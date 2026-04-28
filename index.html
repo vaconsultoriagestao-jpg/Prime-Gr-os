@@ -187,6 +187,7 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
   <div class="topbar">
     <div class="topbar-title" id="page-title">Fechamento</div>
     <span id="topbar-date" style="font-size:12px;color:var(--text-faint)"></span>
+    <button class="btn btn-secondary btn-sm" onclick="recarregarDados()" style="font-size:11px" title="Buscar dados atualizados">↻ Atualizar</button>
   </div>
 
   <!-- FECHAMENTO -->
@@ -537,7 +538,11 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
 <div class="toast" id="toast"></div>
 
 <script>
-const SK='prime_emb_v1',CK='prime_cts_v1',FK='prime_cfg_v1',UK='prime_users_v1',AK='prime_auth';
+// ===== SUPABASE =====
+const SB_URL='https://xnafpqphzqhbnxaahilo.supabase.co';
+const SB_KEY='sb_publishable_Pv0EyfOvKtPYPeGTJZVVxQ_bDWBjkTN';
+const AK='prime_auth';
+
 let embs=[],cts=[],cfg={taxa:2,prazo:72,comissao:1,cn:0.6};
 let usuarios=[
   {id:1,nome:'Administrador',user:'admin',senha:'admin123',perfil:'admin'},
@@ -545,20 +550,80 @@ let usuarios=[
 ];
 let usuarioLogado=null;
 
-function save(){localStorage.setItem(SK,JSON.stringify(embs))}
-function saveCts(){localStorage.setItem(CK,JSON.stringify(cts))}
-function saveCfg(){localStorage.setItem(FK,JSON.stringify(cfg))}
-function saveUsers(){localStorage.setItem(UK,JSON.stringify(usuarios))}
-function load(){
-  try{embs=JSON.parse(localStorage.getItem(SK))||[];}catch(e){embs=[];}
-  try{cts=JSON.parse(localStorage.getItem(CK))||[];}catch(e){cts=[];}
-  try{const s=JSON.parse(localStorage.getItem(FK));if(s)cfg={...cfg,...s};}catch(e){}
-  try{const u=JSON.parse(localStorage.getItem(UK));if(u&&u.length)usuarios=u;}catch(e){}
+async function sbFetch(table,method='GET',body=null,match=null){
+  let url=`${SB_URL}/rest/v1/${table}`;
+  if(match)url+=`?${match}`;
+  const opts={method,headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json','Prefer':'return=representation'}};
+  if(body)opts.body=JSON.stringify(body);
+  const r=await fetch(url,opts);
+  if(!r.ok){const e=await r.text();console.error('Supabase error:',e);return null;}
+  const txt=await r.text();return txt?JSON.parse(txt):null;
 }
 
-function fazerLogin(){
+const _h={'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=minimal'};
+
+async function save(){
+  showLoading('Salvando embarques...');
+  try{
+    await fetch(`${SB_URL}/rest/v1/embarques`,{method:'DELETE',headers:{..._h,'Prefer':''},body:JSON.stringify({})});
+    if(embs.length)await fetch(`${SB_URL}/rest/v1/embarques`,{method:'POST',headers:_h,body:JSON.stringify(embs.map(e=>({id:e.id,data:e})))});
+  }catch(e){console.error(e);}
+  hideLoading();
+}
+async function saveCts(){
+  showLoading('Salvando contratos...');
+  try{
+    await fetch(`${SB_URL}/rest/v1/contratos`,{method:'DELETE',headers:{..._h,'Prefer':''},body:JSON.stringify({})});
+    if(cts.length)await fetch(`${SB_URL}/rest/v1/contratos`,{method:'POST',headers:_h,body:JSON.stringify(cts.map(c=>({id:c.id,data:c})))});
+  }catch(e){console.error(e);}
+  hideLoading();
+}
+async function saveCfg(){
+  try{
+    await fetch(`${SB_URL}/rest/v1/configuracoes`,{method:'DELETE',headers:{..._h,'Prefer':''},body:JSON.stringify({})});
+    await fetch(`${SB_URL}/rest/v1/configuracoes`,{method:'POST',headers:_h,body:JSON.stringify([{id:1,data:cfg}])});
+  }catch(e){console.error(e);}
+}
+async function saveUsers(){
+  try{
+    await fetch(`${SB_URL}/rest/v1/usuarios`,{method:'DELETE',headers:{..._h,'Prefer':''},body:JSON.stringify({})});
+    await fetch(`${SB_URL}/rest/v1/usuarios`,{method:'POST',headers:_h,body:JSON.stringify(usuarios.map(u=>({id:u.id,data:u})))});
+  }catch(e){console.error(e);}
+}
+
+function showLoading(msg='Carregando...'){
+  let el=document.getElementById('loading-overlay');
+  if(!el){el=document.createElement('div');el.id='loading-overlay';el.style.cssText='position:fixed;inset:0;background:rgba(255,255,255,0.85);z-index:9999;display:flex;align-items:center;justify-content:center;font-family:DM Sans,sans-serif;font-size:14px;color:#5f6368;gap:10px';document.body.appendChild(el);}
+  el.innerHTML=`<div style="width:18px;height:18px;border:2px solid #e0e0e0;border-top-color:#2D6A4F;border-radius:50%;animation:spin 0.7s linear infinite"></div>${msg}`;
+  el.style.display='flex';
+  if(!document.getElementById('spin-style')){const s=document.createElement('style');s.id='spin-style';s.textContent='@keyframes spin{to{transform:rotate(360deg)}}';document.head.appendChild(s);}
+}
+function hideLoading(){const el=document.getElementById('loading-overlay');if(el)el.style.display='none';}
+
+async function load(){
+  showLoading('Conectando ao banco de dados...');
+  try{
+    const [re,rc,rf,ru]=await Promise.all([
+      fetch(`${SB_URL}/rest/v1/embarques?select=data&order=id`,{headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}}),
+      fetch(`${SB_URL}/rest/v1/contratos?select=data&order=id`,{headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}}),
+      fetch(`${SB_URL}/rest/v1/configuracoes?select=data&id=eq.1`,{headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}}),
+      fetch(`${SB_URL}/rest/v1/usuarios?select=data&order=id`,{headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}})
+    ]);
+    const de=await re.json(),dc=await rc.json(),df=await rf.json(),du=await ru.json();
+    embs=de.map(r=>r.data)||[];
+    cts=dc.map(r=>r.data)||[];
+    if(df&&df.length)cfg={...cfg,...df[0].data};
+    if(du&&du.length)usuarios=du.map(r=>r.data);
+  }catch(e){console.error('Erro ao carregar dados:',e);}
+  hideLoading();
+}
+
+async function fazerLogin(){
   const user=document.getElementById('login-user').value.trim().toLowerCase();
   const senha=document.getElementById('login-senha').value;
+  showLoading('Verificando credenciais...');
+  await load();
+  hideLoading();
   const u=usuarios.find(x=>x.user.toLowerCase()===user&&x.senha===senha);
   if(u){
     usuarioLogado=u;
@@ -648,7 +713,7 @@ function calcVtCt(){
   const v=parseFloat(document.getElementById('mc_valor').value)||0;
   document.getElementById('mc_vt').value=fmt(q*v);
 }
-function salvarCt(){
+async function salvarCt(){
   const num=document.getElementById('mc_numero').value.trim();
   const comp=document.getElementById('mc_comprador').value.trim();
   if(!num||!comp){toast('Preencha Nº e Comprador!',true);return;}
@@ -669,11 +734,11 @@ function salvarCt(){
     obs:document.getElementById('mc_obs').value,
   };
   if(editCt)cts=cts.map(c=>c.id===editCt?obj:c);else cts.push(obj);
-  saveCts();fecharModalCt();renderContratos();updSelCts();toast(editCt?'Contrato atualizado!':'Contrato salvo!');
+  await saveCts();fecharModalCt();renderContratos();updSelCts();toast(editCt?'Contrato atualizado!':'Contrato salvo!');
 }
-function delCt(id){
+async function delCt(id){
   if(!confirm('Remover este contrato?'))return;
-  cts=cts.filter(c=>c.id!==id);saveCts();renderContratos();updSelCts();toast('Contrato removido.');
+  cts=cts.filter(c=>c.id!==id);await saveCts();renderContratos();updSelCts();toast('Contrato removido.');
 }
 function renderContratos(){
   const q=(document.getElementById('f-ct-q')||{value:''}).value.toLowerCase();
@@ -792,7 +857,7 @@ function aplicaPadroes(){
   const ec=document.getElementById('f_com_sc');if(ec)ec.value=cfg.comissao;
   const en=document.getElementById('f_cn_pct');if(en)en.value=cfg.cn;
 }
-function salvarEmb(){
+async function salvarEmb(){
   const ctId=document.getElementById('f_contrato').value;
   const nf=document.getElementById('f_nf').value.trim();
   const mot=document.getElementById('f_motorista').value.trim();
@@ -842,7 +907,7 @@ function salvarEmb(){
     desc_fin:parseFloat(document.getElementById('f_desc_fin').value)||0,
     outros:parseFloat(document.getElementById('f_outros').value)||0,
     obs:document.getElementById('f_obs').value,...c};
-  embs.push(obj);save();toast('Embarque salvo!');limparForm();
+  embs.push(obj);await save();toast('Embarque salvo!');limparForm();
 }
 function limparForm(){
   ['f_nf','f_placa','f_motorista','f_transportadora','f_obs','f_embarque','f_descarga','f_data_rec','f_prazo_rec','f_taxa_fundo'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
@@ -887,7 +952,7 @@ function abrirEdit(id){
   document.getElementById('modal-edit').style.display='flex';
 }
 function fecharModalEdit(){document.getElementById('modal-edit').style.display='none';editEmb=null;}
-function salvarEdit(){
+async function salvarEdit(){
   const idx=embs.findIndex(d=>d.id===editEmb);if(idx===-1)return;
   const e={...embs[idx]};
   editCampos.forEach(c=>{
@@ -914,11 +979,11 @@ function salvarEdit(){
   if(ctEd&&ctEd.data&&e.embarque&&e.embarque<ctEd.data){
     toast(`Data de embarque anterior ao início do contrato ${ctEd.numero} (${ctEd.data}). Corrija!`,true);return;
   }
-  embs[idx]=e;save();fecharModalEdit();renderEmbarques();renderPainel();toast('Embarque atualizado!');
+  embs[idx]=e;await save();fecharModalEdit();renderEmbarques();renderPainel();toast('Embarque atualizado!');
 }
-function delEmb(id){
+async function delEmb(id){
   if(!confirm('Remover este embarque?'))return;
-  embs=embs.filter(d=>d.id!==id);save();renderEmbarques();renderPainel();toast('Embarque removido.');
+  embs=embs.filter(d=>d.id!==id);await save();renderEmbarques();renderPainel();toast('Embarque removido.');
 }
 
 // ---- PAINEL ----
@@ -1104,12 +1169,12 @@ function loadCfgUI(){
   document.getElementById('cfg_cn').value=cfg.cn;
   renderUsuarios();
 }
-function salvarCfgUI(){
+async function salvarCfgUI(){
   cfg.taxa=parseFloat(document.getElementById('cfg_taxa').value)||2;
   cfg.prazo=parseFloat(document.getElementById('cfg_prazo').value)||72;
   cfg.comissao=parseFloat(document.getElementById('cfg_comissao').value)||1;
   cfg.cn=parseFloat(document.getElementById('cfg_cn').value)||0.6;
-  saveCfg();toast('Configurações salvas!');
+  await saveCfg();toast('Configurações salvas!');
 }
 
 // ---- USUÁRIOS ----
@@ -1152,7 +1217,7 @@ function cancelarEdicaoUser(){
   document.getElementById('u_perfil').value='operador';
   document.getElementById('form-user-titulo').textContent='Novo usuário';
 }
-function salvarUsuario(){
+async function salvarUsuario(){
   const nome=document.getElementById('u_nome').value.trim();
   const user=document.getElementById('u_user').value.trim().toLowerCase();
   const senha=document.getElementById('u_senha').value;
@@ -1167,23 +1232,29 @@ function salvarUsuario(){
     usuarios.push({id:Date.now(),nome,user,senha,perfil});
     toast('Usuário criado!');
   }
-  saveUsers();renderUsuarios();cancelarEdicaoUser();
+  await saveUsers();renderUsuarios();cancelarEdicaoUser();
 }
-function delUsuario(id){
+async function delUsuario(id){
   if(usuarios.length<=1){toast('Deve haver ao menos um usuário!',true);return;}
   if(!confirm('Remover este usuário?'))return;
-  usuarios=usuarios.filter(x=>x.id!==id);saveUsers();renderUsuarios();toast('Usuário removido.');
+  usuarios=usuarios.filter(x=>x.id!==id);await saveUsers();renderUsuarios();toast('Usuário removido.');
 }
-function trocarMinhaSenha(){
+async function trocarMinhaSenha(){
   const sa=document.getElementById('cfg_sa').value;
   const sn=document.getElementById('cfg_sn').value;
   if(!sa||!sn){toast('Preencha a senha atual e a nova!',true);return;}
   if(sa!==usuarioLogado?.senha){toast('Senha atual incorreta!',true);return;}
   usuarios=usuarios.map(x=>x.id===usuarioLogado.id?{...x,senha:sn}:x);
   usuarioLogado={...usuarioLogado,senha:sn};
-  saveUsers();
+  await saveUsers();
   document.getElementById('cfg_sa').value='';document.getElementById('cfg_sn').value='';
   toast('Senha alterada com sucesso!');
+}
+
+async function recarregarDados(){
+  await load();
+  renderPainel();renderEmbarques();renderContratos();initFech();
+  toast('Dados atualizados!');
 }
 
 // ---- INIT ----
@@ -1206,20 +1277,24 @@ function iniciar(){
 }
 
 // ---- BOOT ----
-load();
-const _saved=localStorage.getItem(AK);
-if(_saved){
-  try{
-    const _auth=JSON.parse(_saved);
-    const _u=usuarios.find(x=>x.id===_auth.id&&x.user===_auth.user);
-    if(_u){
-      usuarioLogado=_u;
-      document.getElementById('login-screen').style.display='none';
-      document.getElementById('app').style.display='block';
-      iniciar();
-    }else{localStorage.removeItem(AK);}
-  }catch(e){localStorage.removeItem(AK);}
-}
+(async()=>{
+  const _saved=localStorage.getItem(AK);
+  if(_saved){
+    try{
+      showLoading('Carregando sistema...');
+      await load();
+      hideLoading();
+      const _auth=JSON.parse(_saved);
+      const _u=usuarios.find(x=>x.id===_auth.id&&x.user===_auth.user);
+      if(_u){
+        usuarioLogado=_u;
+        document.getElementById('login-screen').style.display='none';
+        document.getElementById('app').style.display='block';
+        iniciar();
+      }else{localStorage.removeItem(AK);}
+    }catch(e){hideLoading();localStorage.removeItem(AK);}
+  }
+})();
 </script>
 </body>
 </html>
