@@ -374,7 +374,8 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
         <th>Compra/sc</th><th>Venda/sc</th><th>RS/Ton</th>
         <th>Total compra</th><th>Total venda</th><th>Frete total</th>
         <th>Recebido</th><th>Comp.desc.</th>
-        <th>Fornecedor nota</th><th>Custo nota R$/sc</th><th>Custo nota total</th><th>CTE R$/sc</th><th>CTE total</th>
+        <th>Fornecedor nota</th><th>Custo nota R$/sc</th><th>Custo nota total</th>
+        <th>CTE R$/sc</th><th>CTE total</th>
         <th>Custo produto</th><th>Comissão</th><th>Fundo</th><th>Imposto</th><th>Desc.fin.</th><th>Outros</th>
         <th>Lucro R$</th><th>Lucro %</th><th>Lançado por</th><th>Obs</th><th></th>
       </tr></thead><tbody id="tbody-emb"></tbody></table></div>
@@ -463,7 +464,6 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
         <div class="fg"><label>R$ Compra / sc <span class="star">*</span></label><input id="f_compra" type="number" step="0.01" value="0" oninput="calcular()"></div>
         <div class="fg"><label>R$ Venda / sc</label><input id="f_venda" type="number" step="0.01" value="0" readonly disabled></div>
         <div class="fg"><label>RS / Ton (frete)</label><input id="f_rs_ton" type="number" step="0.01" value="0" oninput="calcular()"></div>
-        <div class="fg"><label>Frete / sc <span style="color:var(--green)">(auto)</span></label><input id="f_frete_sc" type="text" readonly></div>
         <div class="fg"><label>Frete total motorista <span style="color:var(--green)">(auto)</span></label><input id="f_frete_total" type="text" readonly></div>
         <div class="fg"><label>Total compra <span style="color:var(--green)">(auto)</span></label><input id="f_total_compra" type="text" readonly></div>
         <div class="fg"><label>Total venda <span style="color:var(--green)">(auto)</span></label><input id="f_total_venda" type="text" readonly></div>
@@ -1171,7 +1171,7 @@ function calcular(){
   const s=(id,v)=>{const el=document.getElementById(id);if(el)el.value=v;};
   s('f_sc_emb',fmtN(sc_emb));s('f_quebra',fmtN(quebra_sc));s('f_sc_ent',fmtN(sc_ent));
   s('f_desc_quebra',fmt(desc_quebra));
-  s('f_frete_sc',fmtN(frete_sc));s('f_frete_total',fmt(frete_total));
+  s('f_frete_total',fmt(frete_total));
   s('f_total_compra',fmt(total_compra));s('f_total_venda',fmt(total_venda));
   s('f_comp_desc',fmt(comp_desc));
   s('f_fundo',fmt(fundo));s('f_com_total',fmt(com_total));
