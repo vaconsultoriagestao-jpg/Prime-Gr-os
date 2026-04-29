@@ -223,7 +223,13 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
     <div class="nav-item" id="nav-cap-com" onclick="irPara('cap-com',this)">
       <svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>Comissionários
     </div>
+    <div class="nav-item" id="nav-cap-nota" onclick="irPara('cap-nota',this)">
+      <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>Notas fiscais
+    </div>
     <div class="nav-label">Cadastros</div>
+    <div class="nav-item" id="nav-fornecedores" onclick="irPara('fornecedores',this)">
+      <svg viewBox="0 0 24 24"><path d="M20 7H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>Fornecedores (nota)
+    </div>
     <div class="nav-item" id="nav-transportadoras" onclick="irPara('transportadoras',this)">
       <svg viewBox="0 0 24 24"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>Transportadoras
     </div>
@@ -365,11 +371,11 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
         <th>Transportadora</th><th>Motorista</th><th>CPF</th><th>Placa</th>
         <th>Peso líq.</th><th>Sc emb.</th><th>Quebra sc</th><th>Desc.quebra</th><th>Scs ent.</th>
         <th>Impureza (kg)</th><th>Desc.impureza</th>
-        <th>Compra/sc</th><th>Venda/sc</th><th>RS/Ton</th><th>Frete/sc</th>
+        <th>Compra/sc</th><th>Venda/sc</th><th>RS/Ton</th>
         <th>Total compra</th><th>Total venda</th><th>Frete total</th>
         <th>Recebido</th><th>Comp.desc.</th>
-        <th>Custo produto</th><th>Custo nota R$</th><th>CTE</th>
-        <th>Comissão</th><th>Fundo</th><th>Imposto</th><th>Desc.fin.</th><th>Outros</th>
+        <th>Fornecedor nota</th><th>Custo nota R$/sc</th><th>Custo nota total</th><th>CTE R$/sc</th><th>CTE total</th>
+        <th>Custo produto</th><th>Comissão</th><th>Fundo</th><th>Imposto</th><th>Desc.fin.</th><th>Outros</th>
         <th>Lucro R$</th><th>Lucro %</th><th>Lançado por</th><th>Obs</th><th></th>
       </tr></thead><tbody id="tbody-emb"></tbody></table></div>
     </div>
@@ -427,6 +433,9 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
         <div class="fg"><label>Data recebimento</label><input id="f_data_rec" type="date" oninput="calcular()"></div>
         <div class="fg"><label>Transportadora</label>
           <select id="f_transportadora_id" onchange="preencherTransportadora()"><option value="">— selecione —</option></select>
+        </div>
+        <div class="fg"><label>Fornecedor da nota</label>
+          <select id="f_fornecedor_id" onchange="preencherFornecedor()"><option value="">— selecione —</option></select>
         </div>
         <div class="fg"><label>Motorista <span class="star">*</span></label><input id="f_motorista" type="text"></div>
         <div class="fg"><label>CPF do motorista <span class="star">*</span></label><input id="f_cpf" type="text" placeholder="000.000.000-00" oninput="mascaraCPF(this)"></div>
@@ -550,7 +559,42 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
     </div>
   </div>
 
-  <!-- CONTAS A PAGAR — CTE TRANSPORTADORAS -->
+  <!-- FORNECEDORES -->
+  <div class="page" id="page-fornecedores">
+    <h1 class="section-heading">Fornecedores de Nota</h1>
+    <p class="section-sub">Empresas que fornecem a nota fiscal de compra.</p>
+    <div style="margin-bottom:1.5rem">
+      <button class="btn btn-primary" onclick="abrirModalForn()">
+        <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Novo fornecedor
+      </button>
+    </div>
+    <div class="table-card">
+      <div class="table-header"><h3>Fornecedores cadastrados</h3></div>
+      <div class="tbl-wrap"><table><thead><tr>
+        <th>Nome</th><th>Telefone</th><th>Responsável</th><th>Obs</th><th></th>
+      </tr></thead><tbody id="tbody-forn"></tbody></table></div>
+    </div>
+  </div>
+
+  <!-- CONTAS A PAGAR — NOTAS FISCAIS -->
+  <div class="page" id="page-cap-nota">
+    <h1 class="section-heading">Notas Fiscais a Pagar</h1>
+    <p class="section-sub">Controle do custo de nota por fornecedor e embarque.</p>
+    <div class="table-filters" style="margin-bottom:1rem;gap:8px;display:flex;flex-wrap:wrap">
+      <select class="filter-select" id="f-capn-forn" onchange="renderCapNota()"><option value="">Todos fornecedores</option></select>
+      <select class="filter-select" id="f-capn-st" onchange="renderCapNota()">
+        <option value="">Todos</option><option value="aberto">Em aberto</option><option value="pago">Pagos</option>
+      </select>
+    </div>
+    <div class="stats-grid" id="capn-cards" style="margin-bottom:1rem"></div>
+    <div class="table-card">
+      <div class="table-header"><h3>Notas por embarque</h3></div>
+      <div class="tbl-wrap"><table><thead><tr>
+        <th>Fornecedor</th><th>Contrato</th><th>NF</th><th>Motorista</th>
+        <th>Embarque</th><th>Sc emb.</th><th>Custo R$/sc</th><th>Custo total</th><th>Status</th><th></th>
+      </tr></thead><tbody id="tbody-capn"></tbody></table></div>
+    </div>
+  </div>
   <div class="page" id="page-cap-transp">
     <h1 class="section-heading">CTE — Transportadoras</h1>
     <p class="section-sub">Controle do CTE por transportadora por embarque.</p>
@@ -721,6 +765,25 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
   </div>
 </div>
 
+<!-- MODAL FORNECEDOR -->
+<div class="modal-overlay" id="modal-forn" style="display:none" onclick="if(event.target===this)fecharModalForn()">
+  <div class="modal" style="max-width:500px">
+    <div class="modal-header"><h2 id="modal-forn-titulo">Novo fornecedor</h2><button class="modal-close" onclick="fecharModalForn()">×</button></div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="fg"><label>Nome <span class="star">*</span></label><input id="mf_nome" type="text"></div>
+        <div class="fg"><label>Telefone</label><input id="mf_tel" type="text"></div>
+        <div class="fg"><label>Responsável</label><input id="mf_resp" type="text"></div>
+        <div class="fg fg-full"><label>Observação</label><input id="mf_obs" type="text"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-primary" onclick="salvarForn()">Salvar</button>
+      <button class="btn btn-secondary" onclick="fecharModalForn()">Cancelar</button>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL EDITAR EMBARQUE -->
 <div class="modal-overlay" id="modal-edit" style="display:none" onclick="if(event.target===this)fecharModalEdit()">
   <div class="modal">
@@ -742,7 +805,7 @@ const SB_KEY='sb_publishable_Pv0EyfOvKtPYPeGTJZVVxQ_bDWBjkTN';
 const AK='prime_auth';
 const _h={'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=minimal'};
 
-let embs=[],cts=[],transp=[],coms=[],cfg={taxa:5,prazo:72,tolerancia:3};
+let embs=[],cts=[],transp=[],coms=[],forn=[],cfg={taxa:5,prazo:72,tolerancia:3};
 let usuarios=[
   {id:1,nome:'Administrador',user:'admin',senha:'admin123',perfil:'admin'},
   {id:2,nome:'Colaborador',user:'colaborador',senha:'colab123',perfil:'operador'}
@@ -803,17 +866,23 @@ async function saveUsers(){
     if(usuarios.length)await sbPost('usuarios',usuarios.map(u=>({id:u.id,data:u})));
   }catch(e){console.error(e);}
 }
-async function load(){
+async function saveForn(){
+  try{
+    await fetch(`${SB_URL}/rest/v1/fornecedores?id=gte.0`,{method:'DELETE',headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}});
+    if(forn.length)await sbPost('fornecedores',forn.map(f=>({id:f.id,data:f})));
+  }catch(e){console.error(e);}
+}
   showLoading('Conectando ao banco de dados...');
   try{
-    const [re,rc,rt,rcom,rf,ru]=await Promise.all([
+    const [re,rc,rt,rcom,rforn,rf,ru]=await Promise.all([
       sbGet('embarques'),sbGet('contratos'),
       fetch(`${SB_URL}/rest/v1/transportadoras?select=data&order=id`,{headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}}).then(r=>r.json()).then(d=>d.map?d.map(x=>x.data):[]),
       fetch(`${SB_URL}/rest/v1/comissionarios?select=data&order=id`,{headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}}).then(r=>r.json()).then(d=>d.map?d.map(x=>x.data):[]),
+      fetch(`${SB_URL}/rest/v1/fornecedores?select=data&order=id`,{headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}}).then(r=>r.json()).then(d=>d.map?d.map(x=>x.data):[]).catch(()=>[]),
       sbGetCfg(),
       fetch(`${SB_URL}/rest/v1/usuarios?select=data&order=id`,{headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}}).then(r=>r.json()).then(d=>d.map?d.map(x=>x.data):[])
     ]);
-    embs=re||[];cts=rc||[];transp=rt||[];coms=rcom||[];
+    embs=re||[];cts=rc||[];transp=rt||[];coms=rcom||[];forn=rforn||[];
     if(rf)cfg={...cfg,...rf};
     if(ru&&ru.length)usuarios=ru;
   }catch(e){console.error('Erro ao carregar:',e);}
@@ -839,7 +908,7 @@ async function fazerLogin(){
 function logout(){localStorage.removeItem(AK);usuarioLogado=null;location.reload();}
 
 // ===== NAV =====
-const ptitles={fechamento:'Fechamento',painel:'Painel',contratos:'Contratos',embarques:'Embarques',novo:'Novo embarque',frete:'Frete — Motoristas','cap-transp':'CTE — Transportadoras','cap-com':'Comissões a Pagar',transportadoras:'Transportadoras',comissionarios:'Cadastro Comissionários',config:'Configurações'};
+const ptitles={fechamento:'Fechamento',painel:'Painel',contratos:'Contratos',embarques:'Embarques',novo:'Novo embarque',frete:'Frete — Motoristas','cap-transp':'CTE — Transportadoras','cap-com':'Comissões a Pagar','cap-nota':'Notas Fiscais a Pagar',transportadoras:'Transportadoras',comissionarios:'Cadastro Comissionários',fornecedores:'Fornecedores de Nota',config:'Configurações'};
 function irPara(id,el){
   if(id==='config'&&usuarioLogado?.perfil!=='admin'){toast('Acesso restrito ao administrador.',true);return;}
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
@@ -852,11 +921,13 @@ function irPara(id,el){
   if(id==='painel')renderPainel();
   if(id==='contratos')renderContratos();
   if(id==='embarques')renderEmbarques();
-  if(id==='novo'){updSelCts();updSelTransp();calcular();}
+  if(id==='novo'){updSelCts();updSelTransp();updSelForn();calcular();}
   if(id==='frete')renderFrete();
   if(id==='cap-transp')renderCapTransp();
   if(id==='cap-com')renderCapCom();
+  if(id==='cap-nota')renderCapNota();
   if(id==='transportadoras')renderTransp();
+  if(id==='fornecedores')renderForn();
   if(id==='comissionarios')renderComs();
   if(id==='config')loadCfgUI();
 }
@@ -1170,6 +1241,8 @@ async function salvarEmb(){
     prazo_rec:document.getElementById('f_prazo_rec').value,
     data_rec:document.getElementById('f_data_rec').value,
     transportadora:transpObj?.nome||'',transportadora_id:transpId,
+    fornecedor_nota:forn.find(x=>x.id===parseInt(document.getElementById('f_fornecedor_id').value))?.nome||'',
+    fornecedor_id:parseInt(document.getElementById('f_fornecedor_id').value)||0,
     motorista:mot,cpf,placa:document.getElementById('f_placa').value,
     tem_fundo:document.getElementById('f_tem_fundo').checked,
     pliq,pdesc:parseFloat(document.getElementById('f_pdesc').value)||0,
@@ -1197,6 +1270,7 @@ function limparForm(){
   document.getElementById('f_tem_fundo').checked=false;document.getElementById('f_fundo_campos').style.display='none';
   document.getElementById('f_contrato').value='';
   document.getElementById('f_empresa').value='';document.getElementById('f_produto').value='';document.getElementById('f_qtd').value='0';document.getElementById('f_venda').value='0';document.getElementById('f_industria').value='';
+  const fsel=document.getElementById('f_fornecedor_id');if(fsel)fsel.value='';
   const cl=document.getElementById('f_comissoes_lista');if(cl)cl.innerHTML='';
   calcular();
 }
@@ -1270,7 +1344,77 @@ async function delEmb(id){
   if(!confirm('Remover este embarque? Esta ação não pode ser desfeita.'))return;
   embs=embs.filter(d=>d.id!==id);await save();renderEmbarques();renderPainel();toast('Embarque removido.');
 }
-// ===== CONTAS A PAGAR — CTE TRANSPORTADORAS =====
+// ===== FORNECEDORES =====
+let editFornId=null;
+function abrirModalForn(id=null){
+  editFornId=id;
+  document.getElementById('modal-forn-titulo').textContent=id?'Editar fornecedor':'Novo fornecedor';
+  const f=id?forn.find(x=>x.id===id):{};
+  ['nome','tel','resp','obs'].forEach(k=>{const el=document.getElementById('mf_'+k);if(el)el.value=f[k]??'';});
+  document.getElementById('modal-forn').style.display='flex';
+}
+function fecharModalForn(){document.getElementById('modal-forn').style.display='none';editFornId=null;}
+async function salvarForn(){
+  const nome=document.getElementById('mf_nome').value.trim();
+  if(!nome){toast('Informe o nome!',true);return;}
+  const obj={id:editFornId||Date.now(),nome,tel:document.getElementById('mf_tel').value,resp:document.getElementById('mf_resp').value,obs:document.getElementById('mf_obs').value};
+  if(editFornId)forn=forn.map(x=>x.id===editFornId?obj:x);else forn.push(obj);
+  await saveForn();fecharModalForn();renderForn();updSelForn();toast(editFornId?'Atualizado!':'Fornecedor salvo!');
+}
+function delForn(id){if(!confirm('Remover?'))return;forn=forn.filter(x=>x.id!==id);saveForn();renderForn();updSelForn();toast('Removido.');}
+function renderForn(){
+  document.getElementById('tbody-forn').innerHTML=forn.length
+    ?forn.map(f=>`<tr><td><strong>${f.nome}</strong></td><td>${f.tel||'—'}</td><td>${f.resp||'—'}</td><td>${f.obs||'—'}</td>
+      <td style="display:flex;gap:4px"><button class="btn-edit" onclick="abrirModalForn(${f.id})">Editar</button><button class="btn btn-danger" onclick="delForn(${f.id})">×</button></td></tr>`).join('')
+    :'<tr><td colspan="5" class="empty-state">Nenhum fornecedor cadastrado.</td></tr>';
+}
+function updSelForn(){
+  const sel=document.getElementById('f_fornecedor_id');if(!sel)return;
+  const cur=sel.value;
+  sel.innerHTML='<option value="">— selecione —</option>'+forn.map(f=>`<option value="${f.id}" ${f.id==cur?'selected':''}>${f.nome}</option>`).join('');
+}
+function preencherFornecedor(){
+  const id=parseInt(document.getElementById('f_fornecedor_id').value);
+  const f=forn.find(x=>x.id===id);
+  if(f)document.getElementById('f_fornecedor_nome')?document.getElementById('f_fornecedor_nome').value=f.nome:null;
+}
+
+// ===== CONTAS A PAGAR — NOTAS FISCAIS =====
+async function toggleCapNotaPago(embId){
+  const idx=embs.findIndex(d=>d.id===embId);if(idx===-1)return;
+  embs[idx].nota_pago=!embs[idx].nota_pago;
+  await save();renderCapNota();toast('Status atualizado!');
+}
+function renderCapNota(){
+  const sel=document.getElementById('f-capn-forn');
+  if(sel){const fs=[...new Set(embs.filter(d=>!d.cancelada&&d.fornecedor_nota).map(d=>d.fornecedor_nota))].sort();const cur=sel.value;sel.innerHTML='<option value="">Todos fornecedores</option>'+fs.map(f=>`<option ${f===cur?'selected':''}>${f}</option>`).join('');}
+  const fForn=(document.getElementById('f-capn-forn')||{value:''}).value;
+  const fSt=(document.getElementById('f-capn-st')||{value:''}).value;
+  const ativos=embs.filter(d=>!d.cancelada&&(d.cn_val||0)>0&&d.fornecedor_nota);
+  const f=ativos.filter(d=>(!fForn||d.fornecedor_nota===fForn)&&(!fSt||(fSt==='aberto'&&!d.nota_pago)||(fSt==='pago'&&d.nota_pago)));
+  const totTotal=f.reduce((s,d)=>s+(d.cn_val||0),0);
+  const totAberto=f.filter(d=>!d.nota_pago).reduce((s,d)=>s+(d.cn_val||0),0);
+  const totPago=f.filter(d=>d.nota_pago).reduce((s,d)=>s+(d.cn_val||0),0);
+  const cards=document.getElementById('capn-cards');
+  if(cards)cards.innerHTML=`
+    <div class="stat-card"><div class="s-label">Total notas</div><div class="s-value">${fmt(totTotal)}</div></div>
+    <div class="stat-card red"><div class="s-label">Em aberto</div><div class="s-value">${fmt(totAberto)}</div></div>
+    <div class="stat-card green"><div class="s-label">Pago</div><div class="s-value">${fmt(totPago)}</div></div>
+  `;
+  document.getElementById('tbody-capn').innerHTML=f.length
+    ?f.map(d=>`<tr>
+      <td><strong>${d.fornecedor_nota||'—'}</strong></td>
+      <td>${d.contrato}</td><td>${d.nf||'—'}</td><td>${d.motorista||'—'}</td>
+      <td>${d.embarque||'—'}</td><td class="mono">${fmtN(d.sc_emb)}</td>
+      <td class="mono">${fmtN(d.cn_sc||0)}</td>
+      <td class="mono">${fmt(d.cn_val||0)}</td>
+      <td><span class="badge ${d.nota_pago?'badge-green':'badge-amber'}">${d.nota_pago?'Pago':'Em aberto'}</span></td>
+      <td><button class="flag-btn ${d.nota_pago?'pago':'aberto'}" onclick="toggleCapNotaPago(${d.id})">${d.nota_pago?'✓ Pago':'Marcar pago'}</button></td>
+    </tr>`).join('')
+    :'<tr><td colspan="10" class="empty-state">Nenhuma nota encontrada.</td></tr>';
+}
+
+// ===== FRETE =====
 async function toggleCapTranspPago(embId){
   const idx=embs.findIndex(d=>d.id===embId);if(idx===-1)return;
   embs[idx].cte_pago=!embs[idx].cte_pago;
@@ -1478,14 +1622,17 @@ function renderEmbarques(){
       <td class="mono">${fmtN(d.impureza||0,1)} kg</td>
       <td class="mono ${(d.imp_desc||0)>0?'neg':''}">${fmt(d.imp_desc||0)}</td>
       <td class="mono">${fmtN(d.compra)}</td><td class="mono">${fmtN(d.venda)}</td>
-      <td class="mono">${fmtN(d.rs_ton)}</td><td class="mono">${fmtN(d.frete_sc)}</td>
+      <td class="mono">${fmtN(d.rs_ton)}</td>
       <td class="mono">${fmt(d.total_compra)}</td><td class="mono">${fmt(d.total_venda)}</td>
       <td class="mono">${fmt(d.frete_total)}</td>
       <td class="mono">${fmt(d.recebido)}</td>
       <td class="mono ${(d.comp_desc||0)>=0?'pos':'neg'}">${fmt(d.comp_desc)}</td>
-      <td class="mono">${fmt(d.custo_produto||0)}</td>
-      <td class="mono">${fmt(d.cn_val)}</td>
+      <td>${d.fornecedor_nota||'—'}</td>
+      <td class="mono">${fmtN(d.cn_sc||0)}</td>
+      <td class="mono">${fmt(d.cn_val||0)}</td>
+      <td class="mono">${fmtN(d.cte_sc||0)}</td>
       <td class="mono">${fmt(d.cte||0)}</td>
+      <td class="mono">${fmt(d.custo_produto||0)}</td>
       <td class="mono">${fmt(d.com_total)}</td>
       <td class="mono">${fmtN(d.fundo)}</td>
       <td class="mono">${fmt(d.imposto)}</td>
@@ -1648,6 +1795,7 @@ async function recarregarDados(){
   if(active==='embarques')renderEmbarques();
   if(active==='contratos')renderContratos();
   if(active==='fechamento')initFech();
+  if(active==='cap-nota')renderCapNota();
   if(active==='frete')renderFrete();
   if(active==='cap-transp')renderCapTransp();
   if(active==='cap-com')renderCapCom();
@@ -1668,7 +1816,7 @@ function iniciar(){
     const navCfg=document.getElementById('nav-config');
     if(navCfg&&usuarioLogado.perfil!=='admin')navCfg.style.display='none';
   }
-  initFech();updSelCts();updSelTransp();calcular();
+  initFech();updSelCts();updSelTransp();updSelForn();calcular();
 }
 
 // ===== BOOT =====
