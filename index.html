@@ -213,15 +213,22 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
     <div class="nav-item" id="nav-novo" onclick="irPara('novo',this)">
       <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>Novo embarque
     </div>
+    <div class="nav-label">Contas a Pagar</div>
     <div class="nav-item" id="nav-frete" onclick="irPara('frete',this)">
       <svg viewBox="0 0 24 24"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>Frete motoristas
     </div>
+    <div class="nav-item" id="nav-cap-transp" onclick="irPara('cap-transp',this)">
+      <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>CTE Transportadoras
+    </div>
+    <div class="nav-item" id="nav-cap-com" onclick="irPara('cap-com',this)">
+      <svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>Comissionários
+    </div>
     <div class="nav-label">Cadastros</div>
     <div class="nav-item" id="nav-transportadoras" onclick="irPara('transportadoras',this)">
-      <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Transportadoras
+      <svg viewBox="0 0 24 24"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>Transportadoras
     </div>
     <div class="nav-item" id="nav-comissionarios" onclick="irPara('comissionarios',this)">
-      <svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>Comissionários
+      <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Cadastro comissionários
     </div>
     <div class="nav-label">Sistema</div>
     <div class="nav-item" id="nav-config" onclick="irPara('config',this)">
@@ -460,8 +467,10 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
       <div class="form-card-header"><svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>Custos adicionais</div>
       <div class="form-body"><div class="form-grid">
         <div class="fg"><label>Custo do produto (R$)</label><input id="f_custo_produto" type="number" step="0.01" value="0" oninput="calcular()"></div>
-        <div class="fg"><label>Custo nota (R$)</label><input id="f_cn_val" type="number" step="0.01" value="0" oninput="calcular()"></div>
-        <div class="fg"><label>CTE (R$)</label><input id="f_cte" type="number" step="0.01" value="0" oninput="calcular()"></div>
+        <div class="fg"><label>Custo nota (R$/saco)</label><input id="f_cn_sc" type="number" step="0.01" value="0" oninput="calcular()"></div>
+        <div class="fg"><label>Custo nota total <span style="color:var(--green)">(auto)</span></label><input id="f_cn_val" type="text" readonly></div>
+        <div class="fg"><label>CTE (R$/saco)</label><input id="f_cte_sc" type="number" step="0.01" value="0" oninput="calcular()"></div>
+        <div class="fg"><label>CTE total <span style="color:var(--green)">(auto)</span></label><input id="f_cte" type="text" readonly></div>
         <div class="fg" style="grid-column:1/-1">
           <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;font-weight:500;color:var(--text-muted)">
             <input type="checkbox" id="f_tem_fundo" onchange="toggleFundoEmb()" style="accent-color:var(--green);width:15px;height:15px">
@@ -519,14 +528,14 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
     <div class="table-card">
       <div class="table-header"><h3>Transportadoras cadastradas</h3></div>
       <div class="tbl-wrap"><table><thead><tr>
-        <th>Nome</th><th>CNPJ/CPF</th><th>Telefone</th><th>Responsável</th><th>Custo padrão R$/Ton</th><th>Obs</th><th></th>
+        <th>Nome</th><th>Telefone</th><th>Responsável</th><th>Obs</th><th></th>
       </tr></thead><tbody id="tbody-transp"></tbody></table></div>
     </div>
   </div>
 
-  <!-- COMISSIONÁRIOS -->
+  <!-- COMISSIONÁRIOS CADASTRO -->
   <div class="page" id="page-comissionarios">
-    <h1 class="section-heading">Comissionários</h1>
+    <h1 class="section-heading">Cadastro de Comissionários</h1>
     <p class="section-sub">Cadastre os comissionários e vincule-os aos compradores.</p>
     <div style="margin-bottom:1.5rem">
       <button class="btn btn-primary" onclick="abrirModalCom()">
@@ -538,6 +547,47 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
       <div class="tbl-wrap"><table><thead><tr>
         <th>Nome</th><th>Comprador vinculado</th><th>Valor R$/sc</th><th>Obs</th><th></th>
       </tr></thead><tbody id="tbody-coms"></tbody></table></div>
+    </div>
+  </div>
+
+  <!-- CONTAS A PAGAR — CTE TRANSPORTADORAS -->
+  <div class="page" id="page-cap-transp">
+    <h1 class="section-heading">CTE — Transportadoras</h1>
+    <p class="section-sub">Controle do CTE por transportadora por embarque.</p>
+    <div class="table-filters" style="margin-bottom:1rem;gap:8px;display:flex;flex-wrap:wrap">
+      <select class="filter-select" id="f-capt-transp" onchange="renderCapTransp()"><option value="">Todas transportadoras</option></select>
+      <select class="filter-select" id="f-capt-st" onchange="renderCapTransp()">
+        <option value="">Todos</option><option value="aberto">Em aberto</option><option value="pago">Pagos</option>
+      </select>
+    </div>
+    <!-- Cards resumo -->
+    <div class="stats-grid" id="capt-cards" style="margin-bottom:1rem"></div>
+    <div class="table-card">
+      <div class="table-header"><h3>CTE por embarque</h3></div>
+      <div class="tbl-wrap"><table><thead><tr>
+        <th>Transportadora</th><th>Contrato</th><th>NF</th><th>Motorista</th>
+        <th>Embarque</th><th>Sc emb.</th><th>CTE R$/sc</th><th>CTE Total</th><th>Status</th><th></th>
+      </tr></thead><tbody id="tbody-capt"></tbody></table></div>
+    </div>
+  </div>
+
+  <!-- CONTAS A PAGAR — COMISSIONÁRIOS -->
+  <div class="page" id="page-cap-com">
+    <h1 class="section-heading">Comissões a Pagar</h1>
+    <p class="section-sub">Controle de comissões por comissionário e embarque.</p>
+    <div class="table-filters" style="margin-bottom:1rem;gap:8px;display:flex;flex-wrap:wrap">
+      <select class="filter-select" id="f-capc-com" onchange="renderCapCom()"><option value="">Todos comissionários</option></select>
+      <select class="filter-select" id="f-capc-st" onchange="renderCapCom()">
+        <option value="">Todos</option><option value="aberto">Em aberto</option><option value="pago">Pagos</option>
+      </select>
+    </div>
+    <div class="stats-grid" id="capc-cards" style="margin-bottom:1rem"></div>
+    <div class="table-card">
+      <div class="table-header"><h3>Comissões por embarque</h3></div>
+      <div class="tbl-wrap"><table><thead><tr>
+        <th>Comissionário</th><th>Comprador</th><th>Contrato</th><th>NF</th>
+        <th>Embarque</th><th>Sc emb.</th><th>R$/sc</th><th>Total</th><th>Status</th><th></th>
+      </tr></thead><tbody id="tbody-capc"></tbody></table></div>
     </div>
   </div>
 
@@ -640,10 +690,8 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
     <div class="modal-body">
       <div class="form-grid">
         <div class="fg"><label>Nome <span class="star">*</span></label><input id="mt_nome" type="text"></div>
-        <div class="fg"><label>CNPJ / CPF</label><input id="mt_doc" type="text"></div>
         <div class="fg"><label>Telefone</label><input id="mt_tel" type="text"></div>
         <div class="fg"><label>Responsável</label><input id="mt_resp" type="text"></div>
-        <div class="fg"><label>Custo padrão R$/saco</label><input id="mt_custo" type="number" step="0.01" value="0"></div>
         <div class="fg fg-full"><label>Observações</label><input id="mt_obs" type="text"></div>
       </div>
     </div>
@@ -791,7 +839,7 @@ async function fazerLogin(){
 function logout(){localStorage.removeItem(AK);usuarioLogado=null;location.reload();}
 
 // ===== NAV =====
-const ptitles={fechamento:'Fechamento',painel:'Painel',contratos:'Contratos',embarques:'Embarques',novo:'Novo embarque',frete:'Frete — Motoristas',transportadoras:'Transportadoras',comissionarios:'Comissionários',config:'Configurações'};
+const ptitles={fechamento:'Fechamento',painel:'Painel',contratos:'Contratos',embarques:'Embarques',novo:'Novo embarque',frete:'Frete — Motoristas','cap-transp':'CTE — Transportadoras','cap-com':'Comissões a Pagar',transportadoras:'Transportadoras',comissionarios:'Cadastro Comissionários',config:'Configurações'};
 function irPara(id,el){
   if(id==='config'&&usuarioLogado?.perfil!=='admin'){toast('Acesso restrito ao administrador.',true);return;}
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
@@ -806,6 +854,8 @@ function irPara(id,el){
   if(id==='embarques')renderEmbarques();
   if(id==='novo'){updSelCts();updSelTransp();calcular();}
   if(id==='frete')renderFrete();
+  if(id==='cap-transp')renderCapTransp();
+  if(id==='cap-com')renderCapCom();
   if(id==='transportadoras')renderTransp();
   if(id==='comissionarios')renderComs();
   if(id==='config')loadCfgUI();
@@ -841,23 +891,23 @@ function abrirModalTransp(id=null){
   editTranspId=id;
   document.getElementById('modal-transp-titulo').textContent=id?'Editar transportadora':'Nova transportadora';
   const t=id?transp.find(x=>x.id===id):{};
-  ['nome','doc','tel','resp','custo','obs'].forEach(f=>{const el=document.getElementById('mt_'+f);if(el)el.value=t[f]??'';});
+  ['nome','tel','resp','obs'].forEach(f=>{const el=document.getElementById('mt_'+f);if(el)el.value=t[f]??'';});
   document.getElementById('modal-transp').style.display='flex';
 }
 function fecharModalTransp(){document.getElementById('modal-transp').style.display='none';editTranspId=null;}
 async function salvarTransp(){
   const nome=document.getElementById('mt_nome').value.trim();
   if(!nome){toast('Informe o nome!',true);return;}
-  const obj={id:editTranspId||Date.now(),nome,doc:document.getElementById('mt_doc').value,tel:document.getElementById('mt_tel').value,resp:document.getElementById('mt_resp').value,custo:parseFloat(document.getElementById('mt_custo').value)||0,obs:document.getElementById('mt_obs').value};
+  const obj={id:editTranspId||Date.now(),nome,tel:document.getElementById('mt_tel').value,resp:document.getElementById('mt_resp').value,obs:document.getElementById('mt_obs').value};
   if(editTranspId)transp=transp.map(x=>x.id===editTranspId?obj:x);else transp.push(obj);
   await saveTransp();fecharModalTransp();renderTransp();updSelTransp();toast(editTranspId?'Atualizada!':'Transportadora salva!');
 }
 function delTransp(id){if(!confirm('Remover?'))return;transp=transp.filter(x=>x.id!==id);saveTransp();renderTransp();updSelTransp();toast('Removida.');}
 function renderTransp(){
   document.getElementById('tbody-transp').innerHTML=transp.length
-    ?transp.map(t=>`<tr><td><strong>${t.nome}</strong></td><td>${t.doc||'—'}</td><td>${t.tel||'—'}</td><td>${t.resp||'—'}</td><td class="mono">${fmt(t.custo)}</td><td>${t.obs||'—'}</td>
+    ?transp.map(t=>`<tr><td><strong>${t.nome}</strong></td><td>${t.tel||'—'}</td><td>${t.resp||'—'}</td><td>${t.obs||'—'}</td>
       <td style="display:flex;gap:4px"><button class="btn-edit" onclick="abrirModalTransp(${t.id})">Editar</button><button class="btn btn-danger" onclick="delTransp(${t.id})">×</button></td></tr>`).join('')
-    :'<tr><td colspan="7" class="empty-state">Nenhuma transportadora cadastrada.</td></tr>';
+    :'<tr><td colspan="5" class="empty-state">Nenhuma transportadora cadastrada.</td></tr>';
 }
 function updSelTransp(){
   const sel=document.getElementById('f_transportadora_id');if(!sel)return;
@@ -993,12 +1043,9 @@ function calcular(){
   const venda=parseFloat(document.getElementById('f_venda').value)||0;
   const rs_ton=parseFloat(document.getElementById('f_rs_ton').value)||0;
   const recebido=parseFloat(document.getElementById('f_recebido').value)||0;
-  const cn_val=parseFloat(document.getElementById('f_cn_val').value)||0;
+  const cn_val_sc=parseFloat(document.getElementById('f_cn_sc')?.value)||0;
+  const cte_sc=parseFloat(document.getElementById('f_cte_sc')?.value)||0;
   const outros=parseFloat(document.getElementById('f_outros').value)||0;
-  const imposto=parseFloat(document.getElementById('f_imposto').value)||0;
-  const desc_fin=parseFloat(document.getElementById('f_desc_fin').value)||0;
-  const cte=parseFloat(document.getElementById('f_cte').value)||0;
-  const custo_produto=parseFloat(document.getElementById('f_custo_produto').value)||0;
   const impureza=parseFloat(document.getElementById('f_impureza').value)||0;
   const descarga=document.getElementById('f_descarga').value;
   const data_rec=document.getElementById('f_data_rec').value;
@@ -1007,23 +1054,30 @@ function calcular(){
   const ph=ctObj?ctObj.prazo:(cfg.prazo||72);
   const tol=cfg.tolerancia||3;
 
+  const imposto=parseFloat(document.getElementById('f_imposto').value)||0;
+  const desc_fin=parseFloat(document.getElementById('f_desc_fin').value)||0;
+  const custo_produto=parseFloat(document.getElementById('f_custo_produto').value)||0;
+
   // Sacas
   const sc_emb=pliq/60;
   const sc_ent=pdesc>0?pdesc/60:sc_emb;
   const quebra_sc=(pdesc>0)?(pdesc-pliq)/60:0;
 
-  // Desconto quebra: tolerância de 3 sacas, acima disso desconta
-  // Quebra negativa = descarga < embarque = perda
+  // Custo nota e CTE: R$/saco × sacas embarcadas
+  const cn_val=cn_val_sc*sc_emb;
+  const cte=cte_sc*sc_emb;
+
+  // Desconto quebra
   const quebra_abs=Math.abs(quebra_sc);
-  const exc_quebra=quebra_sc<0&&quebra_abs>tol?(quebra_abs-tol)*60:0; // kg excedentes
+  const exc_quebra=quebra_sc<0&&quebra_abs>tol?(quebra_abs-tol)*60:0;
   const desc_quebra=exc_quebra>0?(venda/60)*exc_quebra:0;
 
-  // Frete: (pliq/1000) * rs_ton
-  const frete_sc=rs_ton>0?(rs_ton/1000*60)/60:0; // R$/sc = R$/ton / 1000 * 60
-  const frete_total=(pliq/1000)*rs_ton; // Total = (kg/1000) * R$/ton
+  // Frete
+  const frete_sc=rs_ton>0?(rs_ton/1000*60)/60:0;
+  const frete_total=(pliq/1000)*rs_ton;
 
   // Valores
-  const total_compra=sc_emb*compra; // Pela sacas embarcadas
+  const total_compra=sc_emb*compra;
   const total_venda=sc_ent*venda;
   const comp_desc=recebido-total_venda;
 
@@ -1051,6 +1105,8 @@ function calcular(){
   s('f_comp_desc',fmt(comp_desc));
   s('f_fundo',fmt(fundo));s('f_com_total',fmt(com_total));
   s('f_imp_desc',fmt(imp_desc));
+  s('f_cn_val',fmt(cn_val));
+  s('f_cte',fmt(cte));
 
   document.getElementById('r-venda').textContent=fmt(total_venda);
   document.getElementById('r-compra').textContent=fmt(total_compra);
@@ -1089,10 +1145,7 @@ async function salvarEmb(){
   if(!emb_dt){toast('Informe a data de embarque!',true);return;}
   if(!pliq){toast('Informe o peso líquido!',true);return;}
   if(!compra||!venda){toast('Informe os valores de compra e venda!',true);return;}
-  // Validar data vs contrato
-  const ctObj=cts.find(x=>x.id===parseInt(ctId));
-  if(ctObj?.data&&emb_dt<ctObj.data){toast(`Data de embarque anterior ao início do contrato ${ctObj.numero} (${ctObj.data})!`,true);return;}
-
+  // Validar data vs contrato — REMOVIDO conforme solicitado
   const c=calcular();
   const cancelada=document.getElementById('f_canc').checked;
   const transpId=parseInt(document.getElementById('f_transportadora_id').value)||0;
@@ -1123,8 +1176,9 @@ async function salvarEmb(){
     impureza:parseFloat(document.getElementById('f_impureza').value)||0,
     compra,venda,rs_ton:parseFloat(document.getElementById('f_rs_ton').value)||0,
     recebido:parseFloat(document.getElementById('f_recebido').value)||0,
-    cn_val:parseFloat(document.getElementById('f_cn_val').value)||0,
-    cte:parseFloat(document.getElementById('f_cte').value)||0,
+    cn_sc:parseFloat(document.getElementById('f_cn_sc').value)||0,
+    cte_sc:parseFloat(document.getElementById('f_cte_sc').value)||0,
+    cn_val:c.cn_val,cte:c.cte,
     custo_produto:parseFloat(document.getElementById('f_custo_produto').value)||0,
     imposto:parseFloat(document.getElementById('f_imposto').value)||0,
     desc_fin:parseFloat(document.getElementById('f_desc_fin').value)||0,
@@ -1138,7 +1192,7 @@ async function salvarEmb(){
 
 function limparForm(){
   ['f_nf','f_placa','f_motorista','f_cpf','f_obs','f_embarque','f_descarga','f_data_rec','f_prazo_rec','f_dono_carga'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
-  ['f_pliq','f_pdesc','f_rs_ton','f_recebido','f_imposto','f_desc_fin','f_outros','f_cte','f_custo_produto','f_cn_val','f_impureza'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='0';});
+  ['f_pliq','f_pdesc','f_rs_ton','f_recebido','f_imposto','f_desc_fin','f_outros','f_cte_sc','f_custo_produto','f_cn_sc','f_impureza'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='0';});
   document.getElementById('f_canc').checked=false;document.getElementById('cancel-toggle').classList.remove('on');
   document.getElementById('f_tem_fundo').checked=false;document.getElementById('f_fundo_campos').style.display='none';
   document.getElementById('f_contrato').value='';
@@ -1216,6 +1270,87 @@ async function delEmb(id){
   if(!confirm('Remover este embarque? Esta ação não pode ser desfeita.'))return;
   embs=embs.filter(d=>d.id!==id);await save();renderEmbarques();renderPainel();toast('Embarque removido.');
 }
+// ===== CONTAS A PAGAR — CTE TRANSPORTADORAS =====
+async function toggleCapTranspPago(embId){
+  const idx=embs.findIndex(d=>d.id===embId);if(idx===-1)return;
+  embs[idx].cte_pago=!embs[idx].cte_pago;
+  await save();renderCapTransp();toast('Status atualizado!');
+}
+function renderCapTransp(){
+  // Atualizar filtro
+  const sel=document.getElementById('f-capt-transp');
+  if(sel){const ts=[...new Set(embs.filter(d=>!d.cancelada&&d.transportadora).map(d=>d.transportadora))].sort();const cur=sel.value;sel.innerHTML='<option value="">Todas transportadoras</option>'+ts.map(t=>`<option ${t===cur?'selected':''}>${t}</option>`).join('');}
+  const fTransp=(document.getElementById('f-capt-transp')||{value:''}).value;
+  const fSt=(document.getElementById('f-capt-st')||{value:''}).value;
+  const ativos=embs.filter(d=>!d.cancelada&&(d.cte||0)>0&&d.transportadora);
+  const f=ativos.filter(d=>(!fTransp||d.transportadora===fTransp)&&(!fSt||(fSt==='aberto'&&!d.cte_pago)||(fSt==='pago'&&d.cte_pago)));
+  // Cards
+  const totTotal=f.reduce((s,d)=>s+(d.cte||0),0);
+  const totAberto=f.filter(d=>!d.cte_pago).reduce((s,d)=>s+(d.cte||0),0);
+  const totPago=f.filter(d=>d.cte_pago).reduce((s,d)=>s+(d.cte||0),0);
+  const cards=document.getElementById('capt-cards');
+  if(cards)cards.innerHTML=`
+    <div class="stat-card"><div class="s-label">Total CTE</div><div class="s-value">${fmt(totTotal)}</div></div>
+    <div class="stat-card red"><div class="s-label">Em aberto</div><div class="s-value">${fmt(totAberto)}</div></div>
+    <div class="stat-card green"><div class="s-label">Pago</div><div class="s-value">${fmt(totPago)}</div></div>
+  `;
+  document.getElementById('tbody-capt').innerHTML=f.length
+    ?f.map(d=>`<tr>
+      <td><strong>${d.transportadora||'—'}</strong></td>
+      <td>${d.contrato}</td><td>${d.nf||'—'}</td><td>${d.motorista||'—'}</td>
+      <td>${d.embarque||'—'}</td><td class="mono">${fmtN(d.sc_emb)}</td>
+      <td class="mono">${fmtN(d.cte_sc||0)}</td>
+      <td class="mono">${fmt(d.cte||0)}</td>
+      <td><span class="badge ${d.cte_pago?'badge-green':'badge-amber'}">${d.cte_pago?'Pago':'Em aberto'}</span></td>
+      <td><button class="flag-btn ${d.cte_pago?'pago':'aberto'}" onclick="toggleCapTranspPago(${d.id})">${d.cte_pago?'✓ Pago':'Marcar pago'}</button></td>
+    </tr>`).join('')
+    :'<tr><td colspan="10" class="empty-state">Nenhum CTE encontrado.</td></tr>';
+}
+
+// ===== CONTAS A PAGAR — COMISSIONÁRIOS =====
+async function toggleCapComPago(embId,comId){
+  const idx=embs.findIndex(d=>d.id===embId);if(idx===-1)return;
+  if(!embs[idx].comissoes_pago)embs[idx].comissoes_pago={};
+  embs[idx].comissoes_pago[comId]=!embs[idx].comissoes_pago[comId];
+  await save();renderCapCom();toast('Status atualizado!');
+}
+function renderCapCom(){
+  const sel=document.getElementById('f-capc-com');
+  const fSt=(document.getElementById('f-capc-st')||{value:''}).value;
+  // Montar linhas: uma por (embarque × comissionário)
+  const linhas=[];
+  embs.filter(d=>!d.cancelada).forEach(d=>{
+    (d.comissoes||[]).forEach(c=>{
+      const pago=!!(d.comissoes_pago&&d.comissoes_pago[c.id]);
+      const total=(c.valor||0)*(d.sc_emb||0);
+      linhas.push({embId:d.id,comId:c.id,nome:c.nome,comprador:cts.find(x=>x.numero==d.contrato)?.comprador||'—',contrato:d.contrato,nf:d.nf,embarque:d.embarque,sc_emb:d.sc_emb,valor_sc:c.valor,total,pago});
+    });
+  });
+  if(sel){const ns=[...new Set(linhas.map(l=>l.nome))].sort();const cur=sel.value;sel.innerHTML='<option value="">Todos comissionários</option>'+ns.map(n=>`<option ${n===cur?'selected':''}>${n}</option>`).join('');}
+  const fCom=(document.getElementById('f-capc-com')||{value:''}).value;
+  const f=linhas.filter(l=>(!fCom||l.nome===fCom)&&(!fSt||(fSt==='aberto'&&!l.pago)||(fSt==='pago'&&l.pago)));
+  const totTotal=f.reduce((s,l)=>s+l.total,0);
+  const totAberto=f.filter(l=>!l.pago).reduce((s,l)=>s+l.total,0);
+  const totPago=f.filter(l=>l.pago).reduce((s,l)=>s+l.total,0);
+  const cards=document.getElementById('capc-cards');
+  if(cards)cards.innerHTML=`
+    <div class="stat-card"><div class="s-label">Total comissões</div><div class="s-value">${fmt(totTotal)}</div></div>
+    <div class="stat-card red"><div class="s-label">Em aberto</div><div class="s-value">${fmt(totAberto)}</div></div>
+    <div class="stat-card green"><div class="s-label">Pago</div><div class="s-value">${fmt(totPago)}</div></div>
+  `;
+  document.getElementById('tbody-capc').innerHTML=f.length
+    ?f.map(l=>`<tr>
+      <td><strong>${l.nome}</strong></td><td>${l.comprador}</td>
+      <td>${l.contrato}</td><td>${l.nf||'—'}</td><td>${l.embarque||'—'}</td>
+      <td class="mono">${fmtN(l.sc_emb)}</td>
+      <td class="mono">${fmt(l.valor_sc)}</td>
+      <td class="mono">${fmt(l.total)}</td>
+      <td><span class="badge ${l.pago?'badge-green':'badge-amber'}">${l.pago?'Pago':'Em aberto'}</span></td>
+      <td><button class="flag-btn ${l.pago?'pago':'aberto'}" onclick="toggleCapComPago(${l.embId},${l.comId})">${l.pago?'✓ Pago':'Marcar pago'}</button></td>
+    </tr>`).join('')
+    :'<tr><td colspan="10" class="empty-state">Nenhuma comissão encontrada.</td></tr>';
+}
+
 // ===== FRETE =====
 async function toggleFretePago(embId,parcela){
   const idx=embs.findIndex(d=>d.id===embId);if(idx===-1)return;
@@ -1514,6 +1649,8 @@ async function recarregarDados(){
   if(active==='contratos')renderContratos();
   if(active==='fechamento')initFech();
   if(active==='frete')renderFrete();
+  if(active==='cap-transp')renderCapTransp();
+  if(active==='cap-com')renderCapCom();
   if(active==='transportadoras')renderTransp();
   if(active==='comissionarios')renderComs();
   toast('Dados atualizados!');
