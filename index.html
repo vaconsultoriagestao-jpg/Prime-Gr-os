@@ -179,10 +179,10 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
     <h2>Bem-vindo</h2>
     <p>Entre com seu usuário e senha para acessar.</p>
     <label>Usuário</label>
-    <input type="text" id="login-user" placeholder="seu usuário" onkeydown="if(event.key==='Enter')document.getElementById('btn-login').click()" autocomplete="username">
+    <input type="text" id="login-user" placeholder="seu usuário" onkeydown="if(event.key==='Enter')fazerLogin()" autocomplete="username">
     <label>Senha</label>
-    <input type="password" id="login-senha" placeholder="••••••••" onkeydown="if(event.key==='Enter')document.getElementById('btn-login').click()" autocomplete="current-password">
-    <button class="btn-login" id="btn-login" onclick="fazerLogin()">Entrar</button>
+    <input type="password" id="login-senha" placeholder="••••••••" onkeydown="if(event.key==='Enter')fazerLogin()" autocomplete="current-password">
+    <button class="btn-login" onclick="fazerLogin()">Entrar</button>
     <div class="login-error" id="login-error">Usuário ou senha incorretos.</div>
   </div>
 </div>
@@ -872,6 +872,7 @@ async function saveForn(){
     if(forn.length)await sbPost('fornecedores',forn.map(f=>({id:f.id,data:f})));
   }catch(e){console.error(e);}
 }
+async function load(){
   showLoading('Conectando ao banco de dados...');
   try{
     const [re,rc,rt,rcom,rforn,rf,ru]=await Promise.all([
