@@ -179,10 +179,10 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
     <h2>Bem-vindo</h2>
     <p>Entre com seu usuário e senha para acessar.</p>
     <label>Usuário</label>
-    <input type="text" id="login-user" placeholder="seu usuário" onkeydown="if(event.key==='Enter')fazerLogin()" autocomplete="username">
+    <input type="text" id="login-user" placeholder="seu usuário" onkeydown="if(event.key==='Enter')document.getElementById('btn-login').click()" autocomplete="username">
     <label>Senha</label>
-    <input type="password" id="login-senha" placeholder="••••••••" onkeydown="if(event.key==='Enter')fazerLogin()" autocomplete="current-password">
-    <button class="btn-login" onclick="fazerLogin()">Entrar</button>
+    <input type="password" id="login-senha" placeholder="••••••••" onkeydown="if(event.key==='Enter')document.getElementById('btn-login').click()" autocomplete="current-password">
+    <button class="btn-login" id="btn-login" onclick="fazerLogin()">Entrar</button>
     <div class="login-error" id="login-error">Usuário ou senha incorretos.</div>
   </div>
 </div>
@@ -973,7 +973,7 @@ async function salvarTransp(){
   if(editTranspId)transp=transp.map(x=>x.id===editTranspId?obj:x);else transp.push(obj);
   await saveTransp();fecharModalTransp();renderTransp();updSelTransp();toast(editTranspId?'Atualizada!':'Transportadora salva!');
 }
-function delTransp(id){if(!confirm('Remover?'))return;transp=transp.filter(x=>x.id!==id);saveTransp();renderTransp();updSelTransp();toast('Removida.');}
+async function delTransp(id){if(!confirm('Remover?'))return;transp=transp.filter(x=>x.id!==id);await saveTransp();renderTransp();updSelTransp();toast('Removida.');}
 function renderTransp(){
   document.getElementById('tbody-transp').innerHTML=transp.length
     ?transp.map(t=>`<tr><td><strong>${t.nome}</strong></td><td>${t.tel||'—'}</td><td>${t.resp||'—'}</td><td>${t.obs||'—'}</td>
@@ -1016,7 +1016,7 @@ async function salvarCom(){
   if(editComId)coms=coms.map(x=>x.id===editComId?obj:x);else coms.push(obj);
   await saveComs();fecharModalCom();renderComs();toast(editComId?'Atualizado!':'Comissionário salvo!');
 }
-function delCom(id){if(!confirm('Remover?'))return;coms=coms.filter(x=>x.id!==id);saveComs();renderComs();toast('Removido.');}
+async function delCom(id){if(!confirm('Remover?'))return;coms=coms.filter(x=>x.id!==id);await saveComs();renderComs();toast('Removido.');}
 function renderComs(){
   document.getElementById('tbody-coms').innerHTML=coms.length
     ?coms.map(c=>`<tr><td><strong>${c.nome}</strong></td><td>${c.comprador}</td><td class="mono">${fmt(c.valor)}/sc</td><td>${c.obs||'—'}</td>
@@ -1361,7 +1361,7 @@ async function salvarForn(){
   if(editFornId)forn=forn.map(x=>x.id===editFornId?obj:x);else forn.push(obj);
   await saveForn();fecharModalForn();renderForn();updSelForn();toast(editFornId?'Atualizado!':'Fornecedor salvo!');
 }
-function delForn(id){if(!confirm('Remover?'))return;forn=forn.filter(x=>x.id!==id);saveForn();renderForn();updSelForn();toast('Removido.');}
+async function delForn(id){if(!confirm('Remover?'))return;forn=forn.filter(x=>x.id!==id);await saveForn();renderForn();updSelForn();toast('Removido.');}
 function renderForn(){
   document.getElementById('tbody-forn').innerHTML=forn.length
     ?forn.map(f=>`<tr><td><strong>${f.nome}</strong></td><td>${f.tel||'—'}</td><td>${f.resp||'—'}</td><td>${f.obs||'—'}</td>
