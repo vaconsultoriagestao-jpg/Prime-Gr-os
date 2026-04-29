@@ -9,6 +9,8 @@
 :root{--green:#2D6A4F;--green-light:#40916C;--green-pale:#D8F3DC;--green-faint:#F0FAF2;--amber:#B5451B;--amber-pale:#FDEBD0;--red:#C0392B;--red-pale:#FDECEA;--blue:#1A5276;--blue-pale:#D6EAF8;--gray-50:#F8F9FA;--gray-100:#F1F3F4;--gray-200:#E8EAED;--gray-300:#DADCE0;--gray-700:#5F6368;--text:#1a1a1a;--text-muted:#5f6368;--text-faint:#9aa0a6;--border:#e0e0e0;--bg:#fff;--bg-page:#f5f5f0;--radius:10px;--radius-lg:16px;--shadow:0 1px 3px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.04);--shadow-md:0 4px 12px rgba(0,0,0,.10),0 2px 4px rgba(0,0,0,.06)}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'DM Sans',sans-serif;background:var(--bg-page);color:var(--text);font-size:14px;line-height:1.5;min-height:100vh}
+
+/* LOGIN */
 #login-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--green);background-image:repeating-linear-gradient(45deg,transparent,transparent 40px,rgba(255,255,255,.03) 40px,rgba(255,255,255,.03) 80px)}
 .login-card{background:#fff;border-radius:var(--radius-lg);padding:3rem 2.5rem;width:100%;max-width:380px;box-shadow:var(--shadow-md)}
 .login-logo{display:flex;align-items:center;gap:10px;margin-bottom:2rem}
@@ -24,21 +26,23 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg-page);color:var(--text
 .btn-login{width:100%;padding:11px;background:var(--green);color:#fff;border:none;border-radius:var(--radius);font-size:14px;font-weight:500;font-family:inherit;cursor:pointer}
 .btn-login:hover{background:var(--green-light)}
 .login-error{font-size:12px;color:var(--red);margin-top:8px;display:none}
+
+/* LAYOUT */
 #app{display:none;min-height:100vh}
 .layout{display:flex;min-height:100vh}
-.sidebar{width:230px;flex-shrink:0;background:#fff;border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:100}
-.sidebar-logo{padding:1.25rem 1.25rem 1rem;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.sidebar{width:230px;flex-shrink:0;background:#fff;border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:100;overflow-y:auto}
+.sidebar-logo{padding:1.25rem 1.25rem 1rem;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;flex-shrink:0}
 .sidebar-logo-icon{width:32px;height:32px;background:var(--green);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .sidebar-logo-icon svg{width:18px;height:18px;fill:#fff}
 .sidebar-logo-name{font-size:14px;font-weight:600;letter-spacing:-.2px}
 .sidebar-logo-sub{font-size:10px;color:var(--text-faint)}
-.sidebar-nav{flex:1;padding:1rem .75rem;overflow-y:auto}
+.sidebar-nav{flex:1;padding:1rem .75rem}
 .nav-label{font-size:10px;font-weight:500;color:var(--text-faint);text-transform:uppercase;letter-spacing:.08em;margin:.75rem .5rem .35rem}
 .nav-item{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:8px;cursor:pointer;font-size:13px;color:var(--text-muted);margin-bottom:2px;transition:all .15s;user-select:none}
 .nav-item svg{width:16px;height:16px;flex-shrink:0;stroke:currentColor;fill:none;stroke-width:2}
 .nav-item:hover{background:var(--gray-100);color:var(--text)}
 .nav-item.active{background:var(--green-faint);color:var(--green);font-weight:500}
-.sidebar-footer{padding:1rem;border-top:1px solid var(--border)}
+.sidebar-footer{padding:1rem;border-top:1px solid var(--border);flex-shrink:0}
 .sidebar-user{font-size:12px;color:var(--text-muted);margin-bottom:6px}
 .btn-logout{font-size:12px;color:var(--text-faint);background:none;border:none;cursor:pointer;font-family:inherit;padding:0}
 .btn-logout:hover{color:var(--red)}
@@ -47,12 +51,16 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg-page);color:var(--text
 .topbar-title{font-size:16px;font-weight:600;letter-spacing:-.2px}
 .page{padding:2rem;display:none}
 .page.active{display:block}
+
+/* CARDS */
 .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:12px;margin-bottom:1.5rem}
 .stat-card{background:#fff;border-radius:var(--radius);padding:1.1rem 1.25rem;border:1px solid var(--border);box-shadow:var(--shadow)}
 .stat-card .s-label{font-size:11px;font-weight:500;color:var(--text-faint);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
 .stat-card .s-value{font-size:20px;font-weight:600;color:var(--text);letter-spacing:-.5px}
 .stat-card .s-sub{font-size:11px;color:var(--text-faint);margin-top:2px}
 .stat-card.green .s-value{color:var(--green)}.stat-card.red .s-value{color:var(--red)}.stat-card.amber .s-value{color:var(--amber)}
+
+/* TABLE */
 .table-card{background:#fff;border-radius:var(--radius-lg);border:1px solid var(--border);box-shadow:var(--shadow);overflow:hidden;margin-bottom:1.5rem}
 .table-header{padding:1rem 1.25rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
 .table-header h3{font-size:14px;font-weight:600}
@@ -69,33 +77,43 @@ tr.cancelada td{opacity:.4;text-decoration:line-through}
 tr.cancelada td:last-child{text-decoration:none;opacity:1}
 .mono{font-family:'DM Mono',monospace;font-size:11px}
 .pos{color:var(--green);font-weight:500}.neg{color:var(--red);font-weight:500}.amber-txt{color:var(--amber);font-weight:500}
+
+/* BADGES */
 .badge{display:inline-flex;align-items:center;font-size:10px;font-weight:500;padding:3px 8px;border-radius:99px}
 .badge-green{background:var(--green-pale);color:var(--green)}.badge-blue{background:var(--blue-pale);color:var(--blue)}
 .badge-red{background:var(--red-pale);color:var(--red)}.badge-amber{background:var(--amber-pale);color:var(--amber)}
 .badge-gray{background:var(--gray-200);color:var(--gray-700)}
-.form-page{max-width:940px}
+
+/* FORM */
+.form-page{max-width:960px}
 .form-card{background:#fff;border-radius:var(--radius-lg);border:1px solid var(--border);box-shadow:var(--shadow);margin-bottom:1.25rem;overflow:hidden}
 .form-card-header{padding:.9rem 1.25rem;background:var(--gray-50);border-bottom:1px solid var(--border);font-size:12px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;display:flex;align-items:center;gap:8px}
 .form-card-header svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2}
 .form-body{padding:1.25rem}
-.form-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:14px}
+.form-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(185px,1fr));gap:14px}
 .fg{display:flex;flex-direction:column;gap:4px}
 .fg label{font-size:11px;font-weight:500;color:var(--text-muted)}
-.fg input,.fg select{padding:8px 11px;font-size:13px;font-family:inherit;border:1.5px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);outline:none;transition:border-color .15s}
+.fg input,.fg select,.fg textarea{padding:8px 11px;font-size:13px;font-family:inherit;border:1.5px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);outline:none;transition:border-color .15s}
 .fg input:focus,.fg select:focus{border-color:var(--green-light)}
-.fg input[readonly]{background:var(--gray-50);color:var(--text-muted);border-style:dashed;cursor:default}
-.fg .field-hint{font-size:10px;color:var(--text-faint)}
+.fg input[readonly],.fg input[disabled]{background:var(--gray-50);color:var(--text-muted);border-style:dashed;cursor:default}
+.fg .hint{font-size:10px;color:var(--text-faint)}
 .fg-full{grid-column:1/-1}
 .star{color:var(--red);margin-left:2px}
+
+/* CANCEL TOGGLE */
 .cancel-toggle{display:flex;align-items:center;gap:10px;padding:12px 16px;border-radius:10px;border:1.5px solid var(--border);background:var(--bg);cursor:pointer;user-select:none;transition:all .15s;width:fit-content}
 .cancel-toggle.on{border-color:var(--red);background:var(--red-pale)}
 .cancel-toggle input{accent-color:var(--red);width:16px;height:16px;cursor:pointer}
 .cancel-toggle span{font-size:13px;font-weight:500;color:var(--text-muted)}
 .cancel-toggle.on span{color:var(--red)}
-.result-bar{background:var(--green);color:#fff;border-radius:var(--radius-lg);padding:1.1rem 1.5rem;display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:1rem;margin-bottom:1.25rem}
+
+/* RESULT BAR */
+.result-bar{background:var(--green);color:#fff;border-radius:var(--radius-lg);padding:1.1rem 1.5rem;display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:1rem;margin-bottom:1.25rem}
 .r-label{font-size:10px;opacity:.7;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px}
-.r-value{font-size:18px;font-weight:600;letter-spacing:-.3px}
+.r-value{font-size:16px;font-weight:600;letter-spacing:-.3px}
 .r-value.neg{color:#FFCDD2}
+
+/* BUTTONS */
 .btn{display:inline-flex;align-items:center;gap:7px;padding:9px 18px;border-radius:8px;font-size:13px;font-weight:500;font-family:inherit;cursor:pointer;border:1.5px solid transparent;transition:all .15s}
 .btn-primary{background:var(--green);color:#fff;border-color:var(--green)}.btn-primary:hover{background:var(--green-light);border-color:var(--green-light)}
 .btn-secondary{background:#fff;color:var(--text);border-color:var(--border)}.btn-secondary:hover{background:var(--gray-50)}
@@ -104,26 +122,54 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
 .btn-edit{background:none;border:1px solid var(--border);color:var(--text-muted);border-radius:6px;padding:3px 9px;font-size:11px;cursor:pointer;font-family:inherit}
 .btn-edit:hover{border-color:var(--green-light);color:var(--green)}
 .btn svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2}
+
+/* MISC */
 .section-heading{font-size:22px;font-weight:600;letter-spacing:-.5px;margin-bottom:.25rem}
 .section-sub{font-size:13px;color:var(--text-muted);margin-bottom:1.5rem}
 .empty-state{padding:3rem;text-align:center;color:var(--text-faint);font-size:13px}
+.divider{border:none;border-top:1px solid var(--border);margin:1rem 0}
+
+/* MODAL */
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:500;display:flex;align-items:center;justify-content:center;padding:1rem}
-.modal{background:#fff;border-radius:var(--radius-lg);width:100%;max-width:860px;max-height:90vh;overflow-y:auto;box-shadow:var(--shadow-md)}
+.modal{background:#fff;border-radius:var(--radius-lg);width:100%;max-width:880px;max-height:90vh;overflow-y:auto;box-shadow:var(--shadow-md)}
 .modal-header{padding:1.1rem 1.5rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:#fff;z-index:10}
 .modal-header h2{font-size:16px;font-weight:600}
 .modal-close{background:none;border:none;font-size:20px;cursor:pointer;color:var(--text-muted);line-height:1}
 .modal-body{padding:1.5rem}
 .modal-footer{padding:1rem 1.5rem;border-top:1px solid var(--border);display:flex;gap:10px}
+
+/* TOAST */
 .toast{position:fixed;bottom:2rem;right:2rem;background:var(--green);color:#fff;padding:12px 20px;border-radius:var(--radius);font-size:13px;font-weight:500;box-shadow:var(--shadow-md);z-index:1000;transform:translateY(100px);opacity:0;transition:all .3s cubic-bezier(.34,1.56,.64,1)}
 .toast.show{transform:translateY(0);opacity:1}.toast.error{background:var(--red)}
+
+/* FRETE */
+.frete-card{background:#fff;border-radius:var(--radius-lg);border:1px solid var(--border);padding:1.25rem;margin-bottom:1rem;box-shadow:var(--shadow)}
+.frete-split{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
+.split-box{border-radius:var(--radius);padding:.9rem;border:1px solid var(--border)}
+.split-box.parcela-1{background:var(--green-faint);border-color:var(--green-pale)}
+.split-box.parcela-2{background:var(--amber-pale);border-color:#f5cba7}
+.split-label{font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+.split-value{font-size:18px;font-weight:600;margin-bottom:8px}
+.flag-btn{font-size:11px;padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:#fff;cursor:pointer;font-family:inherit;font-weight:500}
+.flag-btn.pago{background:var(--green-pale);color:var(--green);border-color:var(--green-pale)}
+.flag-btn.aberto{background:var(--amber-pale);color:var(--amber);border-color:var(--amber-pale)}
+
+/* CT CHECKS */
 .ct-check{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border:1px solid var(--border);border-radius:8px;cursor:pointer;font-size:13px;user-select:none;transition:all .15s}
 .ct-check:hover{border-color:var(--green-light)}.ct-check input{accent-color:var(--green);width:14px;height:14px}
 .ct-check.on{border-color:var(--green);background:var(--green-faint);color:var(--green);font-weight:500}
+
+/* COMISSAO LIST */
+.com-item{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-radius:8px;background:var(--gray-50);margin-bottom:6px}
+.com-item .com-nome{font-size:13px;font-weight:500}
+.com-item .com-val{font-size:12px;color:var(--text-muted)}
+
 ::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--gray-300);border-radius:3px}
 </style>
 </head>
 <body>
 
+<!-- LOGIN -->
 <div id="login-screen">
   <div class="login-card">
     <div class="login-logo">
@@ -141,6 +187,7 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
   </div>
 </div>
 
+<!-- APP -->
 <div id="app">
 <div class="layout">
 <aside class="sidebar">
@@ -166,6 +213,16 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
     <div class="nav-item" id="nav-novo" onclick="irPara('novo',this)">
       <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>Novo embarque
     </div>
+    <div class="nav-item" id="nav-frete" onclick="irPara('frete',this)">
+      <svg viewBox="0 0 24 24"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>Frete motoristas
+    </div>
+    <div class="nav-label">Cadastros</div>
+    <div class="nav-item" id="nav-transportadoras" onclick="irPara('transportadoras',this)">
+      <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Transportadoras
+    </div>
+    <div class="nav-item" id="nav-comissionarios" onclick="irPara('comissionarios',this)">
+      <svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>Comissionários
+    </div>
     <div class="nav-label">Sistema</div>
     <div class="nav-item" id="nav-config" onclick="irPara('config',this)">
       <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93l-1.41 1.41M4.93 4.93l1.41 1.41M19.07 19.07l-1.41-1.41M4.93 19.07l1.41-1.41M12 2v2M12 20v2M2 12h2M20 12h2"/></svg>Configurações
@@ -186,8 +243,10 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
 <main class="main">
   <div class="topbar">
     <div class="topbar-title" id="page-title">Fechamento</div>
-    <span id="topbar-date" style="font-size:12px;color:var(--text-faint)"></span>
-    <button class="btn btn-secondary btn-sm" onclick="recarregarDados()" style="font-size:11px" title="Buscar dados atualizados">↻ Atualizar</button>
+    <div style="display:flex;align-items:center;gap:12px">
+      <span id="topbar-date" style="font-size:12px;color:var(--text-faint)"></span>
+      <button class="btn btn-secondary btn-sm" onclick="recarregarDados()" title="Atualizar dados">↻ Atualizar</button>
+    </div>
   </div>
 
   <!-- FECHAMENTO -->
@@ -210,9 +269,9 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
       <div class="table-card">
         <div class="table-header"><h3>Detalhamento por contrato</h3><button class="btn btn-secondary btn-sm" onclick="exportFech()">⬇ Exportar Excel</button></div>
         <div class="tbl-wrap"><table><thead><tr>
-          <th>Contrato</th><th>Comprador</th><th>Produto</th><th>Embarques</th>
-          <th>Sc embarcadas</th><th>Sc entregues</th><th>Total venda</th><th>Total recebido</th>
-          <th>A receber</th><th>Saldo vencido</th><th>Situação</th>
+          <th>Contrato</th><th>Empresa</th><th>Comprador</th><th>Produto</th><th>Embarques</th>
+          <th>Sc embarcadas</th><th>Sc entregues</th><th>Sc faltantes</th>
+          <th>Total venda</th><th>Total recebido</th><th>A receber</th><th>Saldo vencido</th><th>Situação</th>
         </tr></thead><tbody id="tbody-fech"></tbody></table></div>
       </div>
       <div class="table-card">
@@ -244,7 +303,7 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
   <div class="page" id="page-contratos">
     <h1 class="section-heading">Contratos</h1>
     <p class="section-sub">Cadastre e gerencie os contratos de compra e venda de grãos.</p>
-    <div style="display:flex;gap:10px;margin-bottom:1.5rem">
+    <div style="margin-bottom:1.5rem">
       <button class="btn btn-primary" onclick="abrirModalCt()">
         <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Novo contrato
       </button>
@@ -264,7 +323,7 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
       </div>
       <div class="tbl-wrap"><table><thead><tr>
         <th>Nº</th><th>Empresa</th><th>Comprador</th><th>Produto</th><th>Qtd (sc)</th><th>Valor R$/sc</th>
-        <th>Valor total</th><th>Prazo receb.</th><th>Fundo?</th><th>% Fundo</th><th>Dias fundo</th>
+        <th>Valor total</th><th>Prazo receb.</th><th>Fundo</th><th>% Fundo</th>
         <th>Tipo frete</th><th>Comissão/sc</th><th>Vencimento</th><th>Vendedor</th><th>Obs</th><th></th>
       </tr></thead><tbody id="tbody-cts"></tbody></table></div>
     </div>
@@ -273,7 +332,7 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
   <!-- EMBARQUES -->
   <div class="page" id="page-embarques">
     <h1 class="section-heading">Embarques</h1>
-    <p class="section-sub">Todos os embarques. Notas canceladas/recusadas aparecem riscadas e não entram no fechamento.</p>
+    <p class="section-sub">Todos os embarques. Notas canceladas aparecem riscadas e não entram no fechamento.</p>
     <div class="table-card">
       <div class="table-header">
         <h3>Lista de embarques</h3>
@@ -295,12 +354,13 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
       <div class="tbl-wrap"><table><thead><tr>
         <th>Contrato</th><th>Empresa</th><th>NF</th><th>Status</th><th>Nota</th><th>Produto</th>
         <th>Embarque</th><th>Descarga</th><th>Prazo receb.</th><th>Data receb.</th><th>Prazo</th>
-        <th>Transportadora</th><th>Motorista</th><th>Placa</th>
-        <th>Peso líq.</th><th>Sc emb.</th><th>Quebra</th><th>Scs ent.</th>
-        <th>Impureza %</th><th>R$/kg</th><th>Desc. impureza</th>
+        <th>Transportadora</th><th>Motorista</th><th>CPF</th><th>Placa</th>
+        <th>Peso líq.</th><th>Sc emb.</th><th>Quebra sc</th><th>Desc.quebra</th><th>Scs ent.</th>
+        <th>Impureza %</th><th>Desc.impureza</th>
         <th>Compra/sc</th><th>Venda/sc</th><th>RS/Ton</th><th>Frete/sc</th>
         <th>Total compra</th><th>Total venda</th><th>Frete total</th>
-        <th>Recebido</th><th>Comp.desc.</th><th>Custo nota</th>
+        <th>Recebido</th><th>Comp.desc.</th>
+        <th>Custo produto</th><th>Custo nota R$</th><th>CTE</th>
         <th>Comissão</th><th>Fundo</th><th>Imposto</th><th>Desc.fin.</th><th>Outros</th>
         <th>Lucro R$</th><th>Lucro %</th><th>Lançado por</th><th>Obs</th><th></th>
       </tr></thead><tbody id="tbody-emb"></tbody></table></div>
@@ -318,10 +378,10 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
       <div><div class="r-label">Total compra</div><div class="r-value" id="r-compra">R$ 0,00</div></div>
       <div><div class="r-label">Lucro R$</div><div class="r-value" id="r-lucro">R$ 0,00</div></div>
       <div><div class="r-label">Lucro %</div><div class="r-value" id="r-lucro-pct">0,00%</div></div>
-      <div><div class="r-label">Prazo receb.</div><div class="r-value" id="r-prazo" style="font-size:13px">—</div></div>
+      <div><div class="r-label">Frete motorista</div><div class="r-value" id="r-frete">R$ 0,00</div></div>
+      <div><div class="r-label">Prazo receb.</div><div class="r-value" id="r-prazo" style="font-size:12px">—</div></div>
     </div>
 
-    <!-- CANCELADA TOGGLE -->
     <div class="form-card">
       <div class="form-body" style="padding:1rem 1.25rem">
         <div class="cancel-toggle" id="cancel-toggle" onclick="toggleCanc()">
@@ -335,18 +395,17 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
     <div class="form-card">
       <div class="form-card-header"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Identificação</div>
       <div class="form-body"><div class="form-grid">
-        <div class="fg"><label>Empresa <span class="star">*</span></label>
-          <select id="f_empresa"><option>Prime Grãos</option><option>ZF Grãos</option></select>
-        </div>
         <div class="fg"><label>Contrato <span class="star">*</span></label>
           <select id="f_contrato" onchange="preencherDoCt()"><option value="">— selecione —</option></select>
         </div>
+        <div class="fg"><label>Empresa</label><input id="f_empresa" type="text" readonly disabled></div>
         <div class="fg"><label>NF <span class="star">*</span></label><input id="f_nf" type="text" placeholder="ex: 900 E 901"></div>
+        <div class="fg"><label>Produto</label><input id="f_produto" type="text" readonly disabled></div>
+        <div class="fg"><label>Status</label>
+          <select id="f_status"><option>Em aberto</option><option>Pago</option><option>Cancelada</option></select>
+        </div>
+        <div class="fg"><label>QTD Contrato (sc)</label><input id="f_qtd" type="number" value="0" readonly disabled></div>
         <div class="fg"><label>Indústria / Granja</label><input id="f_industria" type="text" value="PRIME GRÃOS"></div>
-        <div class="fg"><label>Produto</label><select id="f_produto"><option>SOJA</option><option>MILHO</option><option>TRIGO</option></select></div>
-        <div class="fg"><label>Status</label><select id="f_status"><option>Em aberto</option><option>Pago</option><option>Cancelada</option></select></div>
-        <div class="fg"><label>QTD Contrato (sc)</label><input id="f_qtd" type="number" value="10000"></div>
-        <div class="fg"><label>Tipo pagamento</label><select id="f_pgto_tipo"><option value="3">3</option><option value="1">1</option><option value="2">2</option></select></div>
       </div></div>
     </div>
 
@@ -354,11 +413,14 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
       <div class="form-card-header"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Datas e transporte</div>
       <div class="form-body"><div class="form-grid">
         <div class="fg"><label>Data embarque <span class="star">*</span></label><input id="f_embarque" type="date" oninput="calcular()"></div>
-        <div class="fg"><label>Data descarga</label><input id="f_descarga" type="date" oninput="calcular()"><span class="field-hint">Preencher quando souber</span></div>
+        <div class="fg"><label>Data descarga</label><input id="f_descarga" type="date" oninput="calcular()"><span class="hint">Preencher quando souber</span></div>
         <div class="fg"><label>Prazo recebimento <span style="color:var(--green)">(auto)</span></label><input id="f_prazo_rec" type="text" readonly placeholder="—"></div>
         <div class="fg"><label>Data recebimento</label><input id="f_data_rec" type="date" oninput="calcular()"></div>
-        <div class="fg"><label>Transportadora</label><input id="f_transportadora" type="text" placeholder="Nome da transportadora"></div>
+        <div class="fg"><label>Transportadora</label>
+          <select id="f_transportadora_id" onchange="preencherTransportadora()"><option value="">— selecione —</option></select>
+        </div>
         <div class="fg"><label>Motorista <span class="star">*</span></label><input id="f_motorista" type="text"></div>
+        <div class="fg"><label>CPF do motorista <span class="star">*</span></label><input id="f_cpf" type="text" placeholder="000.000.000-00" oninput="mascaraCPF(this)"></div>
         <div class="fg"><label>Placa</label><input id="f_placa" type="text" placeholder="ABC1234"></div>
       </div></div>
     </div>
@@ -371,9 +433,9 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
         <div class="fg"><label>Sacas embarque <span style="color:var(--green)">(auto)</span></label><input id="f_sc_emb" type="text" readonly></div>
         <div class="fg"><label>Quebra (sc) <span style="color:var(--green)">(auto)</span></label><input id="f_quebra" type="text" readonly></div>
         <div class="fg"><label>SCS entregues <span style="color:var(--green)">(auto)</span></label><input id="f_sc_ent" type="text" readonly></div>
+        <div class="fg"><label>Desconto quebra (R$) <span style="color:var(--green)">(auto)</span></label><input id="f_desc_quebra" type="text" readonly><span class="hint">Acima de 3 sc de tolerância</span></div>
         <div class="fg"><label>Impureza (%)</label><input id="f_impureza" type="number" step="0.001" value="0" oninput="calcular()"></div>
-        <div class="fg"><label>R$/kg venda <span style="color:var(--green)">(auto)</span></label><input id="f_rkg" type="text" readonly><span class="field-hint">Venda/sc ÷ 60</span></div>
-        <div class="fg"><label>Desconto impureza (R$) <span style="color:var(--green)">(auto)</span></label><input id="f_imp_desc" type="text" readonly><span class="field-hint">% × peso desc. × R$/kg</span></div>
+        <div class="fg"><label>Desconto impureza (R$) <span style="color:var(--green)">(auto)</span></label><input id="f_imp_desc" type="text" readonly><span class="hint">% × kg × R$/kg</span></div>
       </div></div>
     </div>
 
@@ -381,12 +443,12 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
       <div class="form-card-header"><svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>Valores</div>
       <div class="form-body"><div class="form-grid">
         <div class="fg"><label>R$ Compra / sc <span class="star">*</span></label><input id="f_compra" type="number" step="0.01" value="0" oninput="calcular()"></div>
-        <div class="fg"><label>R$ Venda / sc <span class="star">*</span></label><input id="f_venda" type="number" step="0.01" value="0" oninput="calcular()"></div>
+        <div class="fg"><label>R$ Venda / sc</label><input id="f_venda" type="number" step="0.01" value="0" readonly disabled></div>
         <div class="fg"><label>RS / Ton (frete)</label><input id="f_rs_ton" type="number" step="0.01" value="0" oninput="calcular()"></div>
         <div class="fg"><label>Frete / sc <span style="color:var(--green)">(auto)</span></label><input id="f_frete_sc" type="text" readonly></div>
+        <div class="fg"><label>Frete total motorista <span style="color:var(--green)">(auto)</span></label><input id="f_frete_total" type="text" readonly></div>
         <div class="fg"><label>Total compra <span style="color:var(--green)">(auto)</span></label><input id="f_total_compra" type="text" readonly></div>
         <div class="fg"><label>Total venda <span style="color:var(--green)">(auto)</span></label><input id="f_total_venda" type="text" readonly></div>
-        <div class="fg"><label>Frete total <span style="color:var(--green)">(auto)</span></label><input id="f_frete_total" type="text" readonly></div>
         <div class="fg"><label>R$ Recebido</label><input id="f_recebido" type="number" step="0.01" value="0" oninput="calcular()"></div>
         <div class="fg"><label>Comp. desc. <span style="color:var(--green)">(auto)</span></label><input id="f_comp_desc" type="text" readonly></div>
       </div></div>
@@ -395,27 +457,29 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
     <div class="form-card">
       <div class="form-card-header"><svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>Custos adicionais</div>
       <div class="form-body"><div class="form-grid">
-        <div class="fg"><label>Custo nota (%)</label><input id="f_cn_pct" type="number" step="0.01" value="0.6" oninput="calcular()"></div>
-        <div class="fg"><label>R$ Custo nota <span style="color:var(--green)">(auto)</span></label><input id="f_cn_val" type="text" readonly></div>
-        <div class="fg"><label>Comissão (R$/sc)</label><input id="f_com_sc" type="number" step="0.01" value="1" oninput="calcular()"></div>
-        <div class="fg"><label>Comissão total <span style="color:var(--green)">(auto)</span></label><input id="f_com_total" type="text" readonly></div>
-        <div class="fg fg-full">
+        <div class="fg"><label>Custo do produto (R$)</label><input id="f_custo_produto" type="number" step="0.01" value="0" oninput="calcular()"></div>
+        <div class="fg"><label>Custo nota (R$)</label><input id="f_cn_val" type="number" step="0.01" value="0" oninput="calcular()"></div>
+        <div class="fg"><label>CTE (R$)</label><input id="f_cte" type="number" step="0.01" value="0" oninput="calcular()"></div>
+        <div class="fg" style="grid-column:1/-1">
           <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;font-weight:500;color:var(--text-muted)">
             <input type="checkbox" id="f_tem_fundo" onchange="toggleFundoEmb()" style="accent-color:var(--green);width:15px;height:15px">
-            Este embarque possui desconto de fundo
+            Este embarque possui desconto de fundo (5% sobre valor venda)
           </label>
         </div>
         <div id="f_fundo_campos" style="display:none;grid-column:1/-1">
           <div class="form-grid">
-            <div class="fg"><label>Taxa fundo (%) <span style="color:var(--text-faint);font-size:10px">— preencher se diferente do padrão</span></label><input id="f_taxa_fundo" type="number" step="0.01" oninput="calcular()"></div>
-            <div class="fg"><label>Fundo calculado <span style="color:var(--green)">(auto)</span></label><input id="f_fundo" type="text" readonly></div>
+            <div class="fg"><label>Fundo calculado <span style="color:var(--green)">(auto — 5% total venda)</span></label><input id="f_fundo" type="text" readonly></div>
           </div>
         </div>
+        <div class="fg"><label>Comissão total <span style="color:var(--green)">(auto)</span></label><input id="f_com_total" type="text" readonly></div>
         <div class="fg"><label>Imposto (R$)</label><input id="f_imposto" type="number" step="0.01" value="0" oninput="calcular()"></div>
         <div class="fg"><label>Desconto financeiro (R$)</label><input id="f_desc_fin" type="number" step="0.01" value="0" oninput="calcular()"></div>
         <div class="fg"><label>Outros (R$)</label><input id="f_outros" type="number" step="0.01" value="0" oninput="calcular()"></div>
-        <div class="fg fg-full"><label>Observação</label><input id="f_obs" type="text" placeholder="Notas adicionais, motivo de cancelamento..."></div>
-      </div></div>
+        <div class="fg fg-full"><label>Observação</label><input id="f_obs" type="text" placeholder="Notas adicionais..."></div>
+      </div>
+      <!-- Comissões vinculadas -->
+      <div id="f_comissoes_lista" style="margin-top:1rem"></div>
+      </div>
     </div>
 
     <div style="display:flex;gap:10px">
@@ -427,6 +491,54 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
     </div>
   </div>
 
+  <!-- FRETE -->
+  <div class="page" id="page-frete">
+    <h1 class="section-heading">Frete — Pagamento de motoristas</h1>
+    <p class="section-sub">Visualize e controle os pagamentos de frete por motorista.</p>
+    <div class="table-filters" style="margin-bottom:1rem">
+      <input class="filter-input" id="f-frete-q" placeholder="Motorista, CPF, contrato..." oninput="renderFrete()" style="width:200px">
+      <select class="filter-select" id="f-frete-ct" onchange="renderFrete()"><option value="">Todos contratos</option></select>
+      <select class="filter-select" id="f-frete-status" onchange="renderFrete()">
+        <option value="">Todos</option><option value="aberto">Com saldo em aberto</option><option value="pago">Quitados</option>
+      </select>
+    </div>
+    <div id="frete-lista"></div>
+  </div>
+
+  <!-- TRANSPORTADORAS -->
+  <div class="page" id="page-transportadoras">
+    <h1 class="section-heading">Transportadoras</h1>
+    <p class="section-sub">Cadastre as transportadoras parceiras.</p>
+    <div style="margin-bottom:1.5rem">
+      <button class="btn btn-primary" onclick="abrirModalTransp()">
+        <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Nova transportadora
+      </button>
+    </div>
+    <div class="table-card">
+      <div class="table-header"><h3>Transportadoras cadastradas</h3></div>
+      <div class="tbl-wrap"><table><thead><tr>
+        <th>Nome</th><th>CNPJ/CPF</th><th>Telefone</th><th>Responsável</th><th>Custo padrão R$/Ton</th><th>Obs</th><th></th>
+      </tr></thead><tbody id="tbody-transp"></tbody></table></div>
+    </div>
+  </div>
+
+  <!-- COMISSIONÁRIOS -->
+  <div class="page" id="page-comissionarios">
+    <h1 class="section-heading">Comissionários</h1>
+    <p class="section-sub">Cadastre os comissionários e vincule-os aos compradores.</p>
+    <div style="margin-bottom:1.5rem">
+      <button class="btn btn-primary" onclick="abrirModalCom()">
+        <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Novo comissionário
+      </button>
+    </div>
+    <div class="table-card">
+      <div class="table-header"><h3>Comissionários cadastrados</h3></div>
+      <div class="tbl-wrap"><table><thead><tr>
+        <th>Nome</th><th>Comprador vinculado</th><th>Valor R$/sc</th><th>Obs</th><th></th>
+      </tr></thead><tbody id="tbody-coms"></tbody></table></div>
+    </div>
+  </div>
+
   <!-- CONFIG -->
   <div class="page" id="page-config">
     <h1 class="section-heading">Configurações</h1>
@@ -434,10 +546,9 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
     <div class="form-card" style="max-width:600px">
       <div class="form-card-header">Parâmetros padrão</div>
       <div class="form-body"><div class="form-grid">
-        <div class="fg"><label>Taxa Fundo (% a.m.)</label><input id="cfg_taxa" type="number" step="0.001" value="2"><span class="field-hint">Cálculo automático do fundo</span></div>
-        <div class="fg"><label>Prazo recebimento (horas após descarga)</label><input id="cfg_prazo" type="number" value="72"><span class="field-hint">Ex: 72 = 3 dias corridos</span></div>
-        <div class="fg"><label>Comissão padrão (R$/sc)</label><input id="cfg_comissao" type="number" step="0.01" value="1"></div>
-        <div class="fg"><label>Custo nota padrão (%)</label><input id="cfg_cn" type="number" step="0.01" value="0.6"></div>
+        <div class="fg"><label>Taxa Fundo (%)</label><input id="cfg_taxa" type="number" step="0.001" value="5"><span class="hint">Padrão 5% sobre total venda</span></div>
+        <div class="fg"><label>Prazo recebimento (horas)</label><input id="cfg_prazo" type="number" value="72"><span class="hint">Após a descarga</span></div>
+        <div class="fg"><label>Tolerância quebra (sc)</label><input id="cfg_tolerancia" type="number" value="3"><span class="hint">Acima disso, desconta</span></div>
       </div></div>
     </div>
     <div class="form-card" style="max-width:700px">
@@ -447,14 +558,11 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
         <div id="form-usuario" style="border-top:1px solid var(--border);padding-top:1rem">
           <p style="font-size:12px;font-weight:600;color:var(--text-muted);margin-bottom:12px;text-transform:uppercase;letter-spacing:.05em" id="form-user-titulo">Novo usuário</p>
           <div class="form-grid">
-            <div class="fg"><label>Nome completo <span class="star">*</span></label><input id="u_nome" type="text" placeholder="Ex: João Silva"></div>
-            <div class="fg"><label>Usuário (login) <span class="star">*</span></label><input id="u_user" type="text" placeholder="Ex: joao" style="text-transform:lowercase"></div>
-            <div class="fg"><label>Senha <span class="star">*</span></label><input id="u_senha" type="password" placeholder="••••••••"></div>
+            <div class="fg"><label>Nome completo <span class="star">*</span></label><input id="u_nome" type="text"></div>
+            <div class="fg"><label>Usuário (login) <span class="star">*</span></label><input id="u_user" type="text"></div>
+            <div class="fg"><label>Senha <span class="star">*</span></label><input id="u_senha" type="password"></div>
             <div class="fg"><label>Perfil</label>
-              <select id="u_perfil">
-                <option value="admin">Admin — acesso total</option>
-                <option value="operador">Operador — sem configurações</option>
-              </select>
+              <select id="u_perfil"><option value="admin">Admin — acesso total</option><option value="operador">Operador</option></select>
             </div>
           </div>
           <div style="display:flex;gap:8px;margin-top:12px">
@@ -464,11 +572,11 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
         </div>
       </div>
     </div>
-    <div class="form-card" style="max-width:700px">
+    <div class="form-card" style="max-width:600px">
       <div class="form-card-header">Minha senha</div>
       <div class="form-body"><div class="form-grid">
-        <div class="fg"><label>Senha atual</label><input id="cfg_sa" type="password" placeholder="••••••••"></div>
-        <div class="fg"><label>Nova senha</label><input id="cfg_sn" type="password" placeholder="••••••••"></div>
+        <div class="fg"><label>Senha atual</label><input id="cfg_sa" type="password"></div>
+        <div class="fg"><label>Nova senha</label><input id="cfg_sn" type="password"></div>
       </div>
       <button class="btn btn-secondary btn-sm" onclick="trocarMinhaSenha()" style="margin-top:12px">Alterar minha senha</button>
       </div>
@@ -486,39 +594,73 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
     <div class="modal-header"><h2 id="modal-ct-titulo">Novo contrato</h2><button class="modal-close" onclick="fecharModalCt()">×</button></div>
     <div class="modal-body">
       <div class="form-grid">
-        <div class="fg"><label>Empresa <span class="star">*</span></label>
-          <select id="mc_empresa"><option>Prime Grãos</option><option>ZF Grãos</option></select>
-        </div>
+        <div class="fg"><label>Empresa <span class="star">*</span></label><select id="mc_empresa"><option>Prime Grãos</option><option>ZF Grãos</option></select></div>
         <div class="fg"><label>Contrato Nº <span class="star">*</span></label><input id="mc_numero" type="text" placeholder="ex: 2450"></div>
-        <div class="fg"><label>Comprador <span class="star">*</span></label><input id="mc_comprador" type="text" placeholder="Nome da empresa/pessoa"></div>
+        <div class="fg"><label>Comprador <span class="star">*</span></label><input id="mc_comprador" type="text"></div>
         <div class="fg"><label>Produto <span class="star">*</span></label><select id="mc_produto"><option>SOJA</option><option>MILHO</option><option>TRIGO</option></select></div>
         <div class="fg"><label>Quantidade (sc) <span class="star">*</span></label><input id="mc_qtd" type="number" placeholder="0" oninput="calcVtCt()"></div>
         <div class="fg"><label>Valor R$/sc <span class="star">*</span></label><input id="mc_valor" type="number" step="0.01" placeholder="0.00" oninput="calcVtCt()"></div>
         <div class="fg"><label>Valor total <span style="color:var(--green)">(auto)</span></label><input id="mc_vt" type="text" readonly></div>
-        <div class="fg"><label>Prazo recebimento (horas) <span class="star">*</span></label><input id="mc_prazo" type="number" value="72"><span class="field-hint">Após a descarga</span></div>
+        <div class="fg"><label>Prazo recebimento (horas) <span class="star">*</span></label><input id="mc_prazo" type="number" value="72"></div>
         <div class="fg" style="grid-column:1/-1">
           <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;font-weight:500;color:var(--text-muted)">
             <input type="checkbox" id="mc_tem_fundo" onchange="toggleFundoCt()" style="accent-color:var(--green);width:15px;height:15px">
-            Este contrato possui desconto de fundo
+            Este contrato possui desconto de fundo (5%)
           </label>
         </div>
         <div id="mc_fundo_campos" style="display:none;grid-column:1/-1">
-          <div class="form-grid" style="margin-top:0">
-            <div class="fg"><label>% Fundo (a.m.)</label><input id="mc_fundo_pct" type="number" step="0.01" value="2"><span class="field-hint">Taxa mensal</span></div>
-            <div class="fg"><label>Dias fundo</label><input id="mc_fundo_dias" type="number" value="75"></div>
-          </div>
+          <div class="form-grid"><div class="fg"><label>% Fundo</label><input id="mc_fundo_pct" type="number" step="0.01" value="5"></div><div class="fg"><label>Dias fundo</label><input id="mc_fundo_dias" type="number" value="75"></div></div>
         </div>
-        <div class="fg"><label>Tipo de frete</label><select id="mc_frete"><option value="CIF">CIF (por conta do vendedor)</option><option value="FOB">FOB (por conta do comprador)</option></select></div>
-        <div class="fg"><label>Comissão (R$/sc)</label><input id="mc_comissao" type="number" step="0.01" value="1"></div>
-        <div class="fg"><label>Vendedor / Responsável</label><input id="mc_vendedor" type="text" placeholder="Nome"></div>
+        <div class="fg"><label>Tipo de frete</label><select id="mc_frete"><option value="CIF">CIF (vendedor)</option><option value="FOB">FOB (comprador)</option></select></div>
+        <div class="fg"><label>Vendedor / Responsável</label><input id="mc_vendedor" type="text"></div>
         <div class="fg"><label>Data do contrato</label><input id="mc_data" type="date"></div>
         <div class="fg"><label>Vencimento</label><input id="mc_vencimento" type="date"></div>
-        <div class="fg fg-full"><label>Observações</label><input id="mc_obs" type="text" placeholder="Condições especiais, cláusulas..."></div>
+        <div class="fg fg-full"><label>Observações</label><input id="mc_obs" type="text"></div>
       </div>
     </div>
     <div class="modal-footer">
       <button class="btn btn-primary" onclick="salvarCt()">Salvar contrato</button>
       <button class="btn btn-secondary" onclick="fecharModalCt()">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL TRANSPORTADORA -->
+<div class="modal-overlay" id="modal-transp" style="display:none" onclick="if(event.target===this)fecharModalTransp()">
+  <div class="modal" style="max-width:600px">
+    <div class="modal-header"><h2 id="modal-transp-titulo">Nova transportadora</h2><button class="modal-close" onclick="fecharModalTransp()">×</button></div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="fg"><label>Nome <span class="star">*</span></label><input id="mt_nome" type="text"></div>
+        <div class="fg"><label>CNPJ / CPF</label><input id="mt_doc" type="text"></div>
+        <div class="fg"><label>Telefone</label><input id="mt_tel" type="text"></div>
+        <div class="fg"><label>Responsável</label><input id="mt_resp" type="text"></div>
+        <div class="fg"><label>Custo padrão R$/Ton</label><input id="mt_custo" type="number" step="0.01" value="0"></div>
+        <div class="fg fg-full"><label>Observações</label><input id="mt_obs" type="text"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-primary" onclick="salvarTransp()">Salvar</button>
+      <button class="btn btn-secondary" onclick="fecharModalTransp()">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL COMISSIONÁRIO -->
+<div class="modal-overlay" id="modal-com" style="display:none" onclick="if(event.target===this)fecharModalCom()">
+  <div class="modal" style="max-width:500px">
+    <div class="modal-header"><h2 id="modal-com-titulo">Novo comissionário</h2><button class="modal-close" onclick="fecharModalCom()">×</button></div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="fg"><label>Nome <span class="star">*</span></label><input id="mcom_nome" type="text"></div>
+        <div class="fg"><label>Comprador vinculado <span class="star">*</span></label><input id="mcom_comprador" type="text" placeholder="Ex: AGROFOODS"></div>
+        <div class="fg"><label>Valor R$/sc <span class="star">*</span></label><input id="mcom_valor" type="number" step="0.01" value="0"></div>
+        <div class="fg fg-full"><label>Observação</label><input id="mcom_obs" type="text"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-primary" onclick="salvarCom()">Salvar</button>
+      <button class="btn btn-secondary" onclick="fecharModalCom()">Cancelar</button>
     </div>
   </div>
 </div>
@@ -542,86 +684,58 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
 const SB_URL='https://xnafpqphzqhbnxaahilo.supabase.co';
 const SB_KEY='sb_publishable_Pv0EyfOvKtPYPeGTJZVVxQ_bDWBjkTN';
 const AK='prime_auth';
+const _h={'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=minimal'};
 
-let embs=[],cts=[],cfg={taxa:2,prazo:72,comissao:1,cn:0.6};
+let embs=[],cts=[],transp=[],coms=[],cfg={taxa:5,prazo:72,tolerancia:3};
 let usuarios=[
   {id:1,nome:'Administrador',user:'admin',senha:'admin123',perfil:'admin'},
   {id:2,nome:'Colaborador',user:'colaborador',senha:'colab123',perfil:'operador'}
 ];
 let usuarioLogado=null;
 
-async function sbFetch(table,method='GET',body=null,match=null){
-  let url=`${SB_URL}/rest/v1/${table}`;
-  if(match)url+=`?${match}`;
-  const opts={method,headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json','Prefer':'return=representation'}};
-  if(body)opts.body=JSON.stringify(body);
-  const r=await fetch(url,opts);
-  if(!r.ok){const e=await r.text();console.error('Supabase error:',e);return null;}
-  const txt=await r.text();return txt?JSON.parse(txt):null;
-}
-
-const _h={'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=minimal'};
-
-async function save(){
-  showLoading('Salvando embarques...');
-  try{
-    await fetch(`${SB_URL}/rest/v1/embarques`,{method:'DELETE',headers:{..._h,'Prefer':''},body:JSON.stringify({})});
-    if(embs.length)await fetch(`${SB_URL}/rest/v1/embarques`,{method:'POST',headers:_h,body:JSON.stringify(embs.map(e=>({id:e.id,data:e})))});
-  }catch(e){console.error(e);}
-  hideLoading();
-}
-async function saveCts(){
-  showLoading('Salvando contratos...');
-  try{
-    await fetch(`${SB_URL}/rest/v1/contratos`,{method:'DELETE',headers:{..._h,'Prefer':''},body:JSON.stringify({})});
-    if(cts.length)await fetch(`${SB_URL}/rest/v1/contratos`,{method:'POST',headers:_h,body:JSON.stringify(cts.map(c=>({id:c.id,data:c})))});
-  }catch(e){console.error(e);}
-  hideLoading();
-}
-async function saveCfg(){
-  try{
-    await fetch(`${SB_URL}/rest/v1/configuracoes`,{method:'DELETE',headers:{..._h,'Prefer':''},body:JSON.stringify({})});
-    await fetch(`${SB_URL}/rest/v1/configuracoes`,{method:'POST',headers:_h,body:JSON.stringify([{id:1,data:cfg}])});
-  }catch(e){console.error(e);}
-}
-async function saveUsers(){
-  try{
-    await fetch(`${SB_URL}/rest/v1/usuarios`,{method:'DELETE',headers:{..._h,'Prefer':''},body:JSON.stringify({})});
-    await fetch(`${SB_URL}/rest/v1/usuarios`,{method:'POST',headers:_h,body:JSON.stringify(usuarios.map(u=>({id:u.id,data:u})))});
-  }catch(e){console.error(e);}
-}
-
 function showLoading(msg='Carregando...'){
   let el=document.getElementById('loading-overlay');
-  if(!el){el=document.createElement('div');el.id='loading-overlay';el.style.cssText='position:fixed;inset:0;background:rgba(255,255,255,0.85);z-index:9999;display:flex;align-items:center;justify-content:center;font-family:DM Sans,sans-serif;font-size:14px;color:#5f6368;gap:10px';document.body.appendChild(el);}
-  el.innerHTML=`<div style="width:18px;height:18px;border:2px solid #e0e0e0;border-top-color:#2D6A4F;border-radius:50%;animation:spin 0.7s linear infinite"></div>${msg}`;
+  if(!el){el=document.createElement('div');el.id='loading-overlay';el.style.cssText='position:fixed;inset:0;background:rgba(255,255,255,.88);z-index:9999;display:flex;align-items:center;justify-content:center;font-family:DM Sans,sans-serif;font-size:14px;color:#5f6368;gap:10px';document.body.appendChild(el);}
+  el.innerHTML=`<div style="width:18px;height:18px;border:2px solid #e0e0e0;border-top-color:#2D6A4F;border-radius:50%;animation:spin .7s linear infinite"></div>${msg}`;
   el.style.display='flex';
   if(!document.getElementById('spin-style')){const s=document.createElement('style');s.id='spin-style';s.textContent='@keyframes spin{to{transform:rotate(360deg)}}';document.head.appendChild(s);}
 }
 function hideLoading(){const el=document.getElementById('loading-overlay');if(el)el.style.display='none';}
 
+async function sbDel(table){await fetch(`${SB_URL}/rest/v1/${table}`,{method:'DELETE',headers:{..._h,'Prefer':''},body:JSON.stringify({})});}
+async function sbPost(table,rows){if(!rows.length)return;await fetch(`${SB_URL}/rest/v1/${table}`,{method:'POST',headers:_h,body:JSON.stringify(rows)});}
+async function sbGet(table){const r=await fetch(`${SB_URL}/rest/v1/${table}?select=data&order=id`,{headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}});const d=await r.json();return d.map?d.map(x=>x.data):[];}
+async function sbGetCfg(){const r=await fetch(`${SB_URL}/rest/v1/configuracoes?select=data&id=eq.1`,{headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}});const d=await r.json();return d&&d.length?d[0].data:null;}
+
+async function save(){showLoading('Salvando...');try{await sbDel('embarques');await sbPost('embarques',embs.map(e=>({id:e.id,data:e})));}catch(e){console.error(e);}hideLoading();}
+async function saveCts(){try{await sbDel('contratos');await sbPost('contratos',cts.map(c=>({id:c.id,data:c})));}catch(e){console.error(e);};}
+async function saveTransp(){try{await sbDel('transportadoras');await sbPost('transportadoras',transp.map(t=>({id:t.id,data:t})));}catch(e){console.error(e);};}
+async function saveComs(){try{await sbDel('comissionarios');await sbPost('comissionarios',coms.map(c=>({id:c.id,data:c})));}catch(e){console.error(e);};}
+async function saveCfg(){try{await fetch(`${SB_URL}/rest/v1/configuracoes`,{method:'DELETE',headers:{..._h,'Prefer':''},body:JSON.stringify({})});await sbPost('configuracoes',[{id:1,data:cfg}]);}catch(e){console.error(e);};}
+async function saveUsers(){try{await sbDel('usuarios');await sbPost('usuarios',usuarios.map(u=>({id:u.id,data:u})));}catch(e){console.error(e);};}
+
 async function load(){
   showLoading('Conectando ao banco de dados...');
   try{
-    const [re,rc,rf,ru]=await Promise.all([
-      fetch(`${SB_URL}/rest/v1/embarques?select=data&order=id`,{headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}}),
-      fetch(`${SB_URL}/rest/v1/contratos?select=data&order=id`,{headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}}),
-      fetch(`${SB_URL}/rest/v1/configuracoes?select=data&id=eq.1`,{headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}}),
-      fetch(`${SB_URL}/rest/v1/usuarios?select=data&order=id`,{headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}})
+    const [re,rc,rt,rcom,rf,ru]=await Promise.all([
+      sbGet('embarques'),sbGet('contratos'),
+      fetch(`${SB_URL}/rest/v1/transportadoras?select=data&order=id`,{headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}}).then(r=>r.json()).then(d=>d.map?d.map(x=>x.data):[]),
+      fetch(`${SB_URL}/rest/v1/comissionarios?select=data&order=id`,{headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}}).then(r=>r.json()).then(d=>d.map?d.map(x=>x.data):[]),
+      sbGetCfg(),
+      fetch(`${SB_URL}/rest/v1/usuarios?select=data&order=id`,{headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}}).then(r=>r.json()).then(d=>d.map?d.map(x=>x.data):[])
     ]);
-    const de=await re.json(),dc=await rc.json(),df=await rf.json(),du=await ru.json();
-    embs=de.map(r=>r.data)||[];
-    cts=dc.map(r=>r.data)||[];
-    if(df&&df.length)cfg={...cfg,...df[0].data};
-    if(du&&du.length)usuarios=du.map(r=>r.data);
-  }catch(e){console.error('Erro ao carregar dados:',e);}
+    embs=re||[];cts=rc||[];transp=rt||[];coms=rcom||[];
+    if(rf)cfg={...cfg,...rf};
+    if(ru&&ru.length)usuarios=ru;
+  }catch(e){console.error('Erro ao carregar:',e);}
   hideLoading();
 }
 
+// ===== AUTH =====
 async function fazerLogin(){
   const user=document.getElementById('login-user').value.trim().toLowerCase();
   const senha=document.getElementById('login-senha').value;
-  showLoading('Verificando credenciais...');
+  showLoading('Verificando...');
   await load();
   hideLoading();
   const u=usuarios.find(x=>x.user.toLowerCase()===user&&x.senha===senha);
@@ -631,15 +745,13 @@ async function fazerLogin(){
     document.getElementById('login-screen').style.display='none';
     document.getElementById('app').style.display='block';
     iniciar();
-  }else{
-    document.getElementById('login-error').style.display='block';
-  }
+  }else{document.getElementById('login-error').style.display='block';}
 }
-function logout(){localStorage.removeItem(AK);usuarioLogado=null;location.reload()}
+function logout(){localStorage.removeItem(AK);usuarioLogado=null;location.reload();}
 
-const ptitles={fechamento:'Fechamento',painel:'Painel',contratos:'Contratos',embarques:'Embarques',novo:'Novo embarque',config:'Configurações'};
+// ===== NAV =====
+const ptitles={fechamento:'Fechamento',painel:'Painel',contratos:'Contratos',embarques:'Embarques',novo:'Novo embarque',frete:'Frete — Motoristas',transportadoras:'Transportadoras',comissionarios:'Comissionários',config:'Configurações'};
 function irPara(id,el){
-  // Operador não acessa configurações
   if(id==='config'&&usuarioLogado?.perfil!=='admin'){toast('Acesso restrito ao administrador.',true);return;}
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
@@ -651,18 +763,19 @@ function irPara(id,el){
   if(id==='painel')renderPainel();
   if(id==='contratos')renderContratos();
   if(id==='embarques')renderEmbarques();
-  if(id==='novo'){updSelCts();calcular();aplicaPadroes();}
+  if(id==='novo'){updSelCts();updSelTransp();calcular();}
+  if(id==='frete')renderFrete();
+  if(id==='transportadoras')renderTransp();
+  if(id==='comissionarios')renderComs();
   if(id==='config')loadCfgUI();
 }
 
+// ===== UTILS =====
 const fmt=v=>'R$ '+Number(v||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
 const fmtN=(v,d=2)=>Number(v||0).toLocaleString('pt-BR',{minimumFractionDigits:d,maximumFractionDigits:d});
 const fmtP=v=>Number(v||0).toFixed(2)+'%';
-
-function prazoData(desc,h){
-  if(!desc)return null;
-  const d=new Date(desc+'T12:00:00');d.setHours(d.getHours()+(h||72));return d;
-}
+function mascaraCPF(el){let v=el.value.replace(/\D/g,'');if(v.length>11)v=v.slice(0,11);v=v.replace(/(\d{3})(\d)/,'$1.$2').replace(/(\d{3})(\d)/,'$1.$2').replace(/(\d{3})(\d{1,2})$/,'$1-$2');el.value=v;}
+function prazoData(desc,h){if(!desc)return null;const d=new Date(desc+'T12:00:00');d.setHours(d.getHours()+(h||72));return d;}
 function sprazo(e){
   if(e.cancelada||e.status==='Cancelada')return{txt:'Cancelada',badge:'badge-gray'};
   if(!e.descarga)return{txt:'—',badge:'badge-gray'};
@@ -681,90 +794,110 @@ function toast(msg,err=false){
   t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2800);
 }
 
-// ---- CONTRATOS ----
+// ===== TRANSPORTADORAS =====
+let editTranspId=null;
+function abrirModalTransp(id=null){
+  editTranspId=id;
+  document.getElementById('modal-transp-titulo').textContent=id?'Editar transportadora':'Nova transportadora';
+  const t=id?transp.find(x=>x.id===id):{};
+  ['nome','doc','tel','resp','custo','obs'].forEach(f=>{const el=document.getElementById('mt_'+f);if(el)el.value=t[f]??'';});
+  document.getElementById('modal-transp').style.display='flex';
+}
+function fecharModalTransp(){document.getElementById('modal-transp').style.display='none';editTranspId=null;}
+async function salvarTransp(){
+  const nome=document.getElementById('mt_nome').value.trim();
+  if(!nome){toast('Informe o nome!',true);return;}
+  const obj={id:editTranspId||Date.now(),nome,doc:document.getElementById('mt_doc').value,tel:document.getElementById('mt_tel').value,resp:document.getElementById('mt_resp').value,custo:parseFloat(document.getElementById('mt_custo').value)||0,obs:document.getElementById('mt_obs').value};
+  if(editTranspId)transp=transp.map(x=>x.id===editTranspId?obj:x);else transp.push(obj);
+  await saveTransp();fecharModalTransp();renderTransp();updSelTransp();toast(editTranspId?'Atualizada!':'Transportadora salva!');
+}
+function delTransp(id){if(!confirm('Remover?'))return;transp=transp.filter(x=>x.id!==id);saveTransp();renderTransp();updSelTransp();toast('Removida.');}
+function renderTransp(){
+  document.getElementById('tbody-transp').innerHTML=transp.length
+    ?transp.map(t=>`<tr><td><strong>${t.nome}</strong></td><td>${t.doc||'—'}</td><td>${t.tel||'—'}</td><td>${t.resp||'—'}</td><td class="mono">${fmt(t.custo)}</td><td>${t.obs||'—'}</td>
+      <td style="display:flex;gap:4px"><button class="btn-edit" onclick="abrirModalTransp(${t.id})">Editar</button><button class="btn btn-danger" onclick="delTransp(${t.id})">×</button></td></tr>`).join('')
+    :'<tr><td colspan="7" class="empty-state">Nenhuma transportadora cadastrada.</td></tr>';
+}
+function updSelTransp(){
+  const sel=document.getElementById('f_transportadora_id');if(!sel)return;
+  const cur=sel.value;
+  sel.innerHTML='<option value="">— selecione —</option>'+transp.map(t=>`<option value="${t.id}" ${t.id==cur?'selected':''}>${t.nome}</option>`).join('');
+}
+function preencherTransportadora(){
+  const id=parseInt(document.getElementById('f_transportadora_id').value);
+  const t=transp.find(x=>x.id===id);
+  if(t&&t.custo){document.getElementById('f_rs_ton').value=t.custo;calcular();}
+}
+
+// ===== COMISSIONÁRIOS =====
+let editComId=null;
+function abrirModalCom(id=null){
+  editComId=id;
+  document.getElementById('modal-com-titulo').textContent=id?'Editar comissionário':'Novo comissionário';
+  const c=id?coms.find(x=>x.id===id):{};
+  ['nome','comprador','obs'].forEach(f=>{const el=document.getElementById('mcom_'+f);if(el)el.value=c[f]??'';});
+  document.getElementById('mcom_valor').value=c.valor??0;
+  document.getElementById('modal-com').style.display='flex';
+}
+function fecharModalCom(){document.getElementById('modal-com').style.display='none';editComId=null;}
+async function salvarCom(){
+  const nome=document.getElementById('mcom_nome').value.trim();
+  const comprador=document.getElementById('mcom_comprador').value.trim();
+  if(!nome||!comprador){toast('Informe nome e comprador!',true);return;}
+  const obj={id:editComId||Date.now(),nome,comprador:comprador.toUpperCase(),valor:parseFloat(document.getElementById('mcom_valor').value)||0,obs:document.getElementById('mcom_obs').value};
+  if(editComId)coms=coms.map(x=>x.id===editComId?obj:x);else coms.push(obj);
+  await saveComs();fecharModalCom();renderComs();toast(editComId?'Atualizado!':'Comissionário salvo!');
+}
+function delCom(id){if(!confirm('Remover?'))return;coms=coms.filter(x=>x.id!==id);saveComs();renderComs();toast('Removido.');}
+function renderComs(){
+  document.getElementById('tbody-coms').innerHTML=coms.length
+    ?coms.map(c=>`<tr><td><strong>${c.nome}</strong></td><td>${c.comprador}</td><td class="mono">${fmt(c.valor)}/sc</td><td>${c.obs||'—'}</td>
+      <td style="display:flex;gap:4px"><button class="btn-edit" onclick="abrirModalCom(${c.id})">Editar</button><button class="btn btn-danger" onclick="delCom(${c.id})">×</button></td></tr>`).join('')
+    :'<tr><td colspan="5" class="empty-state">Nenhum comissionário cadastrado.</td></tr>';
+}
+
+// ===== CONTRATOS =====
 let editCt=null;
-function toggleFundoCt(){
-  const has=document.getElementById('mc_tem_fundo').checked;
-  document.getElementById('mc_fundo_campos').style.display=has?'block':'none';
-}
-function toggleFundoEmb(){
-  const has=document.getElementById('f_tem_fundo').checked;
-  document.getElementById('f_fundo_campos').style.display=has?'block':'none';
-  calcular();
-}
+function toggleFundoCt(){const h=document.getElementById('mc_tem_fundo').checked;document.getElementById('mc_fundo_campos').style.display=h?'block':'none';}
 function abrirModalCt(id=null){
   editCt=id;
   document.getElementById('modal-ct-titulo').textContent=id?'Editar contrato':'Novo contrato';
   const c=id?cts.find(x=>x.id===id):{};
-  ['numero','comprador','produto','qtd','valor','prazo','fundo_pct','fundo_dias','frete','comissao','vendedor','data','vencimento','obs'].forEach(f=>{
-    const el=document.getElementById('mc_'+f);if(el)el.value=c[f]??'';
-  });
-  const empEl=document.getElementById('mc_empresa');
-  if(empEl)empEl.value=c.empresa||'Prime Grãos';
-  const temFundo=!!(c.tem_fundo);
-  document.getElementById('mc_tem_fundo').checked=temFundo;
-  document.getElementById('mc_fundo_campos').style.display=temFundo?'block':'none';
-  if(!id){document.getElementById('mc_prazo').value=cfg.prazo;document.getElementById('mc_fundo_pct').value=cfg.taxa;document.getElementById('mc_comissao').value=cfg.comissao;}
+  ['numero','comprador','qtd','valor','prazo','fundo_pct','fundo_dias','vendedor','data','vencimento','obs'].forEach(f=>{const el=document.getElementById('mc_'+f);if(el)el.value=c[f]??'';});
+  document.getElementById('mc_empresa').value=c.empresa||'Prime Grãos';
+  document.getElementById('mc_produto').value=c.produto||'SOJA';
+  document.getElementById('mc_frete').value=c.frete||'CIF';
+  const tf=!!(c.tem_fundo);
+  document.getElementById('mc_tem_fundo').checked=tf;
+  document.getElementById('mc_fundo_campos').style.display=tf?'block':'none';
+  if(!id){document.getElementById('mc_prazo').value=cfg.prazo||72;document.getElementById('mc_fundo_pct').value=5;}
   calcVtCt();document.getElementById('modal-ct').style.display='flex';
 }
 function fecharModalCt(){document.getElementById('modal-ct').style.display='none';editCt=null;}
-function calcVtCt(){
-  const q=parseFloat(document.getElementById('mc_qtd').value)||0;
-  const v=parseFloat(document.getElementById('mc_valor').value)||0;
-  document.getElementById('mc_vt').value=fmt(q*v);
-}
+function calcVtCt(){const q=parseFloat(document.getElementById('mc_qtd').value)||0,v=parseFloat(document.getElementById('mc_valor').value)||0;document.getElementById('mc_vt').value=fmt(q*v);}
 async function salvarCt(){
-  const num=document.getElementById('mc_numero').value.trim();
-  const comp=document.getElementById('mc_comprador').value.trim();
+  const num=document.getElementById('mc_numero').value.trim(),comp=document.getElementById('mc_comprador').value.trim();
   if(!num||!comp){toast('Preencha Nº e Comprador!',true);return;}
-  const obj={id:editCt||Date.now(),numero:num,comprador:comp,
-    empresa:document.getElementById('mc_empresa').value||'Prime Grãos',
-    produto:document.getElementById('mc_produto').value,
-    qtd:parseFloat(document.getElementById('mc_qtd').value)||0,
-    valor:parseFloat(document.getElementById('mc_valor').value)||0,
-    prazo:parseFloat(document.getElementById('mc_prazo').value)||72,
-    tem_fundo:document.getElementById('mc_tem_fundo').checked,
-    fundo_pct:parseFloat(document.getElementById('mc_fundo_pct').value)||0,
-    fundo_dias:parseFloat(document.getElementById('mc_fundo_dias').value)||0,
-    frete:document.getElementById('mc_frete').value,
-    comissao:parseFloat(document.getElementById('mc_comissao').value)||1,
-    vendedor:document.getElementById('mc_vendedor').value,
-    data:document.getElementById('mc_data').value,
-    vencimento:document.getElementById('mc_vencimento').value,
-    obs:document.getElementById('mc_obs').value,
-  };
+  const obj={id:editCt||Date.now(),numero:num,comprador:comp,empresa:document.getElementById('mc_empresa').value,produto:document.getElementById('mc_produto').value,qtd:parseFloat(document.getElementById('mc_qtd').value)||0,valor:parseFloat(document.getElementById('mc_valor').value)||0,prazo:parseFloat(document.getElementById('mc_prazo').value)||72,tem_fundo:document.getElementById('mc_tem_fundo').checked,fundo_pct:parseFloat(document.getElementById('mc_fundo_pct').value)||5,fundo_dias:parseFloat(document.getElementById('mc_fundo_dias').value)||75,frete:document.getElementById('mc_frete').value,vendedor:document.getElementById('mc_vendedor').value,data:document.getElementById('mc_data').value,vencimento:document.getElementById('mc_vencimento').value,obs:document.getElementById('mc_obs').value};
   if(editCt)cts=cts.map(c=>c.id===editCt?obj:c);else cts.push(obj);
   await saveCts();fecharModalCt();renderContratos();updSelCts();toast(editCt?'Contrato atualizado!':'Contrato salvo!');
 }
-async function delCt(id){
-  if(!confirm('Remover este contrato?'))return;
-  cts=cts.filter(c=>c.id!==id);await saveCts();renderContratos();updSelCts();toast('Contrato removido.');
-}
+async function delCt(id){if(!confirm('Remover?'))return;cts=cts.filter(c=>c.id!==id);await saveCts();renderContratos();updSelCts();toast('Contrato removido.');}
 function renderContratos(){
   const q=(document.getElementById('f-ct-q')||{value:''}).value.toLowerCase();
   const pr=(document.getElementById('f-ct-prod')||{value:''}).value;
   const emp=(document.getElementById('f-ct-emp')||{value:''}).value;
-  const f=cts.filter(c=>
-    (!q||c.numero?.toLowerCase().includes(q)||c.comprador?.toLowerCase().includes(q))&&
-    (!pr||c.produto===pr)&&(!emp||c.empresa===emp));
+  const f=cts.filter(c=>(!q||c.numero?.toLowerCase().includes(q)||c.comprador?.toLowerCase().includes(q))&&(!pr||c.produto===pr)&&(!emp||c.empresa===emp));
   document.getElementById('tbody-cts').innerHTML=f.length
-    ?f.map(c=>`<tr>
-      <td><strong>${c.numero}</strong></td>
+    ?f.map(c=>`<tr><td><strong>${c.numero}</strong></td>
       <td><span class="badge ${c.empresa==='ZF Grãos'?'badge-blue':'badge-green'}">${c.empresa||'Prime Grãos'}</span></td>
-      <td>${c.comprador}</td><td>${c.produto}</td>
-      <td class="mono">${fmtN(c.qtd,0)}</td><td class="mono">${fmt(c.valor)}</td>
-      <td class="mono">${fmt((c.qtd||0)*(c.valor||0))}</td>
-      <td>${c.prazo||72}h</td>
+      <td>${c.comprador}</td><td>${c.produto}</td><td class="mono">${fmtN(c.qtd,0)}</td><td class="mono">${fmt(c.valor)}</td>
+      <td class="mono">${fmt((c.qtd||0)*(c.valor||0))}</td><td>${c.prazo||72}h</td>
       <td>${c.tem_fundo?'<span class="badge badge-amber">Sim</span>':'<span class="badge badge-gray">Não</span>'}</td>
-      <td>${c.tem_fundo?(c.fundo_pct||0)+'%':'—'}</td>
-      <td>${c.tem_fundo?(c.fundo_dias||0)+' dias':'—'}</td>
-      <td>${c.frete||'CIF'}</td><td>${fmt(c.comissao)}</td>
-      <td>${c.vencimento||'—'}</td><td>${c.vendedor||'—'}</td><td>${c.obs||'—'}</td>
-      <td style="display:flex;gap:4px">
-        <button class="btn-edit" onclick="abrirModalCt(${c.id})">Editar</button>
-        <button class="btn btn-danger" onclick="delCt(${c.id})">×</button>
-      </td></tr>`).join('')
-    :'<tr><td colspan="17" class="empty-state">Nenhum contrato cadastrado. Clique em "Novo contrato".</td></tr>';
+      <td>${c.tem_fundo?(c.fundo_pct||5)+'%':'—'}</td>
+      <td>${c.frete||'CIF'}</td><td>—</td><td>${c.vencimento||'—'}</td><td>${c.vendedor||'—'}</td><td>${c.obs||'—'}</td>
+      <td style="display:flex;gap:4px"><button class="btn-edit" onclick="abrirModalCt(${c.id})">Editar</button><button class="btn btn-danger" onclick="delCt(${c.id})">×</button></td></tr>`).join('')
+    :'<tr><td colspan="16" class="empty-state">Nenhum contrato cadastrado.</td></tr>';
 }
 function updSelCts(){
   const sel=document.getElementById('f_contrato');if(!sel)return;
@@ -773,25 +906,32 @@ function updSelCts(){
 }
 function preencherDoCt(){
   const id=parseInt(document.getElementById('f_contrato').value);
-  const c=cts.find(x=>x.id===id);if(!c)return;
+  const c=cts.find(x=>x.id===id);
+  if(!c)return;
+  // Travar campos do contrato
   document.getElementById('f_empresa').value=c.empresa||'Prime Grãos';
   document.getElementById('f_produto').value=c.produto||'SOJA';
-  document.getElementById('f_qtd').value=c.qtd||10000;
+  document.getElementById('f_qtd').value=c.qtd||0;
   document.getElementById('f_venda').value=c.valor||0;
-  document.getElementById('f_com_sc').value=c.comissao||cfg.comissao;
-  // Fundo do contrato
-  const temFundo=!!(c.tem_fundo);
-  document.getElementById('f_tem_fundo').checked=temFundo;
-  document.getElementById('f_fundo_campos').style.display=temFundo?'block':'none';
-  if(temFundo&&c.fundo_pct){document.getElementById('f_taxa_fundo').value=c.fundo_pct;}
+  // Fundo
+  const tf=!!(c.tem_fundo);
+  document.getElementById('f_tem_fundo').checked=tf;
+  document.getElementById('f_fundo_campos').style.display=tf?'block':'none';
+  // Comissões do comprador
+  renderComissoesCt(c.comprador);
+  // Valida data do contrato
   calcular();
 }
-
-// ---- NOVO EMBARQUE ----
-function toggleCanc(){
-  const cb=document.getElementById('f_canc'),tg=document.getElementById('cancel-toggle');
-  tg.classList.toggle('on',cb.checked);
+function renderComissoesCt(comprador){
+  const lista=document.getElementById('f_comissoes_lista');if(!lista)return;
+  const vinculados=coms.filter(c=>c.comprador.toUpperCase()===comprador?.toUpperCase());
+  if(!vinculados.length){lista.innerHTML='';return;}
+  lista.innerHTML=`<p style="font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">Comissionários vinculados a ${comprador}</p>`+
+    vinculados.map(c=>`<div class="com-item"><span class="com-nome">${c.nome}</span><span class="com-val">${fmt(c.valor)}/sc</span></div>`).join('');
 }
+
+// ===== CALCULAR =====
+function toggleFundoEmb(){const h=document.getElementById('f_tem_fundo').checked;document.getElementById('f_fundo_campos').style.display=h?'block':'none';calcular();}
 function calcular(){
   const pliq=parseFloat(document.getElementById('f_pliq').value)||0;
   const pdesc=parseFloat(document.getElementById('f_pdesc').value)||0;
@@ -799,49 +939,70 @@ function calcular(){
   const venda=parseFloat(document.getElementById('f_venda').value)||0;
   const rs_ton=parseFloat(document.getElementById('f_rs_ton').value)||0;
   const recebido=parseFloat(document.getElementById('f_recebido').value)||0;
-  const cnpct=parseFloat(document.getElementById('f_cn_pct').value)||0;
+  const cn_val=parseFloat(document.getElementById('f_cn_val').value)||0;
   const outros=parseFloat(document.getElementById('f_outros').value)||0;
-  const com_sc=parseFloat(document.getElementById('f_com_sc').value)||0;
   const imposto=parseFloat(document.getElementById('f_imposto').value)||0;
   const desc_fin=parseFloat(document.getElementById('f_desc_fin').value)||0;
+  const cte=parseFloat(document.getElementById('f_cte').value)||0;
+  const custo_produto=parseFloat(document.getElementById('f_custo_produto').value)||0;
   const impureza=parseFloat(document.getElementById('f_impureza').value)||0;
   const descarga=document.getElementById('f_descarga').value;
   const data_rec=document.getElementById('f_data_rec').value;
   const ctId=parseInt(document.getElementById('f_contrato').value)||0;
   const ctObj=cts.find(c=>c.id===ctId);
   const ph=ctObj?ctObj.prazo:(cfg.prazo||72);
+  const tol=cfg.tolerancia||3;
 
-  const sc_emb=pliq/60, sc_ent=pdesc/60, quebra=(pdesc-pliq)/60;
-  const frete_sc=(rs_ton/1000)*60, frete_total=sc_emb*frete_sc;
-  const total_compra=sc_ent*compra, total_venda=sc_ent*venda;
+  // Sacas
+  const sc_emb=pliq/60;
+  const sc_ent=pdesc>0?pdesc/60:sc_emb;
+  const quebra_sc=(pdesc>0)?(pdesc-pliq)/60:0;
+
+  // Desconto quebra: tolerância de 3 sacas, acima disso desconta
+  // Quebra negativa = descarga < embarque = perda
+  const quebra_abs=Math.abs(quebra_sc);
+  const exc_quebra=quebra_sc<0&&quebra_abs>tol?(quebra_abs-tol)*60:0; // kg excedentes
+  const desc_quebra=exc_quebra>0?(venda/60)*exc_quebra:0;
+
+  // Frete: (pliq/1000) * rs_ton
+  const frete_sc=rs_ton>0?(rs_ton/1000*60)/60:0; // R$/sc = R$/ton / 1000 * 60
+  const frete_total=(pliq/1000)*rs_ton; // Total = (kg/1000) * R$/ton
+
+  // Valores
+  const total_compra=sc_emb*compra; // Pela sacas embarcadas
+  const total_venda=sc_ent*venda;
   const comp_desc=recebido-total_venda;
-  const cn_val=(cnpct/100)*pliq;
-  const com_total=sc_ent*com_sc;
-  // Fundo: só calcula se o toggle estiver marcado
-  const temFundo=document.getElementById('f_tem_fundo')?.checked||false;
-  const taxaFundoInput=parseFloat(document.getElementById('f_taxa_fundo')?.value)||0;
-  const taxaFundo=temFundo?(taxaFundoInput||cfg.taxa):0;
-  const fundo=temFundo?(taxaFundo/100)*sc_ent:0;
 
-  // Impureza: R$/kg = venda/60 → desconto = (impureza/100) × pdesc × R$/kg
+  // Impureza: R$/kg = venda/60 → desconto = (impureza/100) * pdesc * R$/kg
   const rkg=venda/60;
   const imp_desc=(impureza/100)*pdesc*rkg;
 
-  const lucro=total_venda-total_compra-frete_total-cn_val-com_total-fundo-imposto-desc_fin-imp_desc-outros+comp_desc;
+  // Fundo: 5% sobre total venda
+  const temFundo=document.getElementById('f_tem_fundo')?.checked||false;
+  const fundo=temFundo?total_venda*0.05:0;
+
+  // Comissões do comprador
+  const comprador=ctObj?.comprador?.toUpperCase()||'';
+  const comsVinc=coms.filter(c=>c.comprador.toUpperCase()===comprador);
+  const com_total=comsVinc.reduce((s,c)=>s+((c.valor||0)*sc_emb),0);
+
+  const lucro=total_venda-total_compra-frete_total-cn_val-cte-custo_produto-com_total-fundo-imposto-desc_fin-imp_desc-desc_quebra-outros+comp_desc;
   const lucro_pct=total_venda>0?(lucro/total_venda)*100:0;
 
-  const s=(id,v)=>{const el=document.getElementById(id);if(el)el.value=v};
-  s('f_sc_emb',fmtN(sc_emb)); s('f_quebra',fmtN(quebra)); s('f_sc_ent',fmtN(sc_ent));
-  s('f_frete_sc',fmtN(frete_sc)); s('f_frete_total',fmt(frete_total));
-  s('f_total_compra',fmt(total_compra)); s('f_total_venda',fmt(total_venda));
-  s('f_comp_desc',fmt(comp_desc)); s('f_cn_val',fmt(cn_val));
-  s('f_fundo',fmtN(fundo)); s('f_com_total',fmt(com_total));
-  s('f_rkg',fmtN(rkg,4)); s('f_imp_desc',fmt(imp_desc));
+  const s=(id,v)=>{const el=document.getElementById(id);if(el)el.value=v;};
+  s('f_sc_emb',fmtN(sc_emb));s('f_quebra',fmtN(quebra_sc));s('f_sc_ent',fmtN(sc_ent));
+  s('f_desc_quebra',fmt(desc_quebra));
+  s('f_frete_sc',fmtN(frete_sc));s('f_frete_total',fmt(frete_total));
+  s('f_total_compra',fmt(total_compra));s('f_total_venda',fmt(total_venda));
+  s('f_comp_desc',fmt(comp_desc));
+  s('f_fundo',fmt(fundo));s('f_com_total',fmt(com_total));
+  s('f_imp_desc',fmt(imp_desc));
 
   document.getElementById('r-venda').textContent=fmt(total_venda);
   document.getElementById('r-compra').textContent=fmt(total_compra);
   const rl=document.getElementById('r-lucro');rl.textContent=fmt(lucro);rl.className='r-value'+(lucro<0?' neg':'');
   const rp=document.getElementById('r-lucro-pct');rp.textContent=fmtP(lucro_pct);rp.className='r-value'+(lucro_pct<0?' neg':'');
+  document.getElementById('r-frete').textContent=fmt(frete_total);
 
   if(descarga){
     const pd=prazoData(descarga,ph);
@@ -851,16 +1012,16 @@ function calcular(){
     else{const diff=Math.round((pd-hoje)/3600000);txt=diff<0?`${Math.abs(diff)}h de atraso`:diff<=12?`${diff}h (atenção!)`:`${diff}h restantes`;}
     document.getElementById('r-prazo').textContent=txt;
   }else{s('f_prazo_rec','');document.getElementById('r-prazo').textContent='—';}
-  return{sc_emb,sc_ent,quebra,frete_sc,frete_total,total_compra,total_venda,comp_desc,cn_val,fundo,com_total,imp_desc,rkg,lucro,lucro_pct};
+  return{sc_emb,sc_ent,quebra_sc,frete_sc,frete_total,total_compra,total_venda,comp_desc,cn_val,fundo,com_total,imp_desc,desc_quebra,lucro,lucro_pct,rkg};
 }
-function aplicaPadroes(){
-  const ec=document.getElementById('f_com_sc');if(ec)ec.value=cfg.comissao;
-  const en=document.getElementById('f_cn_pct');if(en)en.value=cfg.cn;
-}
+
+function toggleCanc(){const cb=document.getElementById('f_canc'),tg=document.getElementById('cancel-toggle');tg.classList.toggle('on',cb.checked);}
+
 async function salvarEmb(){
   const ctId=document.getElementById('f_contrato').value;
   const nf=document.getElementById('f_nf').value.trim();
   const mot=document.getElementById('f_motorista').value.trim();
+  const cpf=document.getElementById('f_cpf').value.trim();
   const emb_dt=document.getElementById('f_embarque').value;
   const pliq=parseFloat(document.getElementById('f_pliq').value)||0;
   const compra=parseFloat(document.getElementById('f_compra').value)||0;
@@ -868,20 +1029,25 @@ async function salvarEmb(){
   if(!ctId){toast('Selecione um contrato!',true);return;}
   if(!nf){toast('Informe a NF!',true);return;}
   if(!mot){toast('Informe o motorista!',true);return;}
+  if(!cpf||cpf.replace(/\D/g,'').length<11){toast('Informe o CPF do motorista!',true);return;}
   if(!emb_dt){toast('Informe a data de embarque!',true);return;}
   if(!pliq){toast('Informe o peso líquido!',true);return;}
   if(!compra||!venda){toast('Informe os valores de compra e venda!',true);return;}
-
-  // Validar data de embarque contra data de início do contrato
+  // Validar data vs contrato
   const ctObj=cts.find(x=>x.id===parseInt(ctId));
-  if(ctObj&&ctObj.data&&emb_dt){
-    if(emb_dt<ctObj.data){
-      toast(`Data de embarque (${emb_dt}) é anterior ao início do contrato ${ctObj.numero} (${ctObj.data}). Verifique!`,true);
-      return;
-    }
-  }
+  if(ctObj?.data&&emb_dt<ctObj.data){toast(`Data de embarque anterior ao início do contrato ${ctObj.numero} (${ctObj.data})!`,true);return;}
+
   const c=calcular();
   const cancelada=document.getElementById('f_canc').checked;
+  const transpId=parseInt(document.getElementById('f_transportadora_id').value)||0;
+  const transpObj=transp.find(x=>x.id===transpId);
+  const comprador=ctObj?.comprador?.toUpperCase()||'';
+  const comsVinc=coms.filter(x=>x.comprador.toUpperCase()===comprador);
+
+  // Frete split: 80% à vista, 20% na descarga
+  const frete80=c.frete_total*0.8;
+  const frete20=c.frete_total*0.2;
+
   const obj={id:Date.now(),cancelada,
     lancado_por:usuarioLogado?.nome||'—',
     empresa:document.getElementById('f_empresa').value||'Prime Grãos',
@@ -893,58 +1059,63 @@ async function salvarEmb(){
     embarque:emb_dt,descarga:document.getElementById('f_descarga').value,
     prazo_rec:document.getElementById('f_prazo_rec').value,
     data_rec:document.getElementById('f_data_rec').value,
-    transportadora:document.getElementById('f_transportadora').value,
-    motorista:mot,placa:document.getElementById('f_placa').value,
+    transportadora:transpObj?.nome||'',transportadora_id:transpId,
+    motorista:mot,cpf,placa:document.getElementById('f_placa').value,
     tem_fundo:document.getElementById('f_tem_fundo').checked,
-    taxa_fundo:parseFloat(document.getElementById('f_taxa_fundo')?.value)||0,
     pliq,pdesc:parseFloat(document.getElementById('f_pdesc').value)||0,
     impureza:parseFloat(document.getElementById('f_impureza').value)||0,
     compra,venda,rs_ton:parseFloat(document.getElementById('f_rs_ton').value)||0,
     recebido:parseFloat(document.getElementById('f_recebido').value)||0,
-    cn_pct:parseFloat(document.getElementById('f_cn_pct').value)||0,
-    com_sc:parseFloat(document.getElementById('f_com_sc').value)||0,
+    cn_val:parseFloat(document.getElementById('f_cn_val').value)||0,
+    cte:parseFloat(document.getElementById('f_cte').value)||0,
+    custo_produto:parseFloat(document.getElementById('f_custo_produto').value)||0,
     imposto:parseFloat(document.getElementById('f_imposto').value)||0,
     desc_fin:parseFloat(document.getElementById('f_desc_fin').value)||0,
     outros:parseFloat(document.getElementById('f_outros').value)||0,
-    obs:document.getElementById('f_obs').value,...c};
+    obs:document.getElementById('f_obs').value,
+    comissoes:comsVinc.map(x=>({id:x.id,nome:x.nome,valor:x.valor})),
+    frete80,frete20,frete80_pago:false,frete20_pago:false,
+    ...c};
   embs.push(obj);await save();toast('Embarque salvo!');limparForm();
 }
+
 function limparForm(){
-  ['f_nf','f_placa','f_motorista','f_transportadora','f_obs','f_embarque','f_descarga','f_data_rec','f_prazo_rec','f_taxa_fundo'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
-  ['f_pliq','f_pdesc','f_rs_ton','f_recebido','f_imposto','f_desc_fin','f_outros','f_impureza'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='0';});
+  ['f_nf','f_placa','f_motorista','f_cpf','f_obs','f_embarque','f_descarga','f_data_rec','f_prazo_rec'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  ['f_pliq','f_pdesc','f_rs_ton','f_recebido','f_imposto','f_desc_fin','f_outros','f_cte','f_custo_produto','f_cn_val','f_impureza'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='0';});
   document.getElementById('f_canc').checked=false;document.getElementById('cancel-toggle').classList.remove('on');
   document.getElementById('f_tem_fundo').checked=false;document.getElementById('f_fundo_campos').style.display='none';
-  document.getElementById('f_empresa').value='Prime Grãos';
-  aplicaPadroes();calcular();
+  document.getElementById('f_contrato').value='';
+  document.getElementById('f_empresa').value='';document.getElementById('f_produto').value='';document.getElementById('f_qtd').value='0';document.getElementById('f_venda').value='0';
+  const cl=document.getElementById('f_comissoes_lista');if(cl)cl.innerHTML='';
+  calcular();
 }
 
-// ---- EDITAR EMBARQUE ----
+// ===== EDITAR EMBARQUE =====
 let editEmb=null;
 const editCampos=[
   {id:'empresa',l:'Empresa',t:'sel',o:['Prime Grãos','ZF Grãos']},
-  {id:'nf',l:'NF',t:'text'},{id:'industria',l:'Indústria',t:'text'},
-  {id:'produto',l:'Produto',t:'sel',o:['SOJA','MILHO','TRIGO']},
+  {id:'nf',l:'NF',t:'text'},{id:'produto',l:'Produto',t:'sel',o:['SOJA','MILHO','TRIGO']},
   {id:'status',l:'Status',t:'sel',o:['Em aberto','Pago','Cancelada']},
   {id:'embarque',l:'Data embarque',t:'date'},{id:'descarga',l:'Data descarga',t:'date'},
   {id:'data_rec',l:'Data recebimento',t:'date'},
-  {id:'transportadora',l:'Transportadora',t:'text'},
-  {id:'motorista',l:'Motorista',t:'text'},{id:'placa',l:'Placa',t:'text'},
+  {id:'transportadora',l:'Transportadora',t:'text'},{id:'motorista',l:'Motorista',t:'text'},
+  {id:'cpf',l:'CPF motorista',t:'text'},{id:'placa',l:'Placa',t:'text'},
   {id:'pliq',l:'Peso líquido (kg)',t:'number'},{id:'pdesc',l:'Peso descarga (kg)',t:'number'},
   {id:'impureza',l:'Impureza (%)',t:'number'},
   {id:'compra',l:'R$ Compra/sc',t:'number'},{id:'venda',l:'R$ Venda/sc',t:'number'},
   {id:'rs_ton',l:'RS/Ton',t:'number'},{id:'recebido',l:'R$ Recebido',t:'number'},
-  {id:'cn_pct',l:'Custo nota (%)',t:'number'},{id:'com_sc',l:'Comissão R$/sc',t:'number'},
-  {id:'tem_fundo',l:'Possui fundo?',t:'chkfundo'},
-  {id:'taxa_fundo',l:'Taxa fundo (%)',t:'number'},
-  {id:'imposto',l:'Imposto (R$)',t:'number'},{id:'desc_fin',l:'Desc.fin. (R$)',t:'number'},
-  {id:'outros',l:'Outros (R$)',t:'number'},{id:'obs',l:'Observação',t:'text'},
+  {id:'cn_val',l:'Custo nota R$',t:'number'},{id:'cte',l:'CTE R$',t:'number'},
+  {id:'custo_produto',l:'Custo produto R$',t:'number'},
+  {id:'imposto',l:'Imposto R$',t:'number'},{id:'desc_fin',l:'Desc.fin. R$',t:'number'},
+  {id:'outros',l:'Outros R$',t:'number'},{id:'obs',l:'Observação',t:'text'},
   {id:'_canc',l:'Cancelada / Recusada',t:'chk'},
+  {id:'_fundo',l:'Possui fundo?',t:'chkfundo'},
 ];
 function abrirEdit(id){
   const e=embs.find(d=>d.id===id);if(!e)return;editEmb=id;
   document.getElementById('edit-grid').innerHTML=editCampos.map(c=>{
-    if(c.t==='chk')return`<div class="fg" style="grid-column:1/-1"><label style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" id="ed__canc" ${e.cancelada?'checked':''} style="accent-color:var(--red);width:16px;height:16px"> Marcar como cancelada / recusada</label></div>`;
-    if(c.t==='chkfundo')return`<div class="fg" style="grid-column:1/-1"><label style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" id="ed_tem_fundo" ${e.tem_fundo?'checked':''} style="accent-color:var(--green);width:15px;height:15px"> Possui desconto de fundo</label></div>`;
+    if(c.t==='chk')return`<div class="fg" style="grid-column:1/-1"><label style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" id="ed__canc" ${e.cancelada?'checked':''} style="accent-color:var(--red);width:16px;height:16px"> Cancelada / Recusada</label></div>`;
+    if(c.t==='chkfundo')return`<div class="fg" style="grid-column:1/-1"><label style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" id="ed__fundo" ${e.tem_fundo?'checked':''} style="accent-color:var(--green);width:15px;height:15px"> Possui desconto de fundo (5%)</label></div>`;
     const v=e[c.id]??'';
     if(c.t==='sel')return`<div class="fg"><label>${c.l}</label><select id="ed_${c.id}">${c.o.map(o=>`<option ${o===v?'selected':''}>${o}</option>`).join('')}</select></div>`;
     return`<div class="fg"><label>${c.l}</label><input id="ed_${c.id}" type="${c.t}" value="${v}" ${c.t==='number'?'step="0.01"':''}></div>`;
@@ -957,56 +1128,104 @@ async function salvarEdit(){
   const e={...embs[idx]};
   editCampos.forEach(c=>{
     if(c.t==='chk'){const el=document.getElementById('ed__canc');if(el)e.cancelada=el.checked;return;}
-    if(c.t==='chkfundo'){const el=document.getElementById('ed_tem_fundo');if(el)e.tem_fundo=el.checked;return;}
+    if(c.t==='chkfundo'){const el=document.getElementById('ed__fundo');if(el)e.tem_fundo=el.checked;return;}
     const el=document.getElementById('ed_'+c.id);if(!el)return;
     e[c.id]=c.t==='number'?(parseFloat(el.value)||0):el.value;
   });
+  // Recalcular
   const pl=e.pliq,pd=e.pdesc,co=e.compra,ve=e.venda,rt=e.rs_ton,re=e.recebido,
-        cn=e.cn_pct,cs=e.com_sc,im=e.imposto,df=e.desc_fin,ou=e.outros,imp=e.impureza||0;
-  e.sc_emb=pl/60;e.sc_ent=pd/60;e.quebra=(pd-pl)/60;
-  e.frete_sc=(rt/1000)*60;e.frete_total=e.sc_emb*e.frete_sc;
-  e.total_compra=e.sc_ent*co;e.total_venda=e.sc_ent*ve;
-  e.comp_desc=re-e.total_venda;e.cn_val=(cn/100)*pl;
-  e.com_total=e.sc_ent*cs;
-  e.rkg=ve/60;e.imp_desc=(imp/100)*pd*e.rkg;
-  const txF=e.tem_fundo?(e.taxa_fundo||cfg.taxa):0;
-  e.fundo=e.tem_fundo?(txF/100)*e.sc_ent:0;
-  e.lucro=e.total_venda-e.total_compra-e.frete_total-e.cn_val-e.com_total-e.fundo-im-df-e.imp_desc-ou+e.comp_desc;
+        cn=e.cn_val,im=e.imposto,df=e.desc_fin,ct=e.cte,ou=e.outros,imp=e.impureza||0,cp=e.custo_produto||0;
+  e.sc_emb=pl/60;e.sc_ent=pd>0?pd/60:pl/60;e.quebra_sc=pd>0?(pd-pl)/60:0;
+  const tol=cfg.tolerancia||3;
+  const qa=Math.abs(e.quebra_sc);
+  const exc=e.quebra_sc<0&&qa>tol?(qa-tol)*60:0;
+  e.desc_quebra=exc>0?(ve/60)*exc:0;
+  e.frete_sc=rt>0?(rt/1000*60)/60:0;e.frete_total=(pl/1000)*rt;
+  e.total_compra=e.sc_emb*co;e.total_venda=e.sc_ent*ve;
+  e.comp_desc=re-e.total_venda;e.rkg=ve/60;e.imp_desc=(imp/100)*pd*e.rkg;
+  e.fundo=e.tem_fundo?e.total_venda*0.05:0;
+  const comprador=cts.find(c=>c.numero==e.contrato)?.comprador?.toUpperCase()||'';
+  const comsV=coms.filter(c=>c.comprador.toUpperCase()===comprador);
+  e.com_total=comsV.reduce((s,c)=>s+((c.valor||0)*e.sc_emb),0);
+  e.lucro=e.total_venda-e.total_compra-e.frete_total-cn-ct-cp-e.com_total-e.fundo-im-df-e.imp_desc-e.desc_quebra-ou+e.comp_desc;
   e.lucro_pct=e.total_venda>0?(e.lucro/e.total_venda)*100:0;
-  if(e.descarga){const ctObj2=cts.find(c=>c.numero==e.contrato);const ph=ctObj2?ctObj2.prazo:(cfg.prazo||72);const p=prazoData(e.descarga,ph);e.prazo_rec=p.toLocaleDateString('pt-BR');}
-  // Validar data embarque vs início contrato
-  const ctEd=cts.find(c=>c.numero==e.contrato);
-  if(ctEd&&ctEd.data&&e.embarque&&e.embarque<ctEd.data){
-    toast(`Data de embarque anterior ao início do contrato ${ctEd.numero} (${ctEd.data}). Corrija!`,true);return;
-  }
+  e.frete80=e.frete_total*0.8;e.frete20=e.frete_total*0.2;
+  if(e.descarga){const ctO=cts.find(c=>c.numero==e.contrato);const pp=ctO?ctO.prazo:(cfg.prazo||72);const p=prazoData(e.descarga,pp);e.prazo_rec=p.toLocaleDateString('pt-BR');}
   embs[idx]=e;await save();fecharModalEdit();renderEmbarques();renderPainel();toast('Embarque atualizado!');
 }
-async function delEmb(id){
-  if(!confirm('Remover este embarque?'))return;
-  embs=embs.filter(d=>d.id!==id);await save();renderEmbarques();renderPainel();toast('Embarque removido.');
+async function delEmb(id){if(!confirm('Remover?'))return;embs=embs.filter(d=>d.id!==id);await save();renderEmbarques();renderPainel();toast('Embarque removido.');}
+
+// ===== FRETE =====
+async function toggleFretePago(embId,parcela){
+  const idx=embs.findIndex(d=>d.id===embId);if(idx===-1)return;
+  if(parcela===80)embs[idx].frete80_pago=!embs[idx].frete80_pago;
+  else embs[idx].frete20_pago=!embs[idx].frete20_pago;
+  await save();renderFrete();toast('Status atualizado!');
+}
+function renderFrete(){
+  const q=(document.getElementById('f-frete-q')||{value:''}).value.toLowerCase();
+  const ct=(document.getElementById('f-frete-ct')||{value:''}).value;
+  const st=(document.getElementById('f-frete-status')||{value:''}).value;
+  // Atualizar filtro contratos
+  const ctS=document.getElementById('f-frete-ct');
+  if(ctS){const cs=[...new Set(embs.map(d=>d.contrato))].sort();const cur=ctS.value;ctS.innerHTML='<option value="">Todos contratos</option>'+cs.map(c=>`<option ${c===cur?'selected':''}>${c}</option>`).join('');}
+  const ativos=embs.filter(d=>!d.cancelada&&(d.frete_total||0)>0);
+  const f=ativos.filter(d=>
+    (!q||d.motorista?.toLowerCase().includes(q)||d.cpf?.includes(q)||String(d.contrato||'').includes(q))&&
+    (!ct||d.contrato==ct)&&
+    (!st||(st==='aberto'&&(!d.frete20_pago||!d.frete80_pago))||(st==='pago'&&d.frete20_pago&&d.frete80_pago))
+  );
+  const lista=document.getElementById('frete-lista');
+  if(!f.length){lista.innerHTML='<div class="empty-state">Nenhum embarque com frete encontrado.</div>';return;}
+  lista.innerHTML=f.map(d=>{
+    const saldo=(!d.frete80_pago?d.frete80:0)+(!d.frete20_pago?d.frete20:0);
+    const desc_total=(d.desc_quebra||0)+(d.imp_desc||0);
+    const saldo_ajustado=Math.max(0,saldo-desc_total);
+    return`<div class="frete-card">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px">
+        <div>
+          <div style="font-size:15px;font-weight:600">${d.motorista} <span style="font-size:12px;color:var(--text-faint);font-weight:400">CPF: ${d.cpf||'—'}</span></div>
+          <div style="font-size:12px;color:var(--text-muted);margin-top:2px">Contrato ${d.contrato} · NF ${d.nf} · ${d.embarque||'—'}</div>
+          ${desc_total>0?`<div style="font-size:11px;color:var(--red);margin-top:2px">Desconto quebra/impureza: ${fmt(desc_total)}</div>`:''}
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:11px;color:var(--text-faint)">Frete total</div>
+          <div style="font-size:18px;font-weight:600">${fmt(d.frete_total)}</div>
+          <div style="font-size:11px;color:var(--${saldo_ajustado>0?'amber':'green'});margin-top:2px">Saldo: ${fmt(saldo_ajustado)}</div>
+        </div>
+      </div>
+      <div class="frete-split">
+        <div class="split-box parcela-1">
+          <div class="split-label">80% — À vista</div>
+          <div class="split-value pos">${fmt(d.frete80||0)}</div>
+          <button class="flag-btn ${d.frete80_pago?'pago':'aberto'}" onclick="toggleFretePago(${d.id},80)">${d.frete80_pago?'✓ Pago':'Em aberto'}</button>
+        </div>
+        <div class="split-box parcela-2">
+          <div class="split-label">20% — Na descarga</div>
+          <div class="split-value amber-txt">${fmt(d.frete20||0)}</div>
+          <button class="flag-btn ${d.frete20_pago?'pago':'aberto'}" onclick="toggleFretePago(${d.id},20)">${d.frete20_pago?'✓ Pago':'Em aberto'}</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
 }
 
-// ---- PAINEL ----
+// ===== PAINEL =====
 function renderPainel(){
   const ativos=embs.filter(d=>!d.cancelada);
-  const total=ativos.length,abertos=ativos.filter(d=>d.status==='Em aberto').length;
   const lucroTot=ativos.reduce((s,d)=>s+(d.lucro||0),0);
   const vendaTot=ativos.reduce((s,d)=>s+(d.total_venda||0),0);
   const recTot=ativos.reduce((s,d)=>s+(d.recebido||0),0);
   const hoje=new Date();
-  const atras=ativos.filter(d=>{
-    if(d.status!=='Em aberto'||!d.descarga)return false;
-    const ctObj=cts.find(c=>c.numero==d.contrato);
-    const ph=ctObj?ctObj.prazo:(cfg.prazo||72);
-    const p=prazoData(d.descarga,ph);return hoje>p&&!d.data_rec;
-  }).length;
+  const atras=ativos.filter(d=>{if(d.status!=='Em aberto'||!d.descarga)return false;const ctO=cts.find(c=>c.numero==d.contrato);const ph=ctO?ctO.prazo:(cfg.prazo||72);const p=prazoData(d.descarga,ph);return hoje>p&&!d.data_rec;}).length;
+  const fretePend=ativos.filter(d=>(d.frete_total||0)>0&&(!d.frete80_pago||!d.frete20_pago)).length;
   document.getElementById('stats-grid').innerHTML=`
-    <div class="stat-card"><div class="s-label">Embarques ativos</div><div class="s-value">${total}</div><div class="s-sub">${abertos} em aberto</div></div>
+    <div class="stat-card"><div class="s-label">Embarques ativos</div><div class="s-value">${ativos.length}</div><div class="s-sub">${ativos.filter(d=>d.status==='Em aberto').length} em aberto</div></div>
     <div class="stat-card ${atras>0?'red':'green'}"><div class="s-label">Receb. atrasados</div><div class="s-value">${atras}</div></div>
     <div class="stat-card ${lucroTot>=0?'green':'red'}"><div class="s-label">Lucro total</div><div class="s-value">${fmt(lucroTot)}</div></div>
     <div class="stat-card"><div class="s-label">Total vendas</div><div class="s-value">${fmt(vendaTot)}</div></div>
     <div class="stat-card"><div class="s-label">Total recebido</div><div class="s-value">${fmt(recTot)}</div></div>
-    <div class="stat-card"><div class="s-label">Contratos</div><div class="s-value">${cts.length}</div></div>
+    <div class="stat-card ${fretePend>0?'amber':'green'}"><div class="s-label">Frete pendente</div><div class="s-value">${fretePend}</div><div class="s-sub">embarques</div></div>
   `;
   const ctsNums=[...new Set(ativos.map(d=>d.contrato))];
   document.getElementById('tbody-painel').innerHTML=ctsNums.length
@@ -1021,12 +1240,13 @@ function renderPainel(){
         <td><span class="badge ${co?.empresa==='ZF Grãos'?'badge-blue':'badge-green'}">${co?.empresa||'Prime Grãos'}</span></td>
         <td>${co?.comprador||'—'}</td><td>${co?.produto||'—'}</td><td>${its.length}</td>
         <td class="mono">${fmt(venda)}</td><td class="mono">${fmt(compra)}</td>
-        <td class="mono ${lucro>=0?'pos':'neg'}">${fmt(lucro)}</td><td class="${pct>=0?'pos':'neg'}">${fmtP(pct)}</td></tr>`;
+        <td class="mono ${lucro>=0?'pos':'neg'}">${fmt(lucro)}</td>
+        <td class="${pct>=0?'pos':'neg'}">${fmtP(pct)}</td></tr>`;
     }).join('')
-    :'<tr><td colspan="8" class="empty-state">Nenhum embarque ativo cadastrado.</td></tr>';
+    :'<tr><td colspan="9" class="empty-state">Nenhum embarque ativo.</td></tr>';
 }
 
-// ---- EMBARQUES ----
+// ===== EMBARQUES =====
 function renderEmbarques(){
   const q=(document.getElementById('f-emb-q')||{value:''}).value.toLowerCase();
   const st=(document.getElementById('f-emb-st')||{value:''}).value;
@@ -1034,16 +1254,8 @@ function renderEmbarques(){
   const canc=(document.getElementById('f-emb-canc')||{value:''}).value;
   const emp=(document.getElementById('f-emb-emp')||{value:''}).value;
   const ctS=document.getElementById('f-emb-ct');
-  if(ctS){
-    const cs=[...new Set(embs.map(d=>d.contrato))].sort();const cur=ctS.value;
-    ctS.innerHTML='<option value="">Todos contratos</option>'+cs.map(c=>`<option ${c===cur?'selected':''}>${c}</option>`).join('');
-  }
-  const f=embs.filter(d=>
-    (!q||String(d.contrato||'').includes(q)||String(d.nf||'').toLowerCase().includes(q)||String(d.motorista||'').toLowerCase().includes(q))&&
-    (!st||d.status===st)&&(!ct||d.contrato==ct)&&
-    (canc===''||(canc==='0'&&!d.cancelada)||(canc==='1'&&d.cancelada))&&
-    (!emp||d.empresa===emp)
-  );
+  if(ctS){const cs=[...new Set(embs.map(d=>d.contrato))].sort();const cur=ctS.value;ctS.innerHTML='<option value="">Todos contratos</option>'+cs.map(c=>`<option ${c===cur?'selected':''}>${c}</option>`).join('');}
+  const f=embs.filter(d=>(!q||String(d.contrato||'').includes(q)||String(d.nf||'').toLowerCase().includes(q)||String(d.motorista||'').toLowerCase().includes(q)||String(d.cpf||'').includes(q))&&(!st||d.status===st)&&(!ct||d.contrato==ct)&&(canc===''||(canc==='0'&&!d.cancelada)||(canc==='1'&&d.cancelada))&&(!emp||d.empresa===emp));
   document.getElementById('tbody-emb').innerHTML=f.length
     ?f.map(d=>{const sp=sprazo(d);return`<tr class="${d.cancelada?'cancelada':''}">
       <td><strong>${d.contrato}</strong></td>
@@ -1054,17 +1266,28 @@ function renderEmbarques(){
       <td>${d.produto||'—'}</td><td>${d.embarque||'—'}</td><td>${d.descarga||'—'}</td>
       <td>${d.prazo_rec||'—'}</td><td>${d.data_rec||'—'}</td>
       <td><span class="badge ${sp.badge}">${sp.txt}</span></td>
-      <td>${d.transportadora||'—'}</td><td>${d.motorista||'—'}</td><td>${d.placa||'—'}</td>
+      <td>${d.transportadora||'—'}</td><td>${d.motorista||'—'}</td>
+      <td class="mono">${d.cpf||'—'}</td><td>${d.placa||'—'}</td>
       <td class="mono">${fmtN(d.pliq,0)}</td><td class="mono">${fmtN(d.sc_emb)}</td>
-      <td class="mono ${(d.quebra||0)<0?'neg':''}">${fmtN(d.quebra)}</td><td class="mono">${fmtN(d.sc_ent)}</td>
-      <td>${fmtN(d.impureza||0,3)}%</td><td class="mono">${fmtN(d.rkg||0,4)}</td><td class="mono ${(d.imp_desc||0)>0?'neg':''}">${fmt(d.imp_desc||0)}</td>
+      <td class="mono ${(d.quebra_sc||0)<0?'neg':''}">${fmtN(d.quebra_sc)}</td>
+      <td class="mono ${(d.desc_quebra||0)>0?'neg':''}">${fmt(d.desc_quebra||0)}</td>
+      <td class="mono">${fmtN(d.sc_ent)}</td>
+      <td>${fmtN(d.impureza||0,3)}%</td>
+      <td class="mono ${(d.imp_desc||0)>0?'neg':''}">${fmt(d.imp_desc||0)}</td>
       <td class="mono">${fmtN(d.compra)}</td><td class="mono">${fmtN(d.venda)}</td>
       <td class="mono">${fmtN(d.rs_ton)}</td><td class="mono">${fmtN(d.frete_sc)}</td>
-      <td class="mono">${fmt(d.total_compra)}</td><td class="mono">${fmt(d.total_venda)}</td><td class="mono">${fmt(d.frete_total)}</td>
-      <td class="mono">${fmt(d.recebido)}</td><td class="mono ${(d.comp_desc||0)>=0?'pos':'neg'}">${fmt(d.comp_desc)}</td>
+      <td class="mono">${fmt(d.total_compra)}</td><td class="mono">${fmt(d.total_venda)}</td>
+      <td class="mono">${fmt(d.frete_total)}</td>
+      <td class="mono">${fmt(d.recebido)}</td>
+      <td class="mono ${(d.comp_desc||0)>=0?'pos':'neg'}">${fmt(d.comp_desc)}</td>
+      <td class="mono">${fmt(d.custo_produto||0)}</td>
       <td class="mono">${fmt(d.cn_val)}</td>
-      <td class="mono">${fmt(d.com_total)}</td><td class="mono">${fmtN(d.fundo)}</td>
-      <td class="mono">${fmt(d.imposto)}</td><td class="mono">${fmt(d.desc_fin)}</td><td class="mono">${fmt(d.outros)}</td>
+      <td class="mono">${fmt(d.cte||0)}</td>
+      <td class="mono">${fmt(d.com_total)}</td>
+      <td class="mono">${fmtN(d.fundo)}</td>
+      <td class="mono">${fmt(d.imposto)}</td>
+      <td class="mono">${fmt(d.desc_fin)}</td>
+      <td class="mono">${fmt(d.outros)}</td>
       <td class="mono ${(d.lucro||0)>=0?'pos':'neg'}">${fmt(d.lucro)}</td>
       <td class="${(d.lucro_pct||0)>=0?'pos':'neg'}">${fmtP(d.lucro_pct)}</td>
       <td style="color:var(--text-faint);font-size:11px">${d.lancado_por||'—'}</td>
@@ -1073,34 +1296,27 @@ function renderEmbarques(){
         <button class="btn-edit" onclick="abrirEdit(${d.id})">Editar</button>
         <button class="btn btn-danger" onclick="delEmb(${d.id})">×</button>
       </td></tr>`;}).join('')
-    :'<tr><td colspan="39" class="empty-state">Nenhum embarque encontrado.</td></tr>';
+    :'<tr><td colspan="45" class="empty-state">Nenhum embarque encontrado.</td></tr>';
 }
+
 function exportEmb(){
-  const f=embs;if(!f.length){toast('Nenhum dado.',true);return;}
+  if(!embs.length){toast('Nenhum dado.',true);return;}
   const n=v=>Number(v||0).toFixed(2);
-  const cab=['Contrato','NF','Status','Nota','Produto','Embarque','Descarga','Prazo Receb','Data Receb','Motorista','Placa','Peso Liq','Sc Emb','Quebra','SCS Ent','Impureza','Compra/sc','Venda/sc','RS/Ton','Frete/sc','Total Compra','Total Venda','Frete Total','Recebido','Comp Desc','Custo Nota','CTE','Comissao','Fundo','Imposto','Desc Fin','Outros','Lucro R$','Lucro %','Obs'];
-  const rows=f.map(d=>[d.contrato,d.nf,d.status,d.cancelada?'Cancelada':'Ativa',d.produto,d.embarque,d.descarga,d.prazo_rec,d.data_rec,d.motorista,d.placa,n(d.pliq),n(d.sc_emb),n(d.quebra),n(d.sc_ent),n(d.impureza||0),n(d.compra),n(d.venda),n(d.rs_ton),n(d.frete_sc),n(d.total_compra),n(d.total_venda),n(d.frete_total),n(d.recebido),n(d.comp_desc),n(d.cn_val),n(d.cte),n(d.com_total),n(d.fundo),n(d.imposto),n(d.desc_fin),n(d.outros),n(d.lucro),n(d.lucro_pct),d.obs]);
+  const cab=['Contrato','Empresa','NF','Status','Nota','Produto','Embarque','Descarga','Prazo Receb','Data Receb','Transportadora','Motorista','CPF','Placa','Peso Liq','Sc Emb','Quebra Sc','Desc Quebra','SCS Ent','Impureza%','Desc Impureza','Compra/sc','Venda/sc','RS/Ton','Frete/sc','Total Compra','Total Venda','Frete Total','Recebido','Comp Desc','Custo Produto','Custo Nota','CTE','Comissao','Fundo','Imposto','Desc Fin','Outros','Lucro R$','Lucro %','Lancado Por','Obs'];
+  const rows=embs.map(d=>[d.contrato,d.empresa,d.nf,d.status,d.cancelada?'Cancelada':'Ativa',d.produto,d.embarque,d.descarga,d.prazo_rec,d.data_rec,d.transportadora,d.motorista,d.cpf,d.placa,n(d.pliq),n(d.sc_emb),n(d.quebra_sc),n(d.desc_quebra||0),n(d.sc_ent),n(d.impureza||0),n(d.imp_desc||0),n(d.compra),n(d.venda),n(d.rs_ton),n(d.frete_sc),n(d.total_compra),n(d.total_venda),n(d.frete_total),n(d.recebido),n(d.comp_desc),n(d.custo_produto||0),n(d.cn_val),n(d.cte||0),n(d.com_total),n(d.fundo),n(d.imposto),n(d.desc_fin),n(d.outros),n(d.lucro),n(d.lucro_pct),d.lancado_por,d.obs]);
   const csv=[cab,...rows].map(r=>r.map(c=>`"${String(c||'').replace(/"/g,'""')}"`).join(';')).join('\n');
   const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'}));a.download='prime-graos-embarques.csv';a.click();toast('Exportado!');
 }
 
-// ---- FECHAMENTO ----
+// ===== FECHAMENTO =====
 let _fech=[];
 function initFech(){
   const ns=[...new Set(embs.filter(d=>!d.cancelada).map(d=>d.contrato))].sort();
   const box=document.getElementById('ct-checks');
-  box.innerHTML=ns.length?ns.map(ct=>{
-    const co=cts.find(c=>c.numero==ct);
-    return`<label class="ct-check" onclick="this.classList.toggle('on',this.querySelector('input').checked)">
-      <input type="checkbox" value="${ct}"> ${ct}${co?` — ${co.comprador}`:''}
-    </label>`;
-  }).join(''):'<span style="color:var(--text-faint);font-size:13px">Nenhum embarque ativo cadastrado.</span>';
-  document.getElementById('fech-result').style.display='none';
-  document.getElementById('fech-vazio').style.display='none';
+  box.innerHTML=ns.length?ns.map(ct=>{const co=cts.find(c=>c.numero==ct);return`<label class="ct-check" onclick="this.classList.toggle('on',this.querySelector('input').checked)"><input type="checkbox" value="${ct}"> ${ct}${co?` — ${co.comprador}`:''}</label>`;}).join(''):'<span style="color:var(--text-faint);font-size:13px">Nenhum embarque ativo cadastrado.</span>';
+  document.getElementById('fech-result').style.display='none';document.getElementById('fech-vazio').style.display='none';
 }
-function selTodos(m){
-  document.querySelectorAll('#ct-checks input[type=checkbox]').forEach(cb=>{cb.checked=m;cb.closest('.ct-check').classList.toggle('on',m);});
-}
+function selTodos(m){document.querySelectorAll('#ct-checks input[type=checkbox]').forEach(cb=>{cb.checked=m;cb.closest('.ct-check').classList.toggle('on',m);});}
 function gerarFechamento(){
   const sel=[...document.querySelectorAll('#ct-checks input[type=checkbox]:checked')].map(cb=>cb.value);
   if(!sel.length){document.getElementById('fech-vazio').style.display='block';document.getElementById('fech-result').style.display='none';return;}
@@ -1116,36 +1332,41 @@ function gerarFechamento(){
     const total_venda=its.reduce((s,d)=>s+(d.total_venda||0),0);
     const recebido=its.reduce((s,d)=>s+(d.recebido||0),0);
     const a_receber=its.filter(d=>!d.recebido||d.recebido===0).reduce((s,d)=>s+(d.total_venda||0),0);
-    const vencido=its.filter(d=>{
-      if(d.recebido&&d.recebido>0)return false;if(!d.descarga)return false;
-      const p=prazoData(d.descarga,ph);return hoje>p&&!d.data_rec;
-    }).reduce((s,d)=>s+(d.total_venda||0),0);
-    return{ct,comprador:co?.comprador||'—',produto:co?.produto||'—',qtd:its.length,sc_emb,sc_ent,total_venda,recebido,a_receber,vencido};
+    const vencido=its.filter(d=>{if(d.recebido&&d.recebido>0)return false;if(!d.descarga)return false;const p=prazoData(d.descarga,ph);return hoje>p&&!d.data_rec;}).reduce((s,d)=>s+(d.total_venda||0),0);
+    // Sacas faltantes = qtd contrato - sc embarcadas
+    const qtd_contrato=co?.qtd||0;
+    const sc_faltantes=Math.max(0,qtd_contrato-sc_emb);
+    return{ct,empresa:co?.empresa||'Prime Grãos',comprador:co?.comprador||'—',produto:co?.produto||'—',qtd:its.length,sc_emb,sc_ent,sc_faltantes,total_venda,recebido,a_receber,vencido};
   });
   const tV=_fech.reduce((s,r)=>s+r.total_venda,0),tR=_fech.reduce((s,r)=>s+r.recebido,0);
   const tA=_fech.reduce((s,r)=>s+r.a_receber,0),tVe=_fech.reduce((s,r)=>s+r.vencido,0);
   const tSe=_fech.reduce((s,r)=>s+r.sc_emb,0),tSn=_fech.reduce((s,r)=>s+r.sc_ent,0);
+  const tSf=_fech.reduce((s,r)=>s+r.sc_faltantes,0);
   document.getElementById('fech-cards').innerHTML=`
     <div class="stat-card"><div class="s-label">Total de vendas</div><div class="s-value">${fmt(tV)}</div></div>
     <div class="stat-card green"><div class="s-label">Total recebido</div><div class="s-value">${fmt(tR)}</div></div>
     <div class="stat-card ${tA>0?'amber':'green'}"><div class="s-label">A receber</div><div class="s-value">${fmt(tA)}</div></div>
-    <div class="stat-card ${tVe>0?'red':'green'}"><div class="s-label">Saldo vencido</div><div class="s-value">${fmt(tVe)}</div><div class="s-sub">prazo expirado</div></div>
+    <div class="stat-card ${tVe>0?'red':'green'}"><div class="s-label">Saldo vencido</div><div class="s-value">${fmt(tVe)}</div></div>
     <div class="stat-card"><div class="s-label">Sc embarcadas</div><div class="s-value">${fmtN(tSe,0)}</div></div>
     <div class="stat-card"><div class="s-label">Sc entregues</div><div class="s-value">${fmtN(tSn,0)}</div></div>
+    <div class="stat-card ${tSf>0?'amber':'green'}"><div class="s-label">Sc faltantes</div><div class="s-value">${fmtN(tSf,0)}</div></div>
   `;
   document.getElementById('tbody-fech').innerHTML=_fech.map(r=>{
     const sit=r.vencido>0?'Saldo vencido':r.a_receber>0?'Pendente':'Quitado';
     const bc=sit==='Quitado'?'badge-green':sit==='Saldo vencido'?'badge-red':'badge-amber';
-    return`<tr><td><strong>${r.ct}</strong></td><td>${r.comprador}</td><td>${r.produto}</td><td>${r.qtd}</td>
+    return`<tr><td><strong>${r.ct}</strong></td>
+      <td><span class="badge ${r.empresa==='ZF Grãos'?'badge-blue':'badge-green'}">${r.empresa}</span></td>
+      <td>${r.comprador}</td><td>${r.produto}</td><td>${r.qtd}</td>
       <td class="mono">${fmtN(r.sc_emb)}</td><td class="mono">${fmtN(r.sc_ent)}</td>
+      <td class="mono ${r.sc_faltantes>0?'amber-txt':''}">${fmtN(r.sc_faltantes,0)}</td>
       <td class="mono">${fmt(r.total_venda)}</td><td class="mono pos">${fmt(r.recebido)}</td>
       <td class="mono ${r.a_receber>0?'amber-txt':''}">${fmt(r.a_receber)}</td>
       <td class="mono ${r.vencido>0?'neg':''}">${fmt(r.vencido)}</td>
       <td><span class="badge ${bc}">${sit}</span></td></tr>`;
   }).join('');
-  const pend=ativos.filter(d=>!d.recebido||d.recebido===0);
-  document.getElementById('tbody-pend').innerHTML=pend.length
-    ?pend.map(d=>{const sp=sprazo(d);const pv=d.total_venda-(d.recebido||0);return`<tr>
+  const pendentes=ativos.filter(d=>!d.recebido||d.recebido===0);
+  document.getElementById('tbody-pend').innerHTML=pendentes.length
+    ?pendentes.map(d=>{const sp=sprazo(d);const pv=d.total_venda-(d.recebido||0);return`<tr>
       <td><strong>${d.contrato}</strong></td><td>${d.nf||'—'}</td><td>${d.motorista||'—'}</td>
       <td>${d.descarga||'—'}</td><td>${d.prazo_rec||'—'}</td>
       <td><span class="badge ${sp.badge}">${sp.txt}</span></td>
@@ -1155,128 +1376,104 @@ function gerarFechamento(){
 }
 function exportFech(){
   if(!_fech.length){toast('Gere o fechamento primeiro.',true);return;}
-  const cab=['Contrato','Comprador','Produto','Embarques','Sc Embarcadas','Sc Entregues','Total Venda','Total Recebido','A Receber','Saldo Vencido'];
-  const rows=_fech.map(r=>[r.ct,r.comprador,r.produto,r.qtd,r.sc_emb.toFixed(2),r.sc_ent.toFixed(2),r.total_venda.toFixed(2),r.recebido.toFixed(2),r.a_receber.toFixed(2),r.vencido.toFixed(2)]);
+  const cab=['Contrato','Empresa','Comprador','Produto','Embarques','Sc Embarcadas','Sc Entregues','Sc Faltantes','Total Venda','Total Recebido','A Receber','Saldo Vencido'];
+  const rows=_fech.map(r=>[r.ct,r.empresa,r.comprador,r.produto,r.qtd,r.sc_emb.toFixed(2),r.sc_ent.toFixed(2),r.sc_faltantes.toFixed(0),r.total_venda.toFixed(2),r.recebido.toFixed(2),r.a_receber.toFixed(2),r.vencido.toFixed(2)]);
   const csv=[cab,...rows].map(r=>r.map(c=>`"${String(c||'').replace(/"/g,'""')}"`).join(';')).join('\n');
   const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'}));a.download='prime-graos-fechamento.csv';a.click();toast('Exportado!');
 }
 
-// ---- CONFIG ----
+// ===== CONFIG =====
 function loadCfgUI(){
-  document.getElementById('cfg_taxa').value=cfg.taxa;
-  document.getElementById('cfg_prazo').value=cfg.prazo;
-  document.getElementById('cfg_comissao').value=cfg.comissao;
-  document.getElementById('cfg_cn').value=cfg.cn;
+  document.getElementById('cfg_taxa').value=cfg.taxa||5;
+  document.getElementById('cfg_prazo').value=cfg.prazo||72;
+  document.getElementById('cfg_tolerancia').value=cfg.tolerancia||3;
   renderUsuarios();
 }
 async function salvarCfgUI(){
-  cfg.taxa=parseFloat(document.getElementById('cfg_taxa').value)||2;
+  cfg.taxa=parseFloat(document.getElementById('cfg_taxa').value)||5;
   cfg.prazo=parseFloat(document.getElementById('cfg_prazo').value)||72;
-  cfg.comissao=parseFloat(document.getElementById('cfg_comissao').value)||1;
-  cfg.cn=parseFloat(document.getElementById('cfg_cn').value)||0.6;
+  cfg.tolerancia=parseFloat(document.getElementById('cfg_tolerancia').value)||3;
   await saveCfg();toast('Configurações salvas!');
 }
-
-// ---- USUÁRIOS ----
 let editUserId=null;
 function renderUsuarios(){
   const lista=document.getElementById('usuarios-lista');if(!lista)return;
   lista.innerHTML=usuarios.map(u=>`
-    <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:0.5px solid var(--border)">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:.5px solid var(--border)">
       <div style="display:flex;align-items:center;gap:10px">
-        <div style="width:34px;height:34px;border-radius:50%;background:${u.perfil==='admin'?'var(--green-pale)':'var(--blue-pale)'};display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:${u.perfil==='admin'?'var(--green)':'var(--blue)'};flex-shrink:0">
-          ${u.nome.charAt(0).toUpperCase()}
-        </div>
+        <div style="width:34px;height:34px;border-radius:50%;background:${u.perfil==='admin'?'var(--green-pale)':'var(--blue-pale)'};display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:${u.perfil==='admin'?'var(--green)':'var(--blue)'};flex-shrink:0">${u.nome.charAt(0).toUpperCase()}</div>
         <div>
           <div style="font-size:13px;font-weight:500">${u.nome}</div>
           <div style="font-size:11px;color:var(--text-faint)">@${u.user} · <span class="badge ${u.perfil==='admin'?'badge-green':'badge-blue'}" style="font-size:9px">${u.perfil==='admin'?'Admin':'Operador'}</span></div>
         </div>
       </div>
       <div style="display:flex;gap:6px;align-items:center">
-        ${u.id===usuarioLogado?.id
-          ?'<span style="font-size:11px;color:var(--text-faint)">você</span>'
-          :`<button class="btn-edit" onclick="editarUsuario(${u.id})">Editar</button>
-            <button class="btn btn-danger" onclick="delUsuario(${u.id})">×</button>`
-        }
+        ${u.id===usuarioLogado?.id?'<span style="font-size:11px;color:var(--text-faint)">você</span>':`<button class="btn-edit" onclick="editarUsuario(${u.id})">Editar</button><button class="btn btn-danger" onclick="delUsuario(${u.id})">×</button>`}
       </div>
     </div>`).join('');
 }
-function editarUsuario(id){
-  const u=usuarios.find(x=>x.id===id);if(!u)return;
-  editUserId=id;
-  document.getElementById('u_nome').value=u.nome;
-  document.getElementById('u_user').value=u.user;
-  document.getElementById('u_senha').value=u.senha;
-  document.getElementById('u_perfil').value=u.perfil;
-  document.getElementById('form-user-titulo').textContent='Editar usuário';
-  document.getElementById('u_nome').focus();
-}
-function cancelarEdicaoUser(){
-  editUserId=null;
-  ['u_nome','u_user','u_senha'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
-  document.getElementById('u_perfil').value='operador';
-  document.getElementById('form-user-titulo').textContent='Novo usuário';
-}
+function editarUsuario(id){const u=usuarios.find(x=>x.id===id);if(!u)return;editUserId=id;document.getElementById('u_nome').value=u.nome;document.getElementById('u_user').value=u.user;document.getElementById('u_senha').value=u.senha;document.getElementById('u_perfil').value=u.perfil;document.getElementById('form-user-titulo').textContent='Editar usuário';}
+function cancelarEdicaoUser(){editUserId=null;['u_nome','u_user','u_senha'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});document.getElementById('u_perfil').value='operador';document.getElementById('form-user-titulo').textContent='Novo usuário';}
 async function salvarUsuario(){
-  const nome=document.getElementById('u_nome').value.trim();
-  const user=document.getElementById('u_user').value.trim().toLowerCase();
-  const senha=document.getElementById('u_senha').value;
-  const perfil=document.getElementById('u_perfil').value;
+  const nome=document.getElementById('u_nome').value.trim(),user=document.getElementById('u_user').value.trim().toLowerCase(),senha=document.getElementById('u_senha').value,perfil=document.getElementById('u_perfil').value;
   if(!nome||!user||!senha){toast('Preencha nome, usuário e senha!',true);return;}
   const dup=usuarios.find(x=>x.user===user&&x.id!==editUserId);
-  if(dup){toast('Este nome de usuário já existe!',true);return;}
-  if(editUserId){
-    usuarios=usuarios.map(x=>x.id===editUserId?{...x,nome,user,senha,perfil}:x);
-    toast('Usuário atualizado!');
-  }else{
-    usuarios.push({id:Date.now(),nome,user,senha,perfil});
-    toast('Usuário criado!');
-  }
-  await saveUsers();renderUsuarios();cancelarEdicaoUser();
+  if(dup){toast('Usuário já existe!',true);return;}
+  if(editUserId)usuarios=usuarios.map(x=>x.id===editUserId?{...x,nome,user,senha,perfil}:x);
+  else usuarios.push({id:Date.now(),nome,user,senha,perfil});
+  await saveUsers();renderUsuarios();cancelarEdicaoUser();toast(editUserId?'Usuário atualizado!':'Usuário criado!');
 }
 async function delUsuario(id){
   if(usuarios.length<=1){toast('Deve haver ao menos um usuário!',true);return;}
-  if(!confirm('Remover este usuário?'))return;
-  usuarios=usuarios.filter(x=>x.id!==id);await saveUsers();renderUsuarios();toast('Usuário removido.');
+  if(!confirm('Remover?'))return;
+  usuarios=usuarios.filter(x=>x.id!==id);await saveUsers();renderUsuarios();toast('Removido.');
 }
 async function trocarMinhaSenha(){
-  const sa=document.getElementById('cfg_sa').value;
-  const sn=document.getElementById('cfg_sn').value;
-  if(!sa||!sn){toast('Preencha a senha atual e a nova!',true);return;}
+  const sa=document.getElementById('cfg_sa').value,sn=document.getElementById('cfg_sn').value;
+  if(!sa||!sn){toast('Preencha as senhas!',true);return;}
   if(sa!==usuarioLogado?.senha){toast('Senha atual incorreta!',true);return;}
   usuarios=usuarios.map(x=>x.id===usuarioLogado.id?{...x,senha:sn}:x);
   usuarioLogado={...usuarioLogado,senha:sn};
-  await saveUsers();
-  document.getElementById('cfg_sa').value='';document.getElementById('cfg_sn').value='';
-  toast('Senha alterada com sucesso!');
+  await saveUsers();document.getElementById('cfg_sa').value='';document.getElementById('cfg_sn').value='';toast('Senha alterada!');
 }
 
+// ===== REFRESH =====
 async function recarregarDados(){
   await load();
-  renderPainel();renderEmbarques();renderContratos();initFech();
+  const active=document.querySelector('.page.active')?.id?.replace('page-','');
+  if(active==='painel')renderPainel();
+  if(active==='embarques')renderEmbarques();
+  if(active==='contratos')renderContratos();
+  if(active==='fechamento')initFech();
+  if(active==='frete')renderFrete();
+  if(active==='transportadoras')renderTransp();
+  if(active==='comissionarios')renderComs();
   toast('Dados atualizados!');
 }
 
-// ---- INIT ----
+// ===== INIT =====
 function iniciar(){
   const d=new Date();
   document.getElementById('topbar-date').textContent=d.toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
-  // Mostrar usuário logado na sidebar
   if(usuarioLogado){
-    const av=document.getElementById('user-avatar');
-    const nm=document.getElementById('user-name-display');
-    const rl=document.getElementById('user-role-display');
+    const av=document.getElementById('user-avatar'),nm=document.getElementById('user-name-display'),rl=document.getElementById('user-role-display');
     if(av)av.textContent=usuarioLogado.nome.charAt(0).toUpperCase();
     if(nm)nm.textContent=usuarioLogado.nome;
     if(rl)rl.textContent=usuarioLogado.perfil==='admin'?'Administrador':'Operador';
-    // Esconder config para operadores
     const navCfg=document.getElementById('nav-config');
     if(navCfg&&usuarioLogado.perfil!=='admin')navCfg.style.display='none';
   }
-  initFech();updSelCts();aplicaPadroes();calcular();
+  initFech();updSelCts();updSelTransp();calcular();
 }
 
-// ---- BOOT ----
+// ===== BOOT =====
+// Criar tabelas no Supabase se necessário (transportadoras e comissionarios)
+async function ensureTables(){
+  try{
+    await fetch(`${SB_URL}/rest/v1/transportadoras?limit=1`,{headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}});
+  }catch(e){}
+}
+
 (async()=>{
   const _saved=localStorage.getItem(AK);
   if(_saved){
@@ -1286,12 +1483,8 @@ function iniciar(){
       hideLoading();
       const _auth=JSON.parse(_saved);
       const _u=usuarios.find(x=>x.id===_auth.id&&x.user===_auth.user);
-      if(_u){
-        usuarioLogado=_u;
-        document.getElementById('login-screen').style.display='none';
-        document.getElementById('app').style.display='block';
-        iniciar();
-      }else{localStorage.removeItem(AK);}
+      if(_u){usuarioLogado=_u;document.getElementById('login-screen').style.display='none';document.getElementById('app').style.display='block';iniciar();}
+      else{localStorage.removeItem(AK);}
     }catch(e){hideLoading();localStorage.removeItem(AK);}
   }
 })();
