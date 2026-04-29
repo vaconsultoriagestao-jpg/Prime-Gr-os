@@ -353,10 +353,11 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
       </div>
       <div class="tbl-wrap"><table><thead><tr>
         <th>Contrato</th><th>Empresa</th><th>NF</th><th>Status</th><th>Nota</th><th>Produto</th>
+        <th>Dono da carga</th>
         <th>Embarque</th><th>Descarga</th><th>Prazo receb.</th><th>Data receb.</th><th>Prazo</th>
         <th>Transportadora</th><th>Motorista</th><th>CPF</th><th>Placa</th>
         <th>Peso líq.</th><th>Sc emb.</th><th>Quebra sc</th><th>Desc.quebra</th><th>Scs ent.</th>
-        <th>Impureza %</th><th>Desc.impureza</th>
+        <th>Impureza (kg)</th><th>Desc.impureza</th>
         <th>Compra/sc</th><th>Venda/sc</th><th>RS/Ton</th><th>Frete/sc</th>
         <th>Total compra</th><th>Total venda</th><th>Frete total</th>
         <th>Recebido</th><th>Comp.desc.</th>
@@ -401,11 +402,12 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
         <div class="fg"><label>Empresa</label><input id="f_empresa" type="text" readonly disabled></div>
         <div class="fg"><label>NF <span class="star">*</span></label><input id="f_nf" type="text" placeholder="ex: 900 E 901"></div>
         <div class="fg"><label>Produto</label><input id="f_produto" type="text" readonly disabled></div>
+        <div class="fg"><label>Indústria / Granja</label><input id="f_industria" type="text" readonly disabled></div>
+        <div class="fg"><label>Dono da carga <span class="star">*</span></label><input id="f_dono_carga" type="text" placeholder="Nome do proprietário da carga"></div>
         <div class="fg"><label>Status</label>
           <select id="f_status"><option>Em aberto</option><option>Pago</option><option>Cancelada</option></select>
         </div>
         <div class="fg"><label>QTD Contrato (sc)</label><input id="f_qtd" type="number" value="0" readonly disabled></div>
-        <div class="fg"><label>Indústria / Granja</label><input id="f_industria" type="text" value="PRIME GRÃOS"></div>
       </div></div>
     </div>
 
@@ -434,8 +436,8 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
         <div class="fg"><label>Quebra (sc) <span style="color:var(--green)">(auto)</span></label><input id="f_quebra" type="text" readonly></div>
         <div class="fg"><label>SCS entregues <span style="color:var(--green)">(auto)</span></label><input id="f_sc_ent" type="text" readonly></div>
         <div class="fg"><label>Desconto quebra (R$) <span style="color:var(--green)">(auto)</span></label><input id="f_desc_quebra" type="text" readonly><span class="hint">Acima de 3 sc de tolerância</span></div>
-        <div class="fg"><label>Impureza (%)</label><input id="f_impureza" type="number" step="0.001" value="0" oninput="calcular()"></div>
-        <div class="fg"><label>Desconto impureza (R$) <span style="color:var(--green)">(auto)</span></label><input id="f_imp_desc" type="text" readonly><span class="hint">% × kg × R$/kg</span></div>
+        <div class="fg"><label>Impureza (kg)</label><input id="f_impureza" type="number" step="0.1" value="0" oninput="calcular()"><span class="hint">Informe os kg de impureza</span></div>
+        <div class="fg"><label>Desconto impureza (R$) <span style="color:var(--green)">(auto)</span></label><input id="f_imp_desc" type="text" readonly><span class="hint">Venda/60 × kg impureza</span></div>
       </div></div>
     </div>
 
@@ -615,6 +617,12 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
         <div class="fg"><label>Vendedor / Responsável</label><input id="mc_vendedor" type="text"></div>
         <div class="fg"><label>Data do contrato</label><input id="mc_data" type="date"></div>
         <div class="fg"><label>Vencimento</label><input id="mc_vencimento" type="date"></div>
+        <div class="fg fg-full"><label>Indústria / Granja</label><input id="mc_industria" type="text" placeholder="Ex: AGROFOODS UNIDADE 2"></div>
+        <div class="fg fg-full">
+          <label style="font-size:11px;font-weight:500;color:var(--text-muted);margin-bottom:6px;display:block">Comissionários vinculados</label>
+          <div id="mc_coms_lista" style="background:var(--gray-50);border-radius:8px;padding:.75rem;font-size:12px;color:var(--text-muted);min-height:40px"></div>
+          <span style="font-size:10px;color:var(--text-faint)">Cadastre os comissionários pelo menu e vincule pelo campo Comprador</span>
+        </div>
         <div class="fg fg-full"><label>Observações</label><input id="mc_obs" type="text"></div>
       </div>
     </div>
@@ -635,7 +643,7 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
         <div class="fg"><label>CNPJ / CPF</label><input id="mt_doc" type="text"></div>
         <div class="fg"><label>Telefone</label><input id="mt_tel" type="text"></div>
         <div class="fg"><label>Responsável</label><input id="mt_resp" type="text"></div>
-        <div class="fg"><label>Custo padrão R$/Ton</label><input id="mt_custo" type="number" step="0.01" value="0"></div>
+        <div class="fg"><label>Custo padrão R$/saco</label><input id="mt_custo" type="number" step="0.01" value="0"></div>
         <div class="fg fg-full"><label>Observações</label><input id="mt_obs" type="text"></div>
       </div>
     </div>
@@ -826,7 +834,13 @@ function updSelTransp(){
 function preencherTransportadora(){
   const id=parseInt(document.getElementById('f_transportadora_id').value);
   const t=transp.find(x=>x.id===id);
-  if(t&&t.custo){document.getElementById('f_rs_ton').value=t.custo;calcular();}
+  if(t&&t.custo){
+    // custo por saco → converter para R$/Ton para o campo rs_ton
+    // rs_ton = custo_sc * (1000/60)
+    const rs_ton_equiv=(t.custo*(1000/60));
+    document.getElementById('f_rs_ton').value=rs_ton_equiv.toFixed(2);
+    calcular();
+  }
 }
 
 // ===== COMISSIONÁRIOS =====
@@ -863,7 +877,7 @@ function abrirModalCt(id=null){
   editCt=id;
   document.getElementById('modal-ct-titulo').textContent=id?'Editar contrato':'Novo contrato';
   const c=id?cts.find(x=>x.id===id):{};
-  ['numero','comprador','qtd','valor','prazo','fundo_pct','fundo_dias','vendedor','data','vencimento','obs'].forEach(f=>{const el=document.getElementById('mc_'+f);if(el)el.value=c[f]??'';});
+  ['numero','comprador','qtd','valor','prazo','fundo_pct','fundo_dias','vendedor','data','vencimento','obs','industria'].forEach(f=>{const el=document.getElementById('mc_'+f);if(el)el.value=c[f]??'';});
   document.getElementById('mc_empresa').value=c.empresa||'Prime Grãos';
   document.getElementById('mc_produto').value=c.produto||'SOJA';
   document.getElementById('mc_frete').value=c.frete||'CIF';
@@ -871,14 +885,24 @@ function abrirModalCt(id=null){
   document.getElementById('mc_tem_fundo').checked=tf;
   document.getElementById('mc_fundo_campos').style.display=tf?'block':'none';
   if(!id){document.getElementById('mc_prazo').value=cfg.prazo||72;document.getElementById('mc_fundo_pct').value=5;}
-  calcVtCt();document.getElementById('modal-ct').style.display='flex';
+  calcVtCt();
+  // Mostrar comissionários vinculados
+  const comp=c.comprador||'';
+  const comsVinc=coms.filter(x=>x.comprador.toUpperCase()===comp.toUpperCase());
+  const comsListEl=document.getElementById('mc_coms_lista');
+  if(comsListEl){
+    comsListEl.innerHTML=comsVinc.length
+      ?comsVinc.map(x=>`<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:.5px solid var(--border)"><span>${x.nome}</span><span style="color:var(--green);font-weight:500">${fmt(x.valor)}/sc</span></div>`).join('')
+      :'<span style="color:var(--text-faint)">Nenhum comissionário vinculado a este comprador.</span>';
+  }
+  document.getElementById('modal-ct').style.display='flex';
 }
 function fecharModalCt(){document.getElementById('modal-ct').style.display='none';editCt=null;}
 function calcVtCt(){const q=parseFloat(document.getElementById('mc_qtd').value)||0,v=parseFloat(document.getElementById('mc_valor').value)||0;document.getElementById('mc_vt').value=fmt(q*v);}
 async function salvarCt(){
   const num=document.getElementById('mc_numero').value.trim(),comp=document.getElementById('mc_comprador').value.trim();
   if(!num||!comp){toast('Preencha Nº e Comprador!',true);return;}
-  const obj={id:editCt||Date.now(),numero:num,comprador:comp,empresa:document.getElementById('mc_empresa').value,produto:document.getElementById('mc_produto').value,qtd:parseFloat(document.getElementById('mc_qtd').value)||0,valor:parseFloat(document.getElementById('mc_valor').value)||0,prazo:parseFloat(document.getElementById('mc_prazo').value)||72,tem_fundo:document.getElementById('mc_tem_fundo').checked,fundo_pct:parseFloat(document.getElementById('mc_fundo_pct').value)||5,fundo_dias:parseFloat(document.getElementById('mc_fundo_dias').value)||75,frete:document.getElementById('mc_frete').value,vendedor:document.getElementById('mc_vendedor').value,data:document.getElementById('mc_data').value,vencimento:document.getElementById('mc_vencimento').value,obs:document.getElementById('mc_obs').value};
+  const obj={id:editCt||Date.now(),numero:num,comprador:comp,empresa:document.getElementById('mc_empresa').value,produto:document.getElementById('mc_produto').value,industria:document.getElementById('mc_industria').value,qtd:parseFloat(document.getElementById('mc_qtd').value)||0,valor:parseFloat(document.getElementById('mc_valor').value)||0,prazo:parseFloat(document.getElementById('mc_prazo').value)||72,tem_fundo:document.getElementById('mc_tem_fundo').checked,fundo_pct:parseFloat(document.getElementById('mc_fundo_pct').value)||5,fundo_dias:parseFloat(document.getElementById('mc_fundo_dias').value)||75,frete:document.getElementById('mc_frete').value,vendedor:document.getElementById('mc_vendedor').value,data:document.getElementById('mc_data').value,vencimento:document.getElementById('mc_vencimento').value,obs:document.getElementById('mc_obs').value};
   if(editCt)cts=cts.map(c=>c.id===editCt?obj:c);else cts.push(obj);
   await saveCts();fecharModalCt();renderContratos();updSelCts();toast(editCt?'Contrato atualizado!':'Contrato salvo!');
 }
@@ -908,18 +932,15 @@ function preencherDoCt(){
   const id=parseInt(document.getElementById('f_contrato').value);
   const c=cts.find(x=>x.id===id);
   if(!c)return;
-  // Travar campos do contrato
   document.getElementById('f_empresa').value=c.empresa||'Prime Grãos';
   document.getElementById('f_produto').value=c.produto||'SOJA';
   document.getElementById('f_qtd').value=c.qtd||0;
   document.getElementById('f_venda').value=c.valor||0;
-  // Fundo
+  document.getElementById('f_industria').value=c.industria||c.comprador||'';
   const tf=!!(c.tem_fundo);
   document.getElementById('f_tem_fundo').checked=tf;
   document.getElementById('f_fundo_campos').style.display=tf?'block':'none';
-  // Comissões do comprador
   renderComissoesCt(c.comprador);
-  // Valida data do contrato
   calcular();
 }
 function renderComissoesCt(comprador){
@@ -973,9 +994,9 @@ function calcular(){
   const total_venda=sc_ent*venda;
   const comp_desc=recebido-total_venda;
 
-  // Impureza: R$/kg = venda/60 → desconto = (impureza/100) * pdesc * R$/kg
+  // Impureza: desconto = kg_impureza * (venda/60)
   const rkg=venda/60;
-  const imp_desc=(impureza/100)*pdesc*rkg;
+  const imp_desc=impureza*rkg;
 
   // Fundo: 5% sobre total venda
   const temFundo=document.getElementById('f_tem_fundo')?.checked||false;
@@ -1026,6 +1047,8 @@ async function salvarEmb(){
   const pliq=parseFloat(document.getElementById('f_pliq').value)||0;
   const compra=parseFloat(document.getElementById('f_compra').value)||0;
   const venda=parseFloat(document.getElementById('f_venda').value)||0;
+  const dono_carga=document.getElementById('f_dono_carga').value.trim();
+  if(!dono_carga){toast('Informe o dono da carga!',true);return;}
   if(!ctId){toast('Selecione um contrato!',true);return;}
   if(!nf){toast('Informe a NF!',true);return;}
   if(!mot){toast('Informe o motorista!',true);return;}
@@ -1050,6 +1073,7 @@ async function salvarEmb(){
 
   const obj={id:Date.now(),cancelada,
     lancado_por:usuarioLogado?.nome||'—',
+    dono_carga,
     empresa:document.getElementById('f_empresa').value||'Prime Grãos',
     contrato:ctObj?ctObj.numero:ctId,contrato_id:parseInt(ctId),
     nf,industria:document.getElementById('f_industria').value,
@@ -1080,12 +1104,12 @@ async function salvarEmb(){
 }
 
 function limparForm(){
-  ['f_nf','f_placa','f_motorista','f_cpf','f_obs','f_embarque','f_descarga','f_data_rec','f_prazo_rec'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  ['f_nf','f_placa','f_motorista','f_cpf','f_obs','f_embarque','f_descarga','f_data_rec','f_prazo_rec','f_dono_carga'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   ['f_pliq','f_pdesc','f_rs_ton','f_recebido','f_imposto','f_desc_fin','f_outros','f_cte','f_custo_produto','f_cn_val','f_impureza'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='0';});
   document.getElementById('f_canc').checked=false;document.getElementById('cancel-toggle').classList.remove('on');
   document.getElementById('f_tem_fundo').checked=false;document.getElementById('f_fundo_campos').style.display='none';
   document.getElementById('f_contrato').value='';
-  document.getElementById('f_empresa').value='';document.getElementById('f_produto').value='';document.getElementById('f_qtd').value='0';document.getElementById('f_venda').value='0';
+  document.getElementById('f_empresa').value='';document.getElementById('f_produto').value='';document.getElementById('f_qtd').value='0';document.getElementById('f_venda').value='0';document.getElementById('f_industria').value='';
   const cl=document.getElementById('f_comissoes_lista');if(cl)cl.innerHTML='';
   calcular();
 }
@@ -1094,14 +1118,15 @@ function limparForm(){
 let editEmb=null;
 const editCampos=[
   {id:'empresa',l:'Empresa',t:'sel',o:['Prime Grãos','ZF Grãos']},
-  {id:'nf',l:'NF',t:'text'},{id:'produto',l:'Produto',t:'sel',o:['SOJA','MILHO','TRIGO']},
+  {id:'dono_carga',l:'Dono da carga',t:'text'},
+  {id:'nf',l:'NF',t:'text'},{id:'industria',l:'Indústria/Granja',t:'text'},{id:'produto',l:'Produto',t:'sel',o:['SOJA','MILHO','TRIGO']},
   {id:'status',l:'Status',t:'sel',o:['Em aberto','Pago','Cancelada']},
   {id:'embarque',l:'Data embarque',t:'date'},{id:'descarga',l:'Data descarga',t:'date'},
   {id:'data_rec',l:'Data recebimento',t:'date'},
   {id:'transportadora',l:'Transportadora',t:'text'},{id:'motorista',l:'Motorista',t:'text'},
   {id:'cpf',l:'CPF motorista',t:'text'},{id:'placa',l:'Placa',t:'text'},
   {id:'pliq',l:'Peso líquido (kg)',t:'number'},{id:'pdesc',l:'Peso descarga (kg)',t:'number'},
-  {id:'impureza',l:'Impureza (%)',t:'number'},
+  {id:'impureza',l:'Impureza (kg)',t:'number'},
   {id:'compra',l:'R$ Compra/sc',t:'number'},{id:'venda',l:'R$ Venda/sc',t:'number'},
   {id:'rs_ton',l:'RS/Ton',t:'number'},{id:'recebido',l:'R$ Recebido',t:'number'},
   {id:'cn_val',l:'Custo nota R$',t:'number'},{id:'cte',l:'CTE R$',t:'number'},
@@ -1142,7 +1167,7 @@ async function salvarEdit(){
   e.desc_quebra=exc>0?(ve/60)*exc:0;
   e.frete_sc=rt>0?(rt/1000*60)/60:0;e.frete_total=(pl/1000)*rt;
   e.total_compra=e.sc_emb*co;e.total_venda=e.sc_ent*ve;
-  e.comp_desc=re-e.total_venda;e.rkg=ve/60;e.imp_desc=(imp/100)*pd*e.rkg;
+  e.comp_desc=re-e.total_venda;e.rkg=ve/60;e.imp_desc=(imp)*e.rkg;
   e.fundo=e.tem_fundo?e.total_venda*0.05:0;
   const comprador=cts.find(c=>c.numero==e.contrato)?.comprador?.toUpperCase()||'';
   const comsV=coms.filter(c=>c.comprador.toUpperCase()===comprador);
@@ -1153,8 +1178,11 @@ async function salvarEdit(){
   if(e.descarga){const ctO=cts.find(c=>c.numero==e.contrato);const pp=ctO?ctO.prazo:(cfg.prazo||72);const p=prazoData(e.descarga,pp);e.prazo_rec=p.toLocaleDateString('pt-BR');}
   embs[idx]=e;await save();fecharModalEdit();renderEmbarques();renderPainel();toast('Embarque atualizado!');
 }
-async function delEmb(id){if(!confirm('Remover?'))return;embs=embs.filter(d=>d.id!==id);await save();renderEmbarques();renderPainel();toast('Embarque removido.');}
-
+async function delEmb(id){
+  if(usuarioLogado?.perfil!=='admin'){toast('Apenas o administrador pode excluir embarques!',true);return;}
+  if(!confirm('Remover este embarque? Esta ação não pode ser desfeita.'))return;
+  embs=embs.filter(d=>d.id!==id);await save();renderEmbarques();renderPainel();toast('Embarque removido.');
+}
 // ===== FRETE =====
 async function toggleFretePago(embId,parcela){
   const idx=embs.findIndex(d=>d.id===embId);if(idx===-1)return;
@@ -1166,7 +1194,6 @@ function renderFrete(){
   const q=(document.getElementById('f-frete-q')||{value:''}).value.toLowerCase();
   const ct=(document.getElementById('f-frete-ct')||{value:''}).value;
   const st=(document.getElementById('f-frete-status')||{value:''}).value;
-  // Atualizar filtro contratos
   const ctS=document.getElementById('f-frete-ct');
   if(ctS){const cs=[...new Set(embs.map(d=>d.contrato))].sort();const cur=ctS.value;ctS.innerHTML='<option value="">Todos contratos</option>'+cs.map(c=>`<option ${c===cur?'selected':''}>${c}</option>`).join('');}
   const ativos=embs.filter(d=>!d.cancelada&&(d.frete_total||0)>0);
@@ -1178,20 +1205,25 @@ function renderFrete(){
   const lista=document.getElementById('frete-lista');
   if(!f.length){lista.innerHTML='<div class="empty-state">Nenhum embarque com frete encontrado.</div>';return;}
   lista.innerHTML=f.map(d=>{
-    const saldo=(!d.frete80_pago?d.frete80:0)+(!d.frete20_pago?d.frete20:0);
+    const temDescarga=!!(d.descarga);
     const desc_total=(d.desc_quebra||0)+(d.imp_desc||0);
-    const saldo_ajustado=Math.max(0,saldo-desc_total);
+    // Desconto abate do saldo do 20%
+    const frete20_ajustado=Math.max(0,(d.frete20||0)-desc_total);
+    const saldo80=d.frete80_pago?0:(d.frete80||0);
+    const saldo20=d.frete20_pago?0:frete20_ajustado;
+    const saldo_total=saldo80+saldo20;
     return`<div class="frete-card">
       <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px">
         <div>
           <div style="font-size:15px;font-weight:600">${d.motorista} <span style="font-size:12px;color:var(--text-faint);font-weight:400">CPF: ${d.cpf||'—'}</span></div>
           <div style="font-size:12px;color:var(--text-muted);margin-top:2px">Contrato ${d.contrato} · NF ${d.nf} · ${d.embarque||'—'}</div>
-          ${desc_total>0?`<div style="font-size:11px;color:var(--red);margin-top:2px">Desconto quebra/impureza: ${fmt(desc_total)}</div>`:''}
+          ${!temDescarga?`<div style="font-size:11px;color:var(--amber);margin-top:2px">⏳ Aguardando descarga para liberar pagamento dos 20%</div>`:''}
+          ${desc_total>0&&temDescarga?`<div style="font-size:11px;color:var(--red);margin-top:2px">Desconto (quebra/impureza): ${fmt(desc_total)} — abatido dos 20%</div>`:''}
         </div>
         <div style="text-align:right">
           <div style="font-size:11px;color:var(--text-faint)">Frete total</div>
           <div style="font-size:18px;font-weight:600">${fmt(d.frete_total)}</div>
-          <div style="font-size:11px;color:var(--${saldo_ajustado>0?'amber':'green'});margin-top:2px">Saldo: ${fmt(saldo_ajustado)}</div>
+          <div style="font-size:11px;color:var(--${saldo_total>0?'amber':'green'});margin-top:2px">Saldo a pagar: ${fmt(saldo_total)}</div>
         </div>
       </div>
       <div class="frete-split">
@@ -1200,10 +1232,11 @@ function renderFrete(){
           <div class="split-value pos">${fmt(d.frete80||0)}</div>
           <button class="flag-btn ${d.frete80_pago?'pago':'aberto'}" onclick="toggleFretePago(${d.id},80)">${d.frete80_pago?'✓ Pago':'Em aberto'}</button>
         </div>
-        <div class="split-box parcela-2">
-          <div class="split-label">20% — Na descarga</div>
-          <div class="split-value amber-txt">${fmt(d.frete20||0)}</div>
-          <button class="flag-btn ${d.frete20_pago?'pago':'aberto'}" onclick="toggleFretePago(${d.id},20)">${d.frete20_pago?'✓ Pago':'Em aberto'}</button>
+        <div class="split-box parcela-2" style="${!temDescarga?'opacity:.4;pointer-events:none':''}">
+          <div class="split-label">20% — Na descarga${!temDescarga?' (aguardando)':''}</div>
+          <div class="split-value amber-txt">${fmt(frete20_ajustado)}</div>
+          ${desc_total>0?`<div style="font-size:10px;color:var(--red);margin-bottom:4px">Original: ${fmt(d.frete20||0)} − desc.: ${fmt(desc_total)}</div>`:''}
+          ${temDescarga?`<button class="flag-btn ${d.frete20_pago?'pago':'aberto'}" onclick="toggleFretePago(${d.id},20)">${d.frete20_pago?'✓ Pago':'Em aberto'}</button>`:`<span style="font-size:11px;color:var(--text-faint)">Bloqueado</span>`}
         </div>
       </div>
     </div>`;
@@ -1263,7 +1296,9 @@ function renderEmbarques(){
       <td>${d.nf||'—'}</td>
       <td><span class="badge ${d.status==='Em aberto'?'badge-blue':d.status==='Pago'?'badge-green':'badge-red'}">${d.status}</span></td>
       <td>${d.cancelada?'<span class="badge badge-red">Cancelada</span>':'<span class="badge badge-green">Ativa</span>'}</td>
-      <td>${d.produto||'—'}</td><td>${d.embarque||'—'}</td><td>${d.descarga||'—'}</td>
+      <td>${d.produto||'—'}</td>
+      <td><strong>${d.dono_carga||'—'}</strong></td>
+      <td>${d.embarque||'—'}</td><td>${d.descarga||'—'}</td>
       <td>${d.prazo_rec||'—'}</td><td>${d.data_rec||'—'}</td>
       <td><span class="badge ${sp.badge}">${sp.txt}</span></td>
       <td>${d.transportadora||'—'}</td><td>${d.motorista||'—'}</td>
@@ -1272,7 +1307,7 @@ function renderEmbarques(){
       <td class="mono ${(d.quebra_sc||0)<0?'neg':''}">${fmtN(d.quebra_sc)}</td>
       <td class="mono ${(d.desc_quebra||0)>0?'neg':''}">${fmt(d.desc_quebra||0)}</td>
       <td class="mono">${fmtN(d.sc_ent)}</td>
-      <td>${fmtN(d.impureza||0,3)}%</td>
+      <td class="mono">${fmtN(d.impureza||0,1)} kg</td>
       <td class="mono ${(d.imp_desc||0)>0?'neg':''}">${fmt(d.imp_desc||0)}</td>
       <td class="mono">${fmtN(d.compra)}</td><td class="mono">${fmtN(d.venda)}</td>
       <td class="mono">${fmtN(d.rs_ton)}</td><td class="mono">${fmtN(d.frete_sc)}</td>
