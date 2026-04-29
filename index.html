@@ -710,18 +710,51 @@ function showLoading(msg='Carregando...'){
 }
 function hideLoading(){const el=document.getElementById('loading-overlay');if(el)el.style.display='none';}
 
-async function sbDel(table){await fetch(`${SB_URL}/rest/v1/${table}`,{method:'DELETE',headers:{..._h,'Prefer':''},body:JSON.stringify({})});}
+async function sbDel(table){
+  await fetch(`${SB_URL}/rest/v1/${table}?id=gte.0`,{method:'DELETE',headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}});
+}
 async function sbPost(table,rows){if(!rows.length)return;await fetch(`${SB_URL}/rest/v1/${table}`,{method:'POST',headers:_h,body:JSON.stringify(rows)});}
 async function sbGet(table){const r=await fetch(`${SB_URL}/rest/v1/${table}?select=data&order=id`,{headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}});const d=await r.json();return d.map?d.map(x=>x.data):[];}
 async function sbGetCfg(){const r=await fetch(`${SB_URL}/rest/v1/configuracoes?select=data&id=eq.1`,{headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}});const d=await r.json();return d&&d.length?d[0].data:null;}
 
-async function save(){showLoading('Salvando...');try{await sbDel('embarques');await sbPost('embarques',embs.map(e=>({id:e.id,data:e})));}catch(e){console.error(e);}hideLoading();}
-async function saveCts(){try{await sbDel('contratos');await sbPost('contratos',cts.map(c=>({id:c.id,data:c})));}catch(e){console.error(e);};}
-async function saveTransp(){try{await sbDel('transportadoras');await sbPost('transportadoras',transp.map(t=>({id:t.id,data:t})));}catch(e){console.error(e);};}
-async function saveComs(){try{await sbDel('comissionarios');await sbPost('comissionarios',coms.map(c=>({id:c.id,data:c})));}catch(e){console.error(e);};}
-async function saveCfg(){try{await fetch(`${SB_URL}/rest/v1/configuracoes`,{method:'DELETE',headers:{..._h,'Prefer':''},body:JSON.stringify({})});await sbPost('configuracoes',[{id:1,data:cfg}]);}catch(e){console.error(e);};}
-async function saveUsers(){try{await sbDel('usuarios');await sbPost('usuarios',usuarios.map(u=>({id:u.id,data:u})));}catch(e){console.error(e);};}
-
+async function save(){
+  showLoading('Salvando...');
+  try{
+    await fetch(`${SB_URL}/rest/v1/embarques?id=gte.0`,{method:'DELETE',headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}});
+    if(embs.length){await sbPost('embarques',embs.map(e=>({id:e.id,data:e})));}
+  }catch(e){console.error(e);}
+  hideLoading();
+}
+async function saveCts(){
+  try{
+    await fetch(`${SB_URL}/rest/v1/contratos?id=gte.0`,{method:'DELETE',headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}});
+    if(cts.length)await sbPost('contratos',cts.map(c=>({id:c.id,data:c})));
+  }catch(e){console.error(e);}
+}
+async function saveTransp(){
+  try{
+    await fetch(`${SB_URL}/rest/v1/transportadoras?id=gte.0`,{method:'DELETE',headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}});
+    if(transp.length)await sbPost('transportadoras',transp.map(t=>({id:t.id,data:t})));
+  }catch(e){console.error(e);}
+}
+async function saveComs(){
+  try{
+    await fetch(`${SB_URL}/rest/v1/comissionarios?id=gte.0`,{method:'DELETE',headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}});
+    if(coms.length)await sbPost('comissionarios',coms.map(c=>({id:c.id,data:c})));
+  }catch(e){console.error(e);}
+}
+async function saveCfg(){
+  try{
+    await fetch(`${SB_URL}/rest/v1/configuracoes?id=gte.0`,{method:'DELETE',headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}});
+    await sbPost('configuracoes',[{id:1,data:cfg}]);
+  }catch(e){console.error(e);}
+}
+async function saveUsers(){
+  try{
+    await fetch(`${SB_URL}/rest/v1/usuarios?id=gte.0`,{method:'DELETE',headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}});
+    if(usuarios.length)await sbPost('usuarios',usuarios.map(u=>({id:u.id,data:u})));
+  }catch(e){console.error(e);}
+}
 async function load(){
   showLoading('Conectando ao banco de dados...');
   try{
