@@ -934,18 +934,20 @@ async function load(){
 // ===== AUTH =====
 async function fazerLogin(){
   const user=document.getElementById('login-user').value.trim().toLowerCase();
-  const senha=document.getElementById('login-senha').value;
+  const senha=document.getElementById('login-senha').value.trim();
   showLoading('Verificando...');
   await load();
   hideLoading();
-  const u=usuarios.find(x=>x.user.toLowerCase()===user&&x.senha===senha);
+  const u=usuarios.find(x=>x.user.trim().toLowerCase()===user&&x.senha.trim()===senha);
   if(u){
     usuarioLogado=u;
     localStorage.setItem(AK,JSON.stringify({id:u.id,user:u.user}));
     document.getElementById('login-screen').style.display='none';
     document.getElementById('app').style.display='block';
     iniciar();
-  }else{document.getElementById('login-error').style.display='block';}
+  }else{
+    document.getElementById('login-error').style.display='block';
+  }
 }
 function logout(){localStorage.removeItem(AK);usuarioLogado=null;location.reload();}
 
@@ -1942,7 +1944,7 @@ async function ensureTables(){
       await load();
       hideLoading();
       const _auth=JSON.parse(_saved);
-      const _u=usuarios.find(x=>x.id===_auth.id&&x.user===_auth.user);
+      const _u=usuarios.find(x=>x.id===_auth.id&&x.user.trim().toLowerCase()===_auth.user.trim().toLowerCase());
       if(_u){usuarioLogado=_u;document.getElementById('login-screen').style.display='none';document.getElementById('app').style.display='block';iniciar();}
       else{localStorage.removeItem(AK);}
     }catch(e){hideLoading();localStorage.removeItem(AK);}
