@@ -213,6 +213,9 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
     <div class="nav-item" id="nav-novo" onclick="irPara('novo',this)">
       <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>Novo embarque
     </div>
+    <div class="nav-item" id="nav-saidas" onclick="irPara('saidas',this)">
+      <svg viewBox="0 0 24 24"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>Saídas de produto
+    </div>
     <div class="nav-label">Contas a Pagar</div>
     <div class="nav-item" id="nav-frete" onclick="irPara('frete',this)">
       <svg viewBox="0 0 24 24"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>Frete motoristas
@@ -259,6 +262,43 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
     <div style="display:flex;align-items:center;gap:12px">
       <span id="topbar-date" style="font-size:12px;color:var(--text-faint)"></span>
       <button class="btn btn-secondary btn-sm" onclick="recarregarDados()" title="Atualizar dados">↻ Atualizar</button>
+    </div>
+  </div>
+
+  <!-- SAÍDAS DE PRODUTO -->
+  <div class="page" id="page-saidas">
+    <h1 class="section-heading">Saídas de produto</h1>
+    <p class="section-sub">Volume embarcado por período. Notas canceladas não são consideradas.</p>
+    <div class="table-filters" style="margin-bottom:1rem;gap:8px;display:flex;flex-wrap:wrap;align-items:center">
+      <select class="filter-select" id="f-saidas-mes" onchange="renderSaidas()">
+        <option value="">Todos os meses</option>
+        <option value="01">Janeiro</option><option value="02">Fevereiro</option><option value="03">Março</option>
+        <option value="04">Abril</option><option value="05">Maio</option><option value="06">Junho</option>
+        <option value="07">Julho</option><option value="08">Agosto</option><option value="09">Setembro</option>
+        <option value="10">Outubro</option><option value="11">Novembro</option><option value="12">Dezembro</option>
+      </select>
+      <select class="filter-select" id="f-saidas-ano" onchange="renderSaidas()">
+        <option value="2026">2026</option><option value="2025">2025</option><option value="2024">2024</option>
+      </select>
+      <select class="filter-select" id="f-saidas-prod" onchange="renderSaidas()">
+        <option value="">Todos produtos</option><option>SOJA</option><option>MILHO</option><option>TRIGO</option>
+      </select>
+      <select class="filter-select" id="f-saidas-ct" onchange="renderSaidas()"><option value="">Todos contratos</option></select>
+      <select class="filter-select" id="f-saidas-emp" onchange="renderSaidas()">
+        <option value="">Todas empresas</option><option>Prime Grãos</option><option>ZF Grãos</option>
+      </select>
+    </div>
+    <div class="stats-grid" id="saidas-cards" style="margin-bottom:1rem"></div>
+    <div class="table-card">
+      <div class="table-header">
+        <h3>Volume por embarque</h3>
+        <button class="btn btn-secondary btn-sm" onclick="exportSaidas()">⬇ Exportar Excel</button>
+      </div>
+      <div class="tbl-wrap"><table><thead><tr>
+        <th>Data embarque</th><th>Contrato</th><th>Empresa</th><th>Comprador</th>
+        <th>Produto</th><th>NF</th><th>Motorista</th>
+        <th>Peso líq. (kg)</th><th>Sc embarcadas</th><th>Sc entregues</th>
+      </tr></thead><tbody id="tbody-saidas"></tbody></table></div>
     </div>
   </div>
 
@@ -475,7 +515,6 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
     <div class="form-card">
       <div class="form-card-header"><svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>Custos adicionais</div>
       <div class="form-body"><div class="form-grid">
-        <div class="fg"><label>Custo do produto (R$)</label><input id="f_custo_produto" type="number" step="0.01" value="0" oninput="calcular()"></div>
         <div class="fg"><label>Custo nota (R$/saco)</label><input id="f_cn_sc" type="number" step="0.01" value="0" oninput="calcular()"></div>
         <div class="fg"><label>Custo nota total <span style="color:var(--green)">(auto)</span></label><input id="f_cn_val" type="text" readonly></div>
         <div class="fg"><label>CTE (R$/saco)</label><input id="f_cte_sc" type="number" step="0.01" value="0" oninput="calcular()"></div>
@@ -713,9 +752,11 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
         <div class="fg"><label>Vencimento</label><input id="mc_vencimento" type="date"></div>
         <div class="fg fg-full"><label>Indústria / Granja</label><input id="mc_industria" type="text" placeholder="Ex: AGROFOODS UNIDADE 2"></div>
         <div class="fg fg-full">
-          <label style="font-size:11px;font-weight:500;color:var(--text-muted);margin-bottom:6px;display:block">Comissionários vinculados</label>
-          <div id="mc_coms_lista" style="background:var(--gray-50);border-radius:8px;padding:.75rem;font-size:12px;color:var(--text-muted);min-height:40px"></div>
-          <span style="font-size:10px;color:var(--text-faint)">Cadastre os comissionários pelo menu e vincule pelo campo Comprador</span>
+          <label style="font-size:11px;font-weight:500;color:var(--text-muted);margin-bottom:8px;display:block">Comissionários deste contrato</label>
+          <div id="mc_coms_sel" style="background:var(--gray-50);border-radius:8px;padding:.75rem;min-height:50px">
+            <p style="font-size:11px;color:var(--text-faint)">Carregando comissionários...</p>
+          </div>
+          <span style="font-size:10px;color:var(--text-faint)">Marque os comissionários que participam deste contrato e informe o valor R$/sc de cada um.</span>
         </div>
         <div class="fg fg-full"><label>Observações</label><input id="mc_obs" type="text"></div>
       </div>
@@ -909,7 +950,7 @@ async function fazerLogin(){
 function logout(){localStorage.removeItem(AK);usuarioLogado=null;location.reload();}
 
 // ===== NAV =====
-const ptitles={fechamento:'Fechamento',painel:'Painel',contratos:'Contratos',embarques:'Embarques',novo:'Novo embarque',frete:'Frete — Motoristas','cap-transp':'CTE — Transportadoras','cap-com':'Comissões a Pagar','cap-nota':'Notas Fiscais a Pagar',transportadoras:'Transportadoras',comissionarios:'Cadastro Comissionários',fornecedores:'Fornecedores de Nota',config:'Configurações'};
+const ptitles={fechamento:'Fechamento',painel:'Painel',saidas:'Saídas de produto',contratos:'Contratos',embarques:'Embarques',novo:'Novo embarque',frete:'Frete — Motoristas','cap-transp':'CTE — Transportadoras','cap-com':'Comissões a Pagar','cap-nota':'Notas Fiscais a Pagar',transportadoras:'Transportadoras',comissionarios:'Cadastro Comissionários',fornecedores:'Fornecedores de Nota',config:'Configurações'};
 function irPara(id,el){
   if(id==='config'&&usuarioLogado?.perfil!=='admin'){toast('Acesso restrito ao administrador.',true);return;}
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
@@ -919,6 +960,7 @@ function irPara(id,el){
   else{const n=document.getElementById('nav-'+id);if(n)n.classList.add('active');}
   document.getElementById('page-title').textContent=ptitles[id]||'';
   if(id==='fechamento')initFech();
+  if(id==='saidas')renderSaidas();
   if(id==='painel')renderPainel();
   if(id==='contratos')renderContratos();
   if(id==='embarques')renderEmbarques();
@@ -1041,14 +1083,22 @@ function abrirModalCt(id=null){
   document.getElementById('mc_fundo_campos').style.display=tf?'block':'none';
   if(!id){document.getElementById('mc_prazo').value=cfg.prazo||72;document.getElementById('mc_fundo_pct').value=5;}
   calcVtCt();
-  // Mostrar comissionários vinculados
-  const comp=c.comprador||'';
-  const comsVinc=coms.filter(x=>x.comprador.toUpperCase()===comp.toUpperCase());
-  const comsListEl=document.getElementById('mc_coms_lista');
-  if(comsListEl){
-    comsListEl.innerHTML=comsVinc.length
-      ?comsVinc.map(x=>`<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:.5px solid var(--border)"><span>${x.nome}</span><span style="color:var(--green);font-weight:500">${fmt(x.valor)}/sc</span></div>`).join('')
-      :'<span style="color:var(--text-faint)">Nenhum comissionário vinculado a este comprador.</span>';
+  // Renderizar checkboxes de comissionários
+  const comsEl=document.getElementById('mc_coms_sel');
+  if(comsEl){
+    if(!coms.length){
+      comsEl.innerHTML='<p style="font-size:12px;color:var(--text-faint)">Nenhum comissionário cadastrado. Cadastre primeiro no menu.</p>';
+    }else{
+      const ctComs=c.comissionarios_ct||[];
+      comsEl.innerHTML=coms.map(cm=>{
+        const vinc=ctComs.find(x=>x.id===cm.id);
+        return`<div style="display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:.5px solid var(--border)">
+          <input type="checkbox" id="mc_com_${cm.id}" value="${cm.id}" ${vinc?'checked':''} style="accent-color:var(--green);width:15px;height:15px">
+          <label for="mc_com_${cm.id}" style="flex:1;font-size:13px;cursor:pointer">${cm.nome}</label>
+          <input type="number" id="mc_com_val_${cm.id}" step="0.01" value="${vinc?vinc.valor:cm.valor||0}" style="width:90px;padding:4px 8px;font-size:12px;border:1px solid var(--border);border-radius:6px;font-family:inherit" placeholder="R$/sc">
+        </div>`;
+      }).join('');
+    }
   }
   document.getElementById('modal-ct').style.display='flex';
 }
@@ -1057,7 +1107,11 @@ function calcVtCt(){const q=parseFloat(document.getElementById('mc_qtd').value)|
 async function salvarCt(){
   const num=document.getElementById('mc_numero').value.trim(),comp=document.getElementById('mc_comprador').value.trim();
   if(!num||!comp){toast('Preencha Nº e Comprador!',true);return;}
-  const obj={id:editCt||Date.now(),numero:num,comprador:comp,empresa:document.getElementById('mc_empresa').value,produto:document.getElementById('mc_produto').value,industria:document.getElementById('mc_industria').value,qtd:parseFloat(document.getElementById('mc_qtd').value)||0,valor:parseFloat(document.getElementById('mc_valor').value)||0,prazo:parseFloat(document.getElementById('mc_prazo').value)||72,tem_fundo:document.getElementById('mc_tem_fundo').checked,fundo_pct:parseFloat(document.getElementById('mc_fundo_pct').value)||5,fundo_dias:parseFloat(document.getElementById('mc_fundo_dias').value)||75,frete:document.getElementById('mc_frete').value,vendedor:document.getElementById('mc_vendedor').value,data:document.getElementById('mc_data').value,vencimento:document.getElementById('mc_vencimento').value,obs:document.getElementById('mc_obs').value};
+  // Coletar comissionários selecionados
+  const comissionarios_ct=coms.filter(cm=>document.getElementById(`mc_com_${cm.id}`)?.checked).map(cm=>({
+    id:cm.id,nome:cm.nome,valor:parseFloat(document.getElementById(`mc_com_val_${cm.id}`)?.value)||cm.valor||0
+  }));
+  const obj={id:editCt||Date.now(),numero:num,comprador:comp,empresa:document.getElementById('mc_empresa').value,produto:document.getElementById('mc_produto').value,industria:document.getElementById('mc_industria').value,qtd:parseFloat(document.getElementById('mc_qtd').value)||0,valor:parseFloat(document.getElementById('mc_valor').value)||0,prazo:parseFloat(document.getElementById('mc_prazo').value)||72,tem_fundo:document.getElementById('mc_tem_fundo').checked,fundo_pct:parseFloat(document.getElementById('mc_fundo_pct').value)||5,fundo_dias:parseFloat(document.getElementById('mc_fundo_dias').value)||75,frete:document.getElementById('mc_frete').value,vendedor:document.getElementById('mc_vendedor').value,data:document.getElementById('mc_data').value,vencimento:document.getElementById('mc_vencimento').value,obs:document.getElementById('mc_obs').value,comissionarios_ct};
   if(editCt)cts=cts.map(c=>c.id===editCt?obj:c);else cts.push(obj);
   await saveCts();fecharModalCt();renderContratos();updSelCts();toast(editCt?'Contrato atualizado!':'Contrato salvo!');
 }
@@ -1095,15 +1149,16 @@ function preencherDoCt(){
   const tf=!!(c.tem_fundo);
   document.getElementById('f_tem_fundo').checked=tf;
   document.getElementById('f_fundo_campos').style.display=tf?'block':'none';
-  renderComissoesCt(c.comprador);
+  // Comissões do contrato
+  const comsVinc=c.comissionarios_ct||[];
+  renderComissoesCt(comsVinc);
   calcular();
 }
-function renderComissoesCt(comprador){
+function renderComissoesCt(comsVinc){
   const lista=document.getElementById('f_comissoes_lista');if(!lista)return;
-  const vinculados=coms.filter(c=>c.comprador.toUpperCase()===comprador?.toUpperCase());
-  if(!vinculados.length){lista.innerHTML='';return;}
-  lista.innerHTML=`<p style="font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">Comissionários vinculados a ${comprador}</p>`+
-    vinculados.map(c=>`<div class="com-item"><span class="com-nome">${c.nome}</span><span class="com-val">${fmt(c.valor)}/sc</span></div>`).join('');
+  if(!comsVinc||!comsVinc.length){lista.innerHTML='';return;}
+  lista.innerHTML=`<p style="font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">Comissionários deste contrato</p>`+
+    comsVinc.map(c=>`<div class="com-item"><span class="com-nome">${c.nome}</span><span class="com-val">${fmt(c.valor)}/sc</span></div>`).join('');
 }
 
 // ===== CALCULAR =====
@@ -1128,7 +1183,7 @@ function calcular(){
 
   const imposto=parseFloat(document.getElementById('f_imposto').value)||0;
   const desc_fin=parseFloat(document.getElementById('f_desc_fin').value)||0;
-  const custo_produto=parseFloat(document.getElementById('f_custo_produto').value)||0;
+  const custo_produto=0; // campo removido
 
   // Sacas
   const sc_emb=pliq/60;
@@ -1161,9 +1216,8 @@ function calcular(){
   const temFundo=document.getElementById('f_tem_fundo')?.checked||false;
   const fundo=temFundo?total_venda*0.05:0;
 
-  // Comissões do comprador
-  const comprador=ctObj?.comprador?.toUpperCase()||'';
-  const comsVinc=coms.filter(c=>c.comprador.toUpperCase()===comprador);
+  // Comissões do contrato (por contrato, não por comprador)
+  const comsVinc=ctObj?.comissionarios_ct||[];
   const com_total=comsVinc.reduce((s,c)=>s+((c.valor||0)*sc_emb),0);
 
   const lucro=total_venda-total_compra-frete_total-cn_val-cte-custo_produto-com_total-fundo-imposto-desc_fin-imp_desc-desc_quebra-outros+comp_desc;
@@ -1222,8 +1276,8 @@ async function salvarEmb(){
   const cancelada=document.getElementById('f_canc').checked;
   const transpId=parseInt(document.getElementById('f_transportadora_id').value)||0;
   const transpObj=transp.find(x=>x.id===transpId);
-  const comprador=ctObj?.comprador?.toUpperCase()||'';
-  const comsVinc=coms.filter(x=>x.comprador.toUpperCase()===comprador);
+  const ctObj=cts.find(x=>x.id===parseInt(ctId));
+  const comsVinc=ctObj?.comissionarios_ct||[];
 
   // Frete split: 80% à vista, 20% na descarga
   const frete80=c.frete_total*0.8;
@@ -1266,7 +1320,7 @@ async function salvarEmb(){
 
 function limparForm(){
   ['f_nf','f_placa','f_motorista','f_cpf','f_obs','f_embarque','f_descarga','f_data_rec','f_prazo_rec','f_dono_carga'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
-  ['f_pliq','f_pdesc','f_rs_ton','f_recebido','f_imposto','f_desc_fin','f_outros','f_cte_sc','f_custo_produto','f_cn_sc','f_impureza'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='0';});
+  ['f_pliq','f_pdesc','f_rs_ton','f_recebido','f_imposto','f_desc_fin','f_outros','f_cte_sc','f_cn_sc','f_impureza'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='0';});
   document.getElementById('f_canc').checked=false;document.getElementById('cancel-toggle').classList.remove('on');
   document.getElementById('f_tem_fundo').checked=false;document.getElementById('f_fundo_campos').style.display='none';
   document.getElementById('f_contrato').value='';
@@ -1321,7 +1375,7 @@ async function salvarEdit(){
   });
   // Recalcular
   const pl=e.pliq,pd=e.pdesc,co=e.compra,ve=e.venda,rt=e.rs_ton,re=e.recebido,
-        cn=e.cn_val,im=e.imposto,df=e.desc_fin,ct=e.cte,ou=e.outros,imp=e.impureza||0,cp=e.custo_produto||0;
+        cn=e.cn_val,im=e.imposto,df=e.desc_fin,ct=e.cte,ou=e.outros,imp=e.impureza||0;
   e.sc_emb=pl/60;e.sc_ent=pd>0?pd/60:pl/60;e.quebra_sc=pd>0?(pd-pl)/60:0;
   const tol=cfg.tolerancia||3;
   const qa=Math.abs(e.quebra_sc);
@@ -1331,10 +1385,10 @@ async function salvarEdit(){
   e.total_compra=e.sc_emb*co;e.total_venda=e.sc_ent*ve;
   e.comp_desc=re-e.total_venda;e.rkg=ve/60;e.imp_desc=(imp)*e.rkg;
   e.fundo=e.tem_fundo?e.total_venda*0.05:0;
-  const comprador=cts.find(c=>c.numero==e.contrato)?.comprador?.toUpperCase()||'';
-  const comsV=coms.filter(c=>c.comprador.toUpperCase()===comprador);
-  e.com_total=comsV.reduce((s,c)=>s+((c.valor||0)*e.sc_emb),0);
-  e.lucro=e.total_venda-e.total_compra-e.frete_total-cn-ct-cp-e.com_total-e.fundo-im-df-e.imp_desc-e.desc_quebra-ou+e.comp_desc;
+  const ctEd=cts.find(c=>c.numero==e.contrato);
+  const comsVE=ctEd?.comissionarios_ct||[];
+  e.com_total=comsVE.reduce((s,c)=>s+((c.valor||0)*e.sc_emb),0);
+  e.lucro=e.total_venda-e.total_compra-e.frete_total-cn-ct-e.com_total-e.fundo-im-df-e.imp_desc-e.desc_quebra-ou+e.comp_desc;
   e.lucro_pct=e.total_venda>0?(e.lucro/e.total_venda)*100:0;
   e.frete80=e.frete_total*0.8;e.frete20=e.frete_total*0.2;
   if(e.descarga){const ctO=cts.find(c=>c.numero==e.contrato);const pp=ctO?ctO.prazo:(cfg.prazo||72);const p=prazoData(e.descarga,pp);e.prazo_rec=p.toLocaleDateString('pt-BR');}
@@ -1413,6 +1467,58 @@ function renderCapNota(){
       <td><button class="flag-btn ${d.nota_pago?'pago':'aberto'}" onclick="toggleCapNotaPago(${d.id})">${d.nota_pago?'✓ Pago':'Marcar pago'}</button></td>
     </tr>`).join('')
     :'<tr><td colspan="10" class="empty-state">Nenhuma nota encontrada.</td></tr>';
+}
+
+// ===== SAÍDAS DE PRODUTO =====
+function renderSaidas(){
+  const mes=(document.getElementById('f-saidas-mes')||{value:''}).value;
+  const ano=(document.getElementById('f-saidas-ano')||{value:'2026'}).value;
+  const prod=(document.getElementById('f-saidas-prod')||{value:''}).value;
+  const ct=(document.getElementById('f-saidas-ct')||{value:''}).value;
+  const emp=(document.getElementById('f-saidas-emp')||{value:''}).value;
+  const ctS=document.getElementById('f-saidas-ct');
+  if(ctS){const cs=[...new Set(embs.filter(d=>!d.cancelada).map(d=>d.contrato))].sort();const cur=ctS.value;ctS.innerHTML='<option value="">Todos contratos</option>'+cs.map(c=>`<option ${c===cur?'selected':''}>${c}</option>`).join('');}
+  const f=embs.filter(d=>!d.cancelada&&d.embarque).filter(d=>{
+    if(prod&&d.produto!==prod)return false;
+    if(ct&&d.contrato!=ct)return false;
+    if(emp&&d.empresa!==emp)return false;
+    const [year,month]=(d.embarque||'').split('-');
+    if(ano&&year!==ano)return false;
+    if(mes&&month!==mes)return false;
+    return true;
+  });
+  const totalScEmb=f.reduce((s,d)=>s+(d.sc_emb||0),0);
+  const totalScEnt=f.reduce((s,d)=>s+(d.sc_ent||0),0);
+  const totalKg=f.reduce((s,d)=>s+(d.pliq||0),0);
+  const porProd={};
+  f.forEach(d=>{const p=d.produto||'—';if(!porProd[p])porProd[p]={sc:0,kg:0};porProd[p].sc+=d.sc_emb||0;porProd[p].kg+=d.pliq||0;});
+  const prodCards=Object.entries(porProd).map(([p,v])=>`<div class="stat-card"><div class="s-label">${p}</div><div class="s-value">${fmtN(v.sc,0)} sc</div><div class="s-sub">${fmtN(v.kg,0)} kg</div></div>`).join('');
+  document.getElementById('saidas-cards').innerHTML=`
+    <div class="stat-card"><div class="s-label">Embarques</div><div class="s-value">${f.length}</div></div>
+    <div class="stat-card green"><div class="s-label">Sc embarcadas</div><div class="s-value">${fmtN(totalScEmb,0)}</div></div>
+    <div class="stat-card"><div class="s-label">Sc entregues</div><div class="s-value">${fmtN(totalScEnt,0)}</div></div>
+    <div class="stat-card"><div class="s-label">Peso total (kg)</div><div class="s-value">${fmtN(totalKg,0)}</div></div>
+    ${prodCards}
+  `;
+  document.getElementById('tbody-saidas').innerHTML=f.length
+    ?f.sort((a,b)=>a.embarque>b.embarque?1:-1).map(d=>`<tr>
+      <td>${d.embarque||'—'}</td><td><strong>${d.contrato}</strong></td>
+      <td><span class="badge ${d.empresa==='ZF Grãos'?'badge-blue':'badge-green'}">${d.empresa||'Prime Grãos'}</span></td>
+      <td>${cts.find(c=>c.numero==d.contrato)?.comprador||'—'}</td>
+      <td>${d.produto||'—'}</td><td>${d.nf||'—'}</td><td>${d.motorista||'—'}</td>
+      <td class="mono">${fmtN(d.pliq,0)}</td><td class="mono">${fmtN(d.sc_emb)}</td><td class="mono">${fmtN(d.sc_ent)}</td>
+    </tr>`).join('')
+    :'<tr><td colspan="10" class="empty-state">Nenhum embarque encontrado para o período.</td></tr>';
+}
+function exportSaidas(){
+  const mes=(document.getElementById('f-saidas-mes')||{value:''}).value;
+  const ano=(document.getElementById('f-saidas-ano')||{value:'2026'}).value;
+  const f=embs.filter(d=>!d.cancelada&&d.embarque).filter(d=>{const [y,m]=(d.embarque||'').split('-');if(ano&&y!==ano)return false;if(mes&&m!==mes)return false;return true;});
+  if(!f.length){toast('Nenhum dado.',true);return;}
+  const cab=['Data Embarque','Contrato','Empresa','Comprador','Produto','NF','Motorista','Peso Liq (kg)','Sc Embarcadas','Sc Entregues'];
+  const rows=f.map(d=>[d.embarque,d.contrato,d.empresa,cts.find(c=>c.numero==d.contrato)?.comprador||'—',d.produto,d.nf,d.motorista,(d.pliq||0).toFixed(0),(d.sc_emb||0).toFixed(2),(d.sc_ent||0).toFixed(2)]);
+  const csv=[cab,...rows].map(r=>r.map(c=>`"${String(c||'').replace(/"/g,'""')}"`).join(';')).join('\n');
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'}));a.download='prime-graos-saidas.csv';a.click();toast('Exportado!');
 }
 
 // ===== FRETE =====
@@ -1796,6 +1902,7 @@ async function recarregarDados(){
   if(active==='embarques')renderEmbarques();
   if(active==='contratos')renderContratos();
   if(active==='fechamento')initFech();
+  if(active==='saidas')renderSaidas();
   if(active==='cap-nota')renderCapNota();
   if(active==='frete')renderFrete();
   if(active==='cap-transp')renderCapTransp();
