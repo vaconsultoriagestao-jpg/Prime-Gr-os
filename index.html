@@ -342,9 +342,22 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
   <div class="page" id="page-painel">
     <h1 class="section-heading">Painel geral</h1>
     <p class="section-sub">Visão consolidada de todos os contratos e embarques.</p>
+    <!-- Alerta motoristas atrasados -->
+    <div id="alerta-motoristas" style="display:none;background:var(--red-pale);border:1px solid var(--red);border-radius:var(--radius);padding:.85rem 1.25rem;margin-bottom:1rem"></div>
     <div class="stats-grid" id="stats-grid"></div>
     <div class="table-card">
-      <div class="table-header"><h3>Resumo por contrato</h3></div>
+      <div class="table-header">
+        <h3>Resumo por contrato</h3>
+        <div class="table-filters">
+          <select class="filter-select" id="f-painel-ct" onchange="renderPainel()">
+            <option value="">Todos contratos</option>
+          </select>
+          <select class="filter-select" id="f-painel-emp" onchange="renderPainel()">
+            <option value="">Todas empresas</option>
+            <option>Prime Grãos</option><option>ZF Grãos</option>
+          </select>
+        </div>
+      </div>
       <div class="tbl-wrap"><table><thead><tr>
         <th>Contrato</th><th>Empresa</th><th>Comprador</th><th>Produto</th><th>Embarques</th>
         <th>Total venda</th><th>Total compra</th><th>Lucro R$</th><th>Lucro %</th>
@@ -452,6 +465,7 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
       <div class="form-body"><div class="form-grid">
         <div class="fg"><label>Contrato <span class="star">*</span></label>
           <select id="f_contrato" onchange="preencherDoCt()"><option value="">— selecione —</option></select>
+          <div id="f_sc_progress"></div>
         </div>
         <div class="fg"><label>Empresa</label><input id="f_empresa" type="text" readonly disabled></div>
         <div class="fg"><label>NF <span class="star">*</span></label><input id="f_nf" type="text" placeholder="ex: 900 E 901"></div>
@@ -554,9 +568,19 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
   <div class="page" id="page-frete">
     <h1 class="section-heading">Frete — Pagamento de motoristas</h1>
     <p class="section-sub">Visualize e controle os pagamentos de frete por motorista.</p>
-    <div class="table-filters" style="margin-bottom:1rem">
+    <div class="table-filters" style="margin-bottom:1rem;gap:8px;display:flex;flex-wrap:wrap">
       <input class="filter-input" id="f-frete-q" placeholder="Motorista, CPF, contrato..." oninput="renderFrete()" style="width:200px">
       <select class="filter-select" id="f-frete-ct" onchange="renderFrete()"><option value="">Todos contratos</option></select>
+      <select class="filter-select" id="f-frete-mes" onchange="renderFrete()">
+        <option value="">Todos os meses</option>
+        <option value="01">Janeiro</option><option value="02">Fevereiro</option><option value="03">Março</option>
+        <option value="04">Abril</option><option value="05">Maio</option><option value="06">Junho</option>
+        <option value="07">Julho</option><option value="08">Agosto</option><option value="09">Setembro</option>
+        <option value="10">Outubro</option><option value="11">Novembro</option><option value="12">Dezembro</option>
+      </select>
+      <select class="filter-select" id="f-frete-ano" onchange="renderFrete()">
+        <option value="">Todos os anos</option><option value="2026" selected>2026</option><option value="2025">2025</option>
+      </select>
       <select class="filter-select" id="f-frete-status" onchange="renderFrete()">
         <option value="">Todos</option><option value="aberto">Com saldo em aberto</option><option value="pago">Quitados</option>
       </select>
@@ -847,7 +871,8 @@ const AK='prime_auth';
 const _h={'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=minimal'};
 
 let embs=[],cts=[],transp=[],coms=[],forn=[],cfg={taxa:5,prazo:72,tolerancia:3};
-let usuarios=[
+let usuarios=[];
+let _usuariosDefault=[
   {id:1,nome:'Administrador',user:'admin',senha:'admin123',perfil:'admin'},
   {id:2,nome:'Colaborador',user:'colaborador',senha:'colab123',perfil:'operador'}
 ];
@@ -948,7 +973,14 @@ async function load(){
     ]);
     embs=re||[];cts=rc||[];transp=rt||[];coms=rcom||[];forn=rforn||[];
     if(rf)cfg={...cfg,...rf};
-    if(ru&&ru.length)usuarios=ru;
+    // Usar usuários do banco; só usar padrão se banco vazio
+    if(ru&&ru.length){
+      usuarios=ru;
+    }else{
+      // Banco vazio — usar padrão e salvar no banco
+      usuarios=_usuariosDefault;
+      saveUsers();
+    }
   }catch(e){console.error('Erro ao carregar:',e);}
   hideLoading();
 }
@@ -1173,6 +1205,17 @@ function preencherDoCt(){
   const tf=!!(c.tem_fundo);
   document.getElementById('f_tem_fundo').checked=tf;
   document.getElementById('f_fundo_campos').style.display=tf?'block':'none';
+  // Mostrar progresso de sacas
+  const scEmbarcadas=embs.filter(d=>!d.cancelada&&d.contrato==c.numero).reduce((s,d)=>s+(d.sc_emb||0),0);
+  const scFaltantes=Math.max(0,(c.qtd||0)-scEmbarcadas);
+  const pct=c.qtd>0?Math.round(scEmbarcadas/c.qtd*100):0;
+  const progressEl=document.getElementById('f_sc_progress');
+  if(progressEl){
+    progressEl.innerHTML=`<div style="font-size:12px;color:var(--text-muted);margin-top:6px">
+      Contrato: <strong>${fmtN(scEmbarcadas,0)}</strong> sc embarcadas de <strong>${fmtN(c.qtd,0)}</strong> sc 
+      (${pct}%) — Faltam: <strong style="color:${scFaltantes>0?'var(--amber)':'var(--green)'}">${fmtN(scFaltantes,0)} sc</strong>
+    </div>`;
+  }
   // Comissões do contrato
   const comsVinc=c.comissionarios_ct||[];
   renderComissoesCt(comsVinc);
@@ -1634,15 +1677,20 @@ async function toggleFretePago(embId,parcela){
 function renderFrete(){
   const q=(document.getElementById('f-frete-q')||{value:''}).value.toLowerCase();
   const ct=(document.getElementById('f-frete-ct')||{value:''}).value;
+  const mes=(document.getElementById('f-frete-mes')||{value:''}).value;
+  const ano=(document.getElementById('f-frete-ano')||{value:''}).value;
   const st=(document.getElementById('f-frete-status')||{value:''}).value;
   const ctS=document.getElementById('f-frete-ct');
   if(ctS){const cs=[...new Set(embs.map(d=>d.contrato))].sort();const cur=ctS.value;ctS.innerHTML='<option value="">Todos contratos</option>'+cs.map(c=>`<option ${c===cur?'selected':''}>${c}</option>`).join('');}
   const ativos=embs.filter(d=>!d.cancelada&&(d.frete_total||0)>0);
-  const f=ativos.filter(d=>
-    (!q||d.motorista?.toLowerCase().includes(q)||d.cpf?.includes(q)||String(d.contrato||'').includes(q))&&
-    (!ct||d.contrato==ct)&&
-    (!st||(st==='aberto'&&(!d.frete20_pago||!d.frete80_pago))||(st==='pago'&&d.frete20_pago&&d.frete80_pago))
-  );
+  const f=ativos.filter(d=>{
+    if(q&&!d.motorista?.toLowerCase().includes(q)&&!d.cpf?.includes(q)&&!String(d.contrato||'').includes(q))return false;
+    if(ct&&d.contrato!=ct)return false;
+    if(st&&st==='aberto'&&(d.frete20_pago&&d.frete80_pago))return false;
+    if(st&&st==='pago'&&(!d.frete20_pago||!d.frete80_pago))return false;
+    if(mes||ano){const [y,m]=(d.embarque||'').split('-');if(mes&&m!==mes)return false;if(ano&&y!==ano)return false;}
+    return true;
+  });
   const lista=document.getElementById('frete-lista');
   if(!f.length){lista.innerHTML='<div class="empty-state">Nenhum embarque com frete encontrado.</div>';return;}
   lista.innerHTML=f.map(d=>{
@@ -1686,22 +1734,62 @@ function renderFrete(){
 
 // ===== PAINEL =====
 function renderPainel(){
-  const ativos=embs.filter(d=>!d.cancelada);
+  const fCt=(document.getElementById('f-painel-ct')||{value:''}).value;
+  const fEmp=(document.getElementById('f-painel-emp')||{value:''}).value;
+  // Update contrato filter
+  const ctS=document.getElementById('f-painel-ct');
+  if(ctS){const cs=[...new Set(embs.filter(d=>!d.cancelada).map(d=>d.contrato))].sort();const cur=ctS.value;ctS.innerHTML='<option value="">Todos contratos</option>'+cs.map(c=>`<option ${c===cur?'selected':''}>${c}</option>`).join('');}
+
+  // Alerta motoristas sem descarga há mais de 72h
+  const agora=new Date();
+  const atrasados=embs.filter(d=>{
+    if(d.cancelada||d.descarga)return false;
+    if(!d.embarque)return false;
+    const de=new Date(d.embarque+'T12:00:00');
+    const horas=(agora-de)/3600000;
+    return horas>72;
+  });
+  const alertaEl=document.getElementById('alerta-motoristas');
+  if(alertaEl){
+    if(atrasados.length){
+      alertaEl.style.display='block';
+      alertaEl.innerHTML=`<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <span style="font-size:16px">⚠️</span>
+        <strong style="color:var(--red);font-size:13px">${atrasados.length} motorista${atrasados.length>1?'s':{}} sem descarga há mais de 72h!</strong>
+      </div>`+atrasados.map(d=>{
+        const de=new Date(d.embarque+'T12:00:00');
+        const horas=Math.round((agora-de)/3600000);
+        return`<div style="font-size:12px;color:var(--text);padding:4px 0;border-bottom:.5px solid var(--red-pale)">
+          🚛 <strong>${d.motorista}</strong> — Contrato ${d.contrato} · NF ${d.nf} · Embarque ${d.embarque} · <span style="color:var(--red);font-weight:600">${horas}h sem descarga</span>
+        </div>`;
+      }).join('');
+    }else{
+      alertaEl.style.display='none';
+    }
+  }
+
+  let ativos=embs.filter(d=>!d.cancelada);
+  if(fEmp)ativos=ativos.filter(d=>d.empresa===fEmp);
+
   const lucroTot=ativos.reduce((s,d)=>s+(d.lucro||0),0);
   const vendaTot=ativos.reduce((s,d)=>s+(d.total_venda||0),0);
   const recTot=ativos.reduce((s,d)=>s+(d.recebido||0),0);
-  const hoje=new Date();
-  const atras=ativos.filter(d=>{if(d.status!=='Em aberto'||!d.descarga)return false;const ctO=cts.find(c=>c.numero==d.contrato);const ph=ctO?ctO.prazo:(cfg.prazo||72);const p=prazoData(d.descarga,ph);return hoje>p&&!d.data_rec;}).length;
+  const atras=ativos.filter(d=>{if(d.status!=='Em aberto'||!d.descarga)return false;const ctO=cts.find(c=>c.numero==d.contrato);const ph=ctO?ctO.prazo:(cfg.prazo||72);const p=prazoData(d.descarga,ph);return agora>p&&!d.data_rec;}).length;
   const fretePend=ativos.filter(d=>(d.frete_total||0)>0&&(!d.frete80_pago||!d.frete20_pago)).length;
+
   document.getElementById('stats-grid').innerHTML=`
     <div class="stat-card"><div class="s-label">Embarques ativos</div><div class="s-value">${ativos.length}</div><div class="s-sub">${ativos.filter(d=>d.status==='Em aberto').length} em aberto</div></div>
+    <div class="stat-card ${atrasados.length>0?'red':'green'}"><div class="s-label">Sem descarga +72h</div><div class="s-value">${atrasados.length}</div></div>
     <div class="stat-card ${atras>0?'red':'green'}"><div class="s-label">Receb. atrasados</div><div class="s-value">${atras}</div></div>
     <div class="stat-card ${lucroTot>=0?'green':'red'}"><div class="s-label">Lucro total</div><div class="s-value">${fmt(lucroTot)}</div></div>
     <div class="stat-card"><div class="s-label">Total vendas</div><div class="s-value">${fmt(vendaTot)}</div></div>
     <div class="stat-card"><div class="s-label">Total recebido</div><div class="s-value">${fmt(recTot)}</div></div>
     <div class="stat-card ${fretePend>0?'amber':'green'}"><div class="s-label">Frete pendente</div><div class="s-value">${fretePend}</div><div class="s-sub">embarques</div></div>
   `;
-  const ctsNums=[...new Set(ativos.map(d=>d.contrato))];
+
+  let ctsNums=[...new Set(ativos.map(d=>d.contrato))];
+  if(fCt)ctsNums=ctsNums.filter(c=>c==fCt);
+
   document.getElementById('tbody-painel').innerHTML=ctsNums.length
     ?ctsNums.map(ct=>{
       const its=ativos.filter(d=>d.contrato==ct);
