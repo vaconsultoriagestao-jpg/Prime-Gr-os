@@ -870,10 +870,28 @@ async function sbGet(table){const r=await fetch(`${SB_URL}/rest/v1/${table}?sele
 async function sbGetCfg(){const r=await fetch(`${SB_URL}/rest/v1/configuracoes?select=data&id=eq.1`,{headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}});const d=await r.json();return d&&d.length?d[0].data:null;}
 
 async function save(){
+  // Usado apenas para operações em lote (editar/reordenar)
   showLoading('Salvando...');
   try{
     await fetch(`${SB_URL}/rest/v1/embarques?id=gte.0`,{method:'DELETE',headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}});
     if(embs.length){await sbPost('embarques',embs.map(e=>({id:e.id,data:e})));}
+  }catch(e){console.error(e);}
+  hideLoading();
+}
+async function saveEmb(emb){
+  // Salva APENAS o embarque individual — não apaga os outros
+  showLoading('Salvando embarque...');
+  try{
+    await fetch(`${SB_URL}/rest/v1/embarques?id=eq.${emb.id}`,{method:'DELETE',headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}});
+    await sbPost('embarques',[{id:emb.id,data:emb}]);
+  }catch(e){console.error(e);}
+  hideLoading();
+}
+async function deleteEmb(id){
+  // Remove APENAS o embarque individual
+  showLoading('Removendo...');
+  try{
+    await fetch(`${SB_URL}/rest/v1/embarques?id=eq.${id}`,{method:'DELETE',headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}});
   }catch(e){console.error(e);}
   hideLoading();
 }
@@ -1316,7 +1334,7 @@ async function salvarEmb(){
     comissoes:comsVinc.map(x=>({id:x.id,nome:x.nome,valor:x.valor})),
     frete80,frete20,frete80_pago:false,frete20_pago:false,
     ...c};
-  embs.push(obj);await save();toast('Embarque salvo!');limparForm();
+  embs.push(obj);await saveEmb(obj);toast('Embarque salvo!');limparForm();
 }
 
 function limparForm(){
@@ -1393,12 +1411,14 @@ async function salvarEdit(){
   e.lucro_pct=e.total_venda>0?(e.lucro/e.total_venda)*100:0;
   e.frete80=e.frete_total*0.8;e.frete20=e.frete_total*0.2;
   if(e.descarga){const ctO=cts.find(c=>c.numero==e.contrato);const pp=ctO?ctO.prazo:(cfg.prazo||72);const p=prazoData(e.descarga,pp);e.prazo_rec=p.toLocaleDateString('pt-BR');}
-  embs[idx]=e;await save();fecharModalEdit();renderEmbarques();renderPainel();toast('Embarque atualizado!');
+  embs[idx]=e;await saveEmb(e);fecharModalEdit();renderEmbarques();renderPainel();toast('Embarque atualizado!');
 }
 async function delEmb(id){
   if(usuarioLogado?.perfil!=='admin'){toast('Apenas o administrador pode excluir embarques!',true);return;}
   if(!confirm('Remover este embarque? Esta ação não pode ser desfeita.'))return;
-  embs=embs.filter(d=>d.id!==id);await save();renderEmbarques();renderPainel();toast('Embarque removido.');
+  await deleteEmb(id);
+  embs=embs.filter(d=>d.id!==id);
+  renderEmbarques();renderPainel();toast('Embarque removido.');
 }
 // ===== FORNECEDORES =====
 let editFornId=null;
@@ -1439,7 +1459,7 @@ function preencherFornecedor(){
 async function toggleCapNotaPago(embId){
   const idx=embs.findIndex(d=>d.id===embId);if(idx===-1)return;
   embs[idx].nota_pago=!embs[idx].nota_pago;
-  await save();renderCapNota();toast('Status atualizado!');
+  await saveEmb(embs[idx]);renderCapNota();toast('Status atualizado!');
 }
 function renderCapNota(){
   const sel=document.getElementById('f-capn-forn');
@@ -1526,7 +1546,7 @@ function exportSaidas(){
 async function toggleCapTranspPago(embId){
   const idx=embs.findIndex(d=>d.id===embId);if(idx===-1)return;
   embs[idx].cte_pago=!embs[idx].cte_pago;
-  await save();renderCapTransp();toast('Status atualizado!');
+  await saveEmb(embs[idx]);renderCapTransp();toast('Status atualizado!');
 }
 function renderCapTransp(){
   // Atualizar filtro
@@ -1564,7 +1584,7 @@ async function toggleCapComPago(embId,comId){
   const idx=embs.findIndex(d=>d.id===embId);if(idx===-1)return;
   if(!embs[idx].comissoes_pago)embs[idx].comissoes_pago={};
   embs[idx].comissoes_pago[comId]=!embs[idx].comissoes_pago[comId];
-  await save();renderCapCom();toast('Status atualizado!');
+  await saveEmb(embs[idx]);renderCapCom();toast('Status atualizado!');
 }
 function renderCapCom(){
   const sel=document.getElementById('f-capc-com');
@@ -1608,7 +1628,7 @@ async function toggleFretePago(embId,parcela){
   const idx=embs.findIndex(d=>d.id===embId);if(idx===-1)return;
   if(parcela===80)embs[idx].frete80_pago=!embs[idx].frete80_pago;
   else embs[idx].frete20_pago=!embs[idx].frete20_pago;
-  await save();renderFrete();toast('Status atualizado!');
+  await saveEmb(embs[idx]);renderFrete();toast('Status atualizado!');
 }
 function renderFrete(){
   const q=(document.getElementById('f-frete-q')||{value:''}).value.toLowerCase();
