@@ -1220,7 +1220,7 @@ function calcular(){
   const comsVinc=ctObj?.comissionarios_ct||[];
   const com_total=comsVinc.reduce((s,c)=>s+((c.valor||0)*sc_emb),0);
 
-  const lucro=total_venda-total_compra-frete_total-cn_val-cte-custo_produto-com_total-fundo-imposto-desc_fin-imp_desc-desc_quebra-outros+comp_desc;
+  const lucro=total_venda-total_compra-frete_total-cn_val-cte-com_total-fundo-imposto-desc_fin-imp_desc-desc_quebra-outros+comp_desc;
   const lucro_pct=total_venda>0?(lucro/total_venda)*100:0;
 
   const s=(id,v)=>{const el=document.getElementById(id);if(el)el.value=v;};
@@ -1248,7 +1248,7 @@ function calcular(){
     else{const diff=Math.round((pd-hoje)/3600000);txt=diff<0?`${Math.abs(diff)}h de atraso`:diff<=12?`${diff}h (atenção!)`:`${diff}h restantes`;}
     document.getElementById('r-prazo').textContent=txt;
   }else{s('f_prazo_rec','');document.getElementById('r-prazo').textContent='—';}
-  return{sc_emb,sc_ent,quebra_sc,frete_sc,frete_total,total_compra,total_venda,comp_desc,cn_val,fundo,com_total,imp_desc,desc_quebra,lucro,lucro_pct,rkg};
+  return{sc_emb,sc_ent,quebra_sc,frete_sc,frete_total,total_compra,total_venda,comp_desc,cn_val,cte,fundo,com_total,imp_desc,desc_quebra,lucro,lucro_pct,rkg};
 }
 
 function toggleCanc(){const cb=document.getElementById('f_canc'),tg=document.getElementById('cancel-toggle');tg.classList.toggle('on',cb.checked);}
