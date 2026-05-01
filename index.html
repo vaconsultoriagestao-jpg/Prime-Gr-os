@@ -1986,12 +1986,12 @@ function exportCapCom(tipo){
 }
 
 
+function exportEmb(tipo='csv'){
   if(!embs.length){toast('Nenhum dado.',true);return;}
   const n=v=>Number(v||0).toFixed(2);
-  const cab=['Contrato','Empresa','NF','Status','Nota','Produto','Embarque','Descarga','Prazo Receb','Data Receb','Transportadora','Motorista','CPF','Placa','Peso Liq','Sc Emb','Quebra Sc','Desc Quebra','SCS Ent','Impureza kg','Desc Impureza','Compra/sc','Venda/sc','RS/Ton','Total Compra','Total Venda','Frete Total','Recebido','Comp Desc','Custo Nota','CTE','Comissao','Fundo','Imposto','Desc Fin','Outros','Lucro R$','Lucro %','Lancado Por','Obs'];
-  const rows=embs.map(d=>[d.contrato,d.empresa,d.nf,d.status,d.cancelada?'Cancelada':'Ativa',d.produto,d.embarque,d.descarga,d.prazo_rec,d.data_rec,d.transportadora,d.motorista,d.cpf,d.placa,n(d.pliq),n(d.sc_emb),n(d.quebra_sc),n(d.desc_quebra||0),n(d.sc_ent),n(d.impureza||0),n(d.imp_desc||0),n(d.compra),n(d.venda),n(d.rs_ton),n(d.total_compra),n(d.total_venda),n(d.frete_total),n(d.recebido),n(d.comp_desc),n(d.cn_val),n(d.cte||0),n(d.com_total),n(d.fundo),n(d.imposto),n(d.desc_fin),n(d.outros),n(d.lucro),n(d.lucro_pct),d.lancado_por,d.obs]);
-  const csv=[cab,...rows].map(r=>r.map(c=>`"${String(c||'').replace(/"/g,'""')}"`).join(';')).join('\n');
-  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'}));a.download='prime-graos-embarques.csv';a.click();toast('Exportado!');
+  const cab=['Contrato','Empresa','NF','Status','Nota','Produto','Dono carga','Embarque','Descarga','Motorista','CPF','Transportadora','Sc Emb','Sc Ent','Quebra','Impureza kg','Compra/sc','Venda/sc','Total Compra','Total Venda','Frete Total','Custo Nota','CTE','Comissao','Fundo','Lucro R$','Lucro %','Lancado Por'];
+  const rows=embs.map(d=>[d.contrato,d.empresa,d.nf,d.status,d.cancelada?'Cancelada':'Ativa',d.produto,d.dono_carga,d.embarque,d.descarga,d.motorista,d.cpf,d.transportadora,n(d.sc_emb),n(d.sc_ent),n(d.quebra_sc),n(d.impureza||0),n(d.compra),n(d.venda),n(d.total_compra),n(d.total_venda),n(d.frete_total),n(d.cn_val),n(d.cte||0),n(d.com_total),n(d.fundo),n(d.lucro),n(d.lucro_pct),d.lancado_por]);
+  tipo==='pdf'?gerarPDF('Embarques',cab,rows,'prime-graos-embarques'):gerarCSV(cab,rows,'prime-graos-embarques');
 }
 
 // ===== FECHAMENTO =====
