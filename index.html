@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Prime Grãos — Controle de Contratos</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 <style>
 :root{--green:#2D6A4F;--green-light:#40916C;--green-pale:#D8F3DC;--green-faint:#F0FAF2;--amber:#B5451B;--amber-pale:#FDEBD0;--red:#C0392B;--red-pale:#FDECEA;--blue:#1A5276;--blue-pale:#D6EAF8;--gray-50:#F8F9FA;--gray-100:#F1F3F4;--gray-200:#E8EAED;--gray-300:#DADCE0;--gray-700:#5F6368;--text:#1a1a1a;--text-muted:#5f6368;--text-faint:#9aa0a6;--border:#e0e0e0;--bg:#fff;--bg-page:#f5f5f0;--radius:10px;--radius-lg:16px;--shadow:0 1px 3px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.04);--shadow-md:0 4px 12px rgba(0,0,0,.10),0 2px 4px rgba(0,0,0,.06)}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -292,7 +294,10 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
     <div class="table-card">
       <div class="table-header">
         <h3>Volume por embarque</h3>
-        <button class="btn btn-secondary btn-sm" onclick="exportSaidas()">⬇ Exportar Excel</button>
+        <div style="display:flex;gap:6px">
+          <button class="btn btn-secondary btn-sm" onclick="exportSaidas('csv')">⬇ Excel</button>
+          <button class="btn btn-secondary btn-sm" onclick="exportSaidas('pdf')">⬇ PDF</button>
+        </div>
       </div>
       <div class="tbl-wrap"><table><thead><tr>
         <th>Data embarque</th><th>Contrato</th><th>Empresa</th><th>Comprador</th>
@@ -320,7 +325,10 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
     <div id="fech-result" style="display:none">
       <div id="fech-cards" class="stats-grid"></div>
       <div class="table-card">
-        <div class="table-header"><h3>Detalhamento por contrato</h3><button class="btn btn-secondary btn-sm" onclick="exportFech()">⬇ Exportar Excel</button></div>
+        <div style="display:flex;gap:6px">
+          <button class="btn btn-secondary btn-sm" onclick="exportFech('csv')">⬇ Excel</button>
+          <button class="btn btn-secondary btn-sm" onclick="exportFech('pdf')">⬇ PDF</button>
+        </div>
         <div class="tbl-wrap"><table><thead><tr>
           <th>Contrato</th><th>Empresa</th><th>Comprador</th><th>Produto</th><th>Embarques</th>
           <th>Sc embarcadas</th><th>Sc entregues</th><th>Sc faltantes</th>
@@ -348,14 +356,18 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
     <div class="table-card">
       <div class="table-header">
         <h3>Resumo por contrato</h3>
-        <div class="table-filters">
-          <select class="filter-select" id="f-painel-ct" onchange="renderPainel()">
-            <option value="">Todos contratos</option>
-          </select>
-          <select class="filter-select" id="f-painel-emp" onchange="renderPainel()">
-            <option value="">Todas empresas</option>
-            <option>Prime Grãos</option><option>ZF Grãos</option>
-          </select>
+        <div style="display:flex;gap:6px;align-items:center">
+          <div class="table-filters">
+            <select class="filter-select" id="f-painel-ct" onchange="renderPainel()">
+              <option value="">Todos contratos</option>
+            </select>
+            <select class="filter-select" id="f-painel-emp" onchange="renderPainel()">
+              <option value="">Todas empresas</option>
+              <option>Prime Grãos</option><option>ZF Grãos</option>
+            </select>
+          </div>
+          <button class="btn btn-secondary btn-sm" onclick="exportPainel('csv')">⬇ Excel</button>
+          <button class="btn btn-secondary btn-sm" onclick="exportPainel('pdf')">⬇ PDF</button>
         </div>
       </div>
       <div class="tbl-wrap"><table><thead><tr>
@@ -377,14 +389,18 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
     <div class="table-card">
       <div class="table-header">
         <h3>Contratos cadastrados</h3>
-        <div class="table-filters">
-          <input class="filter-input" id="f-ct-q" placeholder="Buscar..." oninput="renderContratos()" style="width:160px">
-          <select class="filter-select" id="f-ct-emp" onchange="renderContratos()">
-            <option value="">Todas empresas</option><option>Prime Grãos</option><option>ZF Grãos</option>
-          </select>
-          <select class="filter-select" id="f-ct-prod" onchange="renderContratos()">
-            <option value="">Todos produtos</option><option>SOJA</option><option>MILHO</option><option>TRIGO</option>
-          </select>
+        <div style="display:flex;gap:6px;align-items:center">
+          <div class="table-filters">
+            <input class="filter-input" id="f-ct-q" placeholder="Buscar..." oninput="renderContratos()" style="width:160px">
+            <select class="filter-select" id="f-ct-emp" onchange="renderContratos()">
+              <option value="">Todas empresas</option><option>Prime Grãos</option><option>ZF Grãos</option>
+            </select>
+            <select class="filter-select" id="f-ct-prod" onchange="renderContratos()">
+              <option value="">Todos produtos</option><option>SOJA</option><option>MILHO</option><option>TRIGO</option>
+            </select>
+          </div>
+          <button class="btn btn-secondary btn-sm" onclick="exportContratos('csv')">⬇ Excel</button>
+          <button class="btn btn-secondary btn-sm" onclick="exportContratos('pdf')">⬇ PDF</button>
         </div>
       </div>
       <div class="tbl-wrap"><table><thead><tr>
@@ -414,7 +430,8 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
           <select class="filter-select" id="f-emb-canc" onchange="renderEmbarques()">
             <option value="">Todas</option><option value="0">Ativas</option><option value="1">Canceladas</option>
           </select>
-          <button class="btn btn-secondary btn-sm" onclick="exportEmb()">⬇ Excel</button>
+          <button class="btn btn-secondary btn-sm" onclick="exportEmb('csv')">⬇ Excel</button>
+          <button class="btn btn-secondary btn-sm" onclick="exportEmb('pdf')">⬇ PDF</button>
         </div>
       </div>
       <div class="tbl-wrap"><table><thead><tr>
@@ -586,6 +603,10 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
       </select>
     </div>
     <div id="frete-lista"></div>
+    <div style="display:flex;gap:6px;margin-top:1rem">
+      <button class="btn btn-secondary btn-sm" onclick="exportFrete('csv')">⬇ Excel</button>
+      <button class="btn btn-secondary btn-sm" onclick="exportFrete('pdf')">⬇ PDF</button>
+    </div>
   </div>
 
   <!-- TRANSPORTADORAS -->
@@ -651,7 +672,7 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
     </div>
     <div class="stats-grid" id="capn-cards" style="margin-bottom:1rem"></div>
     <div class="table-card">
-      <div class="table-header"><h3>Notas por embarque</h3></div>
+      <div class="table-header"><h3>Notas por embarque</h3><div style="display:flex;gap:6px"><button class="btn btn-secondary btn-sm" onclick="exportCapNota('csv')">⬇ Excel</button><button class="btn btn-secondary btn-sm" onclick="exportCapNota('pdf')">⬇ PDF</button></div></div>
       <div class="tbl-wrap"><table><thead><tr>
         <th>Fornecedor</th><th>Contrato</th><th>NF</th><th>Motorista</th>
         <th>Embarque</th><th>Sc emb.</th><th>Custo R$/sc</th><th>Custo total</th><th>Status</th><th></th>
@@ -670,7 +691,7 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
     <!-- Cards resumo -->
     <div class="stats-grid" id="capt-cards" style="margin-bottom:1rem"></div>
     <div class="table-card">
-      <div class="table-header"><h3>CTE por embarque</h3></div>
+      <div class="table-header"><h3>CTE por embarque</h3><div style="display:flex;gap:6px"><button class="btn btn-secondary btn-sm" onclick="exportCapTransp('csv')">⬇ Excel</button><button class="btn btn-secondary btn-sm" onclick="exportCapTransp('pdf')">⬇ PDF</button></div></div>
       <div class="tbl-wrap"><table><thead><tr>
         <th>Transportadora</th><th>Contrato</th><th>NF</th><th>Motorista</th>
         <th>Embarque</th><th>Sc emb.</th><th>CTE R$/sc</th><th>CTE Total</th><th>Status</th><th></th>
@@ -690,7 +711,7 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
     </div>
     <div class="stats-grid" id="capc-cards" style="margin-bottom:1rem"></div>
     <div class="table-card">
-      <div class="table-header"><h3>Comissões por embarque</h3></div>
+      <div class="table-header"><h3>Comissões por embarque</h3><div style="display:flex;gap:6px"><button class="btn btn-secondary btn-sm" onclick="exportCapCom('csv')">⬇ Excel</button><button class="btn btn-secondary btn-sm" onclick="exportCapCom('pdf')">⬇ PDF</button></div></div>
       <div class="tbl-wrap"><table><thead><tr>
         <th>Comissionário</th><th>Comprador</th><th>Contrato</th><th>NF</th>
         <th>Embarque</th><th>Sc emb.</th><th>R$/sc</th><th>Total</th><th>Status</th><th></th>
@@ -1575,15 +1596,14 @@ function renderSaidas(){
     </tr>`).join('')
     :'<tr><td colspan="10" class="empty-state">Nenhum embarque encontrado para o período.</td></tr>';
 }
-function exportSaidas(){
+function exportSaidas(tipo='csv'){
   const mes=(document.getElementById('f-saidas-mes')||{value:''}).value;
   const ano=(document.getElementById('f-saidas-ano')||{value:'2026'}).value;
   const f=embs.filter(d=>!d.cancelada&&d.embarque).filter(d=>{const [y,m]=(d.embarque||'').split('-');if(ano&&y!==ano)return false;if(mes&&m!==mes)return false;return true;});
   if(!f.length){toast('Nenhum dado.',true);return;}
   const cab=['Data Embarque','Contrato','Empresa','Comprador','Produto','NF','Motorista','Peso Liq (kg)','Sc Embarcadas','Sc Entregues'];
   const rows=f.map(d=>[d.embarque,d.contrato,d.empresa,cts.find(c=>c.numero==d.contrato)?.comprador||'—',d.produto,d.nf,d.motorista,(d.pliq||0).toFixed(0),(d.sc_emb||0).toFixed(2),(d.sc_ent||0).toFixed(2)]);
-  const csv=[cab,...rows].map(r=>r.map(c=>`"${String(c||'').replace(/"/g,'""')}"`).join(';')).join('\n');
-  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'}));a.download='prime-graos-saidas.csv';a.click();toast('Exportado!');
+  tipo==='pdf'?gerarPDF('Saídas de Produto',cab,rows,'prime-graos-saidas'):gerarCSV(cab,rows,'prime-graos-saidas');
 }
 
 // ===== FRETE =====
@@ -1667,8 +1687,20 @@ function renderCapCom(){
     :'<tr><td colspan="10" class="empty-state">Nenhuma comissão encontrada.</td></tr>';
 }
 
-// ===== FRETE =====
-async function toggleFretePago(embId,parcela){
+function exportFrete(tipo='csv'){
+  const ativos=embs.filter(d=>!d.cancelada&&(d.frete_total||0)>0);
+  if(!ativos.length){toast('Nenhum dado.',true);return;}
+  const cab=['Motorista','CPF','Contrato','NF','Embarque','Frete Total','80% À vista','Pago 80%','20% Descarga','Pago 20%','Desc. quebra','Desc. impureza','Saldo'];
+  const rows=ativos.map(d=>{
+    const desc=(d.desc_quebra||0)+(d.imp_desc||0);
+    const f20=Math.max(0,(d.frete20||0)-desc);
+    const saldo=(!d.frete80_pago?(d.frete80||0):0)+(!d.frete20_pago?f20:0);
+    return[d.motorista,d.cpf,d.contrato,d.nf,d.embarque,(d.frete_total||0).toFixed(2),(d.frete80||0).toFixed(2),d.frete80_pago?'Pago':'Aberto',f20.toFixed(2),d.frete20_pago?'Pago':'Aberto',(d.desc_quebra||0).toFixed(2),(d.imp_desc||0).toFixed(2),saldo.toFixed(2)];
+  });
+  tipo==='pdf'?gerarPDF('Frete — Pagamento de Motoristas',cab,rows,'prime-graos-frete'):gerarCSV(cab,rows,'prime-graos-frete');
+}
+
+(embId,parcela){
   const idx=embs.findIndex(d=>d.id===embId);if(idx===-1)return;
   if(parcela===80)embs[idx].frete80_pago=!embs[idx].frete80_pago;
   else embs[idx].frete20_pago=!embs[idx].frete20_pago;
@@ -1865,7 +1897,93 @@ function renderEmbarques(){
     :'<tr><td colspan="45" class="empty-state">Nenhum embarque encontrado.</td></tr>';
 }
 
-function exportEmb(){
+// ===== EXPORT HELPERS =====
+function gerarCSV(cab,rows,nome){
+  const csv=[cab,...rows].map(r=>r.map(c=>`"${String(c||'').replace(/"/g,'""')}"`).join(';')).join('\n');
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'}));a.download=nome+'.csv';a.click();toast('Excel exportado!');
+}
+function gerarPDF(titulo,cab,rows,nome){
+  const {jsPDF}=window.jspdf;
+  const doc=new jsPDF({orientation:cab.length>8?'landscape':'portrait'});
+  const hoje=new Date().toLocaleDateString('pt-BR');
+  // Cabeçalho
+  doc.setFillColor(45,106,79);doc.rect(0,0,doc.internal.pageSize.width,22,'F');
+  doc.setTextColor(255,255,255);doc.setFontSize(14);doc.setFont('helvetica','bold');
+  doc.text('Prime Grãos',14,10);
+  doc.setFontSize(10);doc.setFont('helvetica','normal');
+  doc.text(titulo,14,17);
+  doc.setFontSize(8);doc.text('Gerado em: '+hoje,doc.internal.pageSize.width-14,17,{align:'right'});
+  doc.setTextColor(0,0,0);
+  doc.autoTable({
+    head:[cab],body:rows,startY:26,
+    styles:{fontSize:7,cellPadding:2},
+    headStyles:{fillColor:[45,106,79],textColor:255,fontStyle:'bold'},
+    alternateRowStyles:{fillColor:[240,250,242]},
+    margin:{left:14,right:14}
+  });
+  doc.save(nome+'.pdf');toast('PDF exportado!');
+}
+
+function exportContratos(tipo){
+  const q=(document.getElementById('f-ct-q')||{value:''}).value.toLowerCase();
+  const pr=(document.getElementById('f-ct-prod')||{value:''}).value;
+  const emp=(document.getElementById('f-ct-emp')||{value:''}).value;
+  const f=cts.filter(c=>(!q||c.numero?.toLowerCase().includes(q)||c.comprador?.toLowerCase().includes(q))&&(!pr||c.produto===pr)&&(!emp||c.empresa===emp));
+  if(!f.length){toast('Nenhum dado.',true);return;}
+  const cab=['Nº','Empresa','Comprador','Produto','Qtd (sc)','Valor R$/sc','Total R$','Prazo','Fundo','Frete','Vendedor','Vencimento'];
+  const rows=f.map(c=>[c.numero,c.empresa,c.comprador,c.produto,c.qtd,c.valor,((c.qtd||0)*(c.valor||0)).toFixed(2),c.prazo+'h',c.tem_fundo?'Sim':'Não',c.frete,c.vendedor,c.vencimento]);
+  tipo==='pdf'?gerarPDF('Contratos',cab,rows,'prime-graos-contratos'):gerarCSV(cab,rows,'prime-graos-contratos');
+}
+function exportPainel(tipo){
+  const ativos=embs.filter(d=>!d.cancelada);
+  const ctsNums=[...new Set(ativos.map(d=>d.contrato))];
+  const cab=['Contrato','Empresa','Comprador','Produto','Embarques','Total Venda','Total Compra','Lucro R$','Lucro %'];
+  const rows=ctsNums.map(ct=>{
+    const its=ativos.filter(d=>d.contrato==ct);
+    const lucro=its.reduce((s,d)=>s+(d.lucro||0),0);
+    const venda=its.reduce((s,d)=>s+(d.total_venda||0),0);
+    const compra=its.reduce((s,d)=>s+(d.total_compra||0),0);
+    const co=cts.find(c=>c.numero==ct);
+    return[ct,co?.empresa||'Prime Grãos',co?.comprador||'—',co?.produto||'—',its.length,venda.toFixed(2),compra.toFixed(2),lucro.toFixed(2),(venda>0?lucro/venda*100:0).toFixed(2)+'%'];
+  });
+  tipo==='pdf'?gerarPDF('Painel — Resumo por Contrato',cab,rows,'prime-graos-painel'):gerarCSV(cab,rows,'prime-graos-painel');
+}
+function exportCapNota(tipo){
+  const fForn=(document.getElementById('f-capn-forn')||{value:''}).value;
+  const fSt=(document.getElementById('f-capn-st')||{value:''}).value;
+  const f=embs.filter(d=>!d.cancelada&&(d.cn_val||0)>0&&d.fornecedor_nota).filter(d=>(!fForn||d.fornecedor_nota===fForn)&&(!fSt||(fSt==='aberto'&&!d.nota_pago)||(fSt==='pago'&&d.nota_pago)));
+  if(!f.length){toast('Nenhum dado.',true);return;}
+  const cab=['Fornecedor','Contrato','NF','Motorista','Embarque','Sc emb.','Custo R$/sc','Total R$','Status'];
+  const rows=f.map(d=>[d.fornecedor_nota,d.contrato,d.nf,d.motorista,d.embarque,(d.sc_emb||0).toFixed(2),(d.cn_sc||0).toFixed(2),(d.cn_val||0).toFixed(2),d.nota_pago?'Pago':'Em aberto']);
+  tipo==='pdf'?gerarPDF('Notas Fiscais a Pagar',cab,rows,'prime-graos-notas'):gerarCSV(cab,rows,'prime-graos-notas');
+}
+function exportCapTransp(tipo){
+  const fT=(document.getElementById('f-capt-transp')||{value:''}).value;
+  const fSt=(document.getElementById('f-capt-st')||{value:''}).value;
+  const f=embs.filter(d=>!d.cancelada&&(d.cte||0)>0&&d.transportadora).filter(d=>(!fT||d.transportadora===fT)&&(!fSt||(fSt==='aberto'&&!d.cte_pago)||(fSt==='pago'&&d.cte_pago)));
+  if(!f.length){toast('Nenhum dado.',true);return;}
+  const cab=['Transportadora','Contrato','NF','Motorista','Embarque','Sc emb.','CTE R$/sc','CTE Total','Status'];
+  const rows=f.map(d=>[d.transportadora,d.contrato,d.nf,d.motorista,d.embarque,(d.sc_emb||0).toFixed(2),(d.cte_sc||0).toFixed(2),(d.cte||0).toFixed(2),d.cte_pago?'Pago':'Em aberto']);
+  tipo==='pdf'?gerarPDF('CTE — Transportadoras',cab,rows,'prime-graos-cte'):gerarCSV(cab,rows,'prime-graos-cte');
+}
+function exportCapCom(tipo){
+  const fCom=(document.getElementById('f-capc-com')||{value:''}).value;
+  const fSt=(document.getElementById('f-capc-st')||{value:''}).value;
+  const linhas=[];
+  embs.filter(d=>!d.cancelada).forEach(d=>{
+    (d.comissoes||[]).forEach(c=>{
+      const pago=!!(d.comissoes_pago&&d.comissoes_pago[c.id]);
+      linhas.push({nome:c.nome,comprador:cts.find(x=>x.numero==d.contrato)?.comprador||'—',contrato:d.contrato,nf:d.nf,embarque:d.embarque,sc_emb:d.sc_emb,valor_sc:c.valor,total:(c.valor||0)*(d.sc_emb||0),pago});
+    });
+  });
+  const f=linhas.filter(l=>(!fCom||l.nome===fCom)&&(!fSt||(fSt==='aberto'&&!l.pago)||(fSt==='pago'&&l.pago)));
+  if(!f.length){toast('Nenhum dado.',true);return;}
+  const cab=['Comissionário','Comprador','Contrato','NF','Embarque','Sc emb.','R$/sc','Total R$','Status'];
+  const rows=f.map(l=>[l.nome,l.comprador,l.contrato,l.nf,l.embarque,(l.sc_emb||0).toFixed(2),(l.valor_sc||0).toFixed(2),(l.total||0).toFixed(2),l.pago?'Pago':'Em aberto']);
+  tipo==='pdf'?gerarPDF('Comissões a Pagar',cab,rows,'prime-graos-comissoes'):gerarCSV(cab,rows,'prime-graos-comissoes');
+}
+
+
   if(!embs.length){toast('Nenhum dado.',true);return;}
   const n=v=>Number(v||0).toFixed(2);
   const cab=['Contrato','Empresa','NF','Status','Nota','Produto','Embarque','Descarga','Prazo Receb','Data Receb','Transportadora','Motorista','CPF','Placa','Peso Liq','Sc Emb','Quebra Sc','Desc Quebra','SCS Ent','Impureza kg','Desc Impureza','Compra/sc','Venda/sc','RS/Ton','Total Compra','Total Venda','Frete Total','Recebido','Comp Desc','Custo Nota','CTE','Comissao','Fundo','Imposto','Desc Fin','Outros','Lucro R$','Lucro %','Lancado Por','Obs'];
@@ -1940,12 +2058,18 @@ function gerarFechamento(){
       <td class="mono ${pv>0?'neg':''}">${fmt(pv)}</td></tr>`;}).join('')
     :'<tr><td colspan="9" class="empty-state">Nenhuma nota com recebimento pendente.</td></tr>';
 }
-function exportFech(){
+function exportEmb(tipo='csv'){
+  if(!embs.length){toast('Nenhum dado.',true);return;}
+  const n=v=>Number(v||0).toFixed(2);
+  const cab=['Contrato','Empresa','NF','Status','Nota','Produto','Dono carga','Embarque','Descarga','Motorista','CPF','Transportadora','Sc Emb','Sc Ent','Quebra','Impureza kg','Compra/sc','Venda/sc','Total Compra','Total Venda','Frete Total','Custo Nota','CTE','Comissao','Fundo','Lucro R$','Lucro %','Lancado Por'];
+  const rows=embs.map(d=>[d.contrato,d.empresa,d.nf,d.status,d.cancelada?'Cancelada':'Ativa',d.produto,d.dono_carga,d.embarque,d.descarga,d.motorista,d.cpf,d.transportadora,n(d.sc_emb),n(d.sc_ent),n(d.quebra_sc),n(d.impureza||0),n(d.compra),n(d.venda),n(d.total_compra),n(d.total_venda),n(d.frete_total),n(d.cn_val),n(d.cte||0),n(d.com_total),n(d.fundo),n(d.lucro),n(d.lucro_pct),d.lancado_por]);
+  tipo==='pdf'?gerarPDF('Embarques',cab,rows,'prime-graos-embarques'):gerarCSV(cab,rows,'prime-graos-embarques');
+}
+function exportFech(tipo='csv'){
   if(!_fech.length){toast('Gere o fechamento primeiro.',true);return;}
   const cab=['Contrato','Empresa','Comprador','Produto','Embarques','Sc Embarcadas','Sc Entregues','Sc Faltantes','Total Venda','Total Recebido','A Receber','Saldo Vencido'];
   const rows=_fech.map(r=>[r.ct,r.empresa,r.comprador,r.produto,r.qtd,r.sc_emb.toFixed(2),r.sc_ent.toFixed(2),r.sc_faltantes.toFixed(0),r.total_venda.toFixed(2),r.recebido.toFixed(2),r.a_receber.toFixed(2),r.vencido.toFixed(2)]);
-  const csv=[cab,...rows].map(r=>r.map(c=>`"${String(c||'').replace(/"/g,'""')}"`).join(';')).join('\n');
-  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'}));a.download='prime-graos-fechamento.csv';a.click();toast('Exportado!');
+  tipo==='pdf'?gerarPDF('Fechamento por Contrato',cab,rows,'prime-graos-fechamento'):gerarCSV(cab,rows,'prime-graos-fechamento');
 }
 
 // ===== CONFIG =====
