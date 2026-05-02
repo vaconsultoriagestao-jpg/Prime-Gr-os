@@ -994,8 +994,11 @@ async function deleteEmb(id){
 async function saveCts(){
   try{
     await fetch(`${SB_URL}/rest/v1/contratos?id=gte.0`,{method:'DELETE',headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}});
-    if(cts.length)await sbPost('contratos',cts.map(c=>({id:c.id,data:c})));
-  }catch(e){console.error(e);}
+    if(cts.length){
+      const r=await fetch(`${SB_URL}/rest/v1/contratos`,{method:'POST',headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify(cts.map(c=>({id:c.id,data:c})))});
+      if(!r.ok){const t=await r.text();console.error('saveCts error:',t);}
+    }
+  }catch(e){console.error('saveCts exception:',e);}
 }
 async function saveTransp(){
   try{
@@ -1219,7 +1222,8 @@ function abrirModalCt(id=null){
     }else{
       const ctComs=c.comissionarios_ct||[];
       comsEl.innerHTML=coms.map(cm=>{
-        const vinc=ctComs.find(x=>x.id===cm.id);
+        // Busca por ID ou por nome (fallback)
+        const vinc=ctComs.find(x=>x.id===cm.id||x.nome?.toUpperCase()===cm.nome?.toUpperCase());
         return`<div style="display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:.5px solid var(--border)">
           <input type="checkbox" id="mc_com_${cm.id}" value="${cm.id}" ${vinc?'checked':''} style="accent-color:var(--green);width:15px;height:15px">
           <label for="mc_com_${cm.id}" style="flex:1;font-size:13px;cursor:pointer">${cm.nome}</label>
@@ -1241,7 +1245,16 @@ async function salvarCt(){
   }));
   const obj={id:editCt||Date.now(),numero:num,comprador:comp,empresa:document.getElementById('mc_empresa').value,produto:document.getElementById('mc_produto').value,industria:document.getElementById('mc_industria').value,qtd:parseFloat(document.getElementById('mc_qtd').value)||0,valor:parseFloat(document.getElementById('mc_valor').value)||0,prazo:parseFloat(document.getElementById('mc_prazo').value)||72,tem_fundo:document.getElementById('mc_tem_fundo').checked,fundo_pct:parseFloat(document.getElementById('mc_fundo_pct').value)||5,fundo_dias:parseFloat(document.getElementById('mc_fundo_dias').value)||75,frete:document.getElementById('mc_frete').value,vendedor:document.getElementById('mc_vendedor').value,data:document.getElementById('mc_data').value,vencimento:document.getElementById('mc_vencimento').value,obs:document.getElementById('mc_obs').value,comissionarios_ct};
   if(editCt)cts=cts.map(c=>c.id===editCt?obj:c);else cts.push(obj);
-  await saveCts();fecharModalCt();renderContratos();updSelCts();toast(editCt?'Contrato atualizado!':'Contrato salvo!');
+  showLoading('Salvando contrato...');
+  await saveCts();
+  // Recarregar do banco para confirmar
+  try{
+    const rc=await fetch(`${SB_URL}/rest/v1/contratos?select=data&order=id`,{headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}}).then(r=>r.json()).then(d=>d.map?d.map(x=>x.data):[]);
+    if(rc&&rc.length)cts=rc;
+  }catch(e){console.error(e);}
+  hideLoading();
+  fecharModalCt();renderContratos();updSelCts();
+  toast(editCt?'Contrato atualizado!':'Contrato salvo!');
 }
 async function delCt(id){if(!confirm('Remover?'))return;cts=cts.filter(c=>c.id!==id);await saveCts();renderContratos();updSelCts();toast('Contrato removido.');}
 function renderContratos(){
@@ -2072,8 +2085,12 @@ function gerarFechContrato(){
   const total_venda=its.reduce((s,d)=>s+(d.total_venda||0),0);
   const total_compra=its.reduce((s,d)=>s+(d.total_compra||0),0);
   const frete_total=its.reduce((s,d)=>s+(d.frete_total||0),0);
-  const com_total=its.reduce((s,d)=>s+(d.com_total||0),0);
-  const cte_total=its.reduce((s,d)=>s+(d.cte||0),0);
+  // Comissão recalculada com comissionários ATUAIS do contrato
+  const comsAtuaisCalc=ctObj?.comissionarios_ct||[];
+  const com_total=its.reduce((s,d)=>{
+    const cl=comsAtuaisCalc.length>0?comsAtuaisCalc:(d.comissoes||[]);
+    return s+cl.reduce((cs,c)=>cs+((c.valor||0)*(d.sc_emb||0)),0);
+  },0);  const cte_total=its.reduce((s,d)=>s+(d.cte||0),0);
   const nf_total=its.reduce((s,d)=>s+(d.cn_val||0),0);
   const fundo_total=its.reduce((s,d)=>s+(d.fundo||0),0);
   const desc_total=its.reduce((s,d)=>s+(d.desc_quebra||0)+(d.imp_desc||0),0);
@@ -2096,16 +2113,23 @@ function gerarFechContrato(){
     <div class="stat-card ${sc_falt>0?'amber':'green'}"><div class="s-label">Sc faltantes</div><div class="s-value">${fmtN(sc_falt,0)}</div><div class="s-sub">de ${fmtN(ctObj?.qtd||0,0)} sc</div></div>
   `;
 
-  // Comissões por comissionário
+  // Comissões por comissionário — usa comissionários ATUAIS do contrato
+  const comsAtuais=ctObj?.comissionarios_ct||[];
   const porCom={};
-  its.forEach(d=>(d.comissoes||[]).forEach(c=>{
-    if(!porCom[c.nome])porCom[c.nome]={nome:c.nome,sc:0,valor_sc:c.valor,total:0,pago:0,aberto:0};
-    porCom[c.nome].sc+=d.sc_emb||0;
-    const t=(c.valor||0)*(d.sc_emb||0);
-    porCom[c.nome].total+=t;
-    const pg=!!(d.comissoes_pago&&d.comissoes_pago[c.id]);
-    if(pg)porCom[c.nome].pago+=t;else porCom[c.nome].aberto+=t;
-  }));
+  its.forEach(d=>{
+    // Usa os comissionários atuais do contrato
+    const comsList=comsAtuais.length>0?comsAtuais:(d.comissoes||[]);
+    comsList.forEach(c=>{
+      if(!porCom[c.nome])porCom[c.nome]={nome:c.nome,sc:0,valor_sc:c.valor,total:0,pago:0,aberto:0};
+      porCom[c.nome].sc+=d.sc_emb||0;
+      const t=(c.valor||0)*(d.sc_emb||0);
+      porCom[c.nome].total+=t;
+      // Busca flag pago por id ou por nome
+      const comOriginal=(d.comissoes||[]).find(x=>x.nome?.toUpperCase()===c.nome?.toUpperCase());
+      const pg=comOriginal&&!!(d.comissoes_pago&&d.comissoes_pago[comOriginal.id]);
+      if(pg)porCom[c.nome].pago+=t;else porCom[c.nome].aberto+=t;
+    });
+  });
   document.getElementById('fc-tbody-com').innerHTML=Object.values(porCom).length
     ?Object.values(porCom).map(c=>`<tr><td><strong>${c.nome}</strong></td><td class="mono">${fmtN(c.sc)}</td><td class="mono">${fmt(c.valor_sc)}</td><td class="mono">${fmt(c.total)}</td><td><span class="badge ${c.aberto>0?'badge-amber':'badge-green'}">${c.aberto>0?fmt(c.aberto)+' aberto':'Quitado'}</span></td></tr>`).join('')
     :'<tr><td colspan="5" class="empty-state">Nenhuma comissão.</td></tr>';
