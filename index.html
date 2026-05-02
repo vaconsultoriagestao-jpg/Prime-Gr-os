@@ -265,6 +265,14 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
   <div class="topbar">
     <div class="topbar-title" id="page-title">Fechamento</div>
     <div style="display:flex;align-items:center;gap:12px">
+      <div style="display:flex;align-items:center;gap:6px">
+        <span style="font-size:11px;color:var(--text-faint);font-weight:500">Empresa:</span>
+        <select id="filtro-empresa-global" onchange="aplicarFiltroEmpresa()" style="font-size:12px;padding:5px 10px;border:1.5px solid var(--green-pale);border-radius:8px;background:var(--green-faint);color:var(--green);font-weight:500;font-family:inherit;outline:none;cursor:pointer">
+          <option value="">Todas</option>
+          <option value="Prime Grãos">Prime Grãos</option>
+          <option value="ZF Grãos">ZF Grãos</option>
+        </select>
+      </div>
       <span id="topbar-date" style="font-size:12px;color:var(--text-faint)"></span>
       <button class="btn btn-secondary btn-sm" onclick="recarregarDados()" title="Atualizar dados">↻ Atualizar</button>
     </div>
@@ -456,7 +464,7 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
       <div class="tbl-wrap"><table><thead><tr>
         <th>Nº</th><th>Empresa</th><th>Comprador</th><th>Produto</th><th>Qtd (sc)</th><th>Valor R$/sc</th>
         <th>Valor total</th><th>Prazo receb.</th><th>Fundo</th><th>% Fundo</th>
-        <th>Tipo frete</th><th>Comissão/sc</th><th>Vencimento</th><th>Vendedor</th><th>Obs</th><th></th>
+        <th>Tipo frete</th><th>Vencimento</th><th>Vendedor</th><th>Situação</th><th></th>
       </tr></thead><tbody id="tbody-cts"></tbody></table></div>
     </div>
   </div>
@@ -948,6 +956,24 @@ let _usuariosDefault=[
   {id:2,nome:'Colaborador',user:'colaborador',senha:'colab123',perfil:'operador'}
 ];
 let usuarioLogado=null;
+let _empresaFiltro=''; // Filtro global de empresa
+
+function aplicarFiltroEmpresa(){
+  _empresaFiltro=document.getElementById('filtro-empresa-global')?.value||'';
+  // Reaplicar em todas as telas abertas
+  const active=document.querySelector('.page.active')?.id?.replace('page-','');
+  if(active==='painel')renderPainel();
+  if(active==='fechamento')initFech();
+  if(active==='fech-contrato')initFechContrato();
+  if(active==='embarques')renderEmbarques();
+  if(active==='contratos')renderContratos();
+  if(active==='frete')renderFrete();
+  if(active==='cap-transp')renderCapTransp();
+  if(active==='cap-com')renderCapCom();
+  if(active==='cap-nota')renderCapNota();
+  if(active==='saidas')renderSaidas();
+  if(active==='novo')updSelCts();
+}
 
 function showLoading(msg='Carregando...'){
   let el=document.getElementById('loading-overlay');
@@ -1260,23 +1286,38 @@ async function delCt(id){if(!confirm('Remover?'))return;cts=cts.filter(c=>c.id!=
 function renderContratos(){
   const q=(document.getElementById('f-ct-q')||{value:''}).value.toLowerCase();
   const pr=(document.getElementById('f-ct-prod')||{value:''}).value;
-  const emp=(document.getElementById('f-ct-emp')||{value:''}).value;
+  const emp=(document.getElementById('f-ct-emp')||{value:''}).value||_empresaFiltro;
   const f=cts.filter(c=>(!q||c.numero?.toLowerCase().includes(q)||c.comprador?.toLowerCase().includes(q))&&(!pr||c.produto===pr)&&(!emp||c.empresa===emp));
   document.getElementById('tbody-cts').innerHTML=f.length
-    ?f.map(c=>`<tr><td><strong>${c.numero}</strong></td>
+    ?f.map(c=>`<tr style="${c.encerrado?'opacity:.6':''}"><td><strong>${c.numero}</strong></td>
       <td><span class="badge ${c.empresa==='ZF Grãos'?'badge-blue':'badge-green'}">${c.empresa||'Prime Grãos'}</span></td>
       <td>${c.comprador}</td><td>${c.produto}</td><td class="mono">${fmtN(c.qtd,0)}</td><td class="mono">${fmt(c.valor)}</td>
       <td class="mono">${fmt((c.qtd||0)*(c.valor||0))}</td><td>${c.prazo||72}h</td>
       <td>${c.tem_fundo?'<span class="badge badge-amber">Sim</span>':'<span class="badge badge-gray">Não</span>'}</td>
       <td>${c.tem_fundo?(c.fundo_pct||5)+'%':'—'}</td>
-      <td>${c.frete||'CIF'}</td><td>—</td><td>${c.vencimento||'—'}</td><td>${c.vendedor||'—'}</td><td>${c.obs||'—'}</td>
-      <td style="display:flex;gap:4px"><button class="btn-edit" onclick="abrirModalCt(${c.id})">Editar</button><button class="btn btn-danger" onclick="delCt(${c.id})">×</button></td></tr>`).join('')
-    :'<tr><td colspan="16" class="empty-state">Nenhum contrato cadastrado.</td></tr>';
+      <td>${c.frete||'CIF'}</td><td>${c.vencimento||'—'}</td><td>${c.vendedor||'—'}</td>
+      <td>${c.encerrado?'<span class="badge badge-gray">Encerrado</span>':'<span class="badge badge-green">Ativo</span>'}</td>
+      <td style="display:flex;gap:4px">
+        <button class="btn-edit" onclick="abrirModalCt(${c.id})">Editar</button>
+        <button class="btn-edit" onclick="encerrarCt(${c.id})" style="color:${c.encerrado?'var(--green)':'var(--amber)'}">${c.encerrado?'Reabrir':'Encerrar'}</button>
+        <button class="btn btn-danger" onclick="delCt(${c.id})">×</button>
+      </td></tr>`).join('')
+    :'<tr><td colspan="15" class="empty-state">Nenhum contrato cadastrado.</td></tr>';
+}
+async function encerrarCt(id){
+  const c=cts.find(x=>x.id===id);if(!c)return;
+  const msg=c.encerrado?'Reabrir este contrato?':'Encerrar este contrato? Ele não aparecerá mais na lista de novos embarques.';
+  if(!confirm(msg))return;
+  cts=cts.map(x=>x.id===id?{...x,encerrado:!x.encerrado}:x);
+  await saveCts();renderContratos();updSelCts();
+  toast(c.encerrado?'Contrato reaberto!':'Contrato encerrado!');
 }
 function updSelCts(){
   const sel=document.getElementById('f_contrato');if(!sel)return;
   const cur=sel.value;
-  sel.innerHTML='<option value="">— selecione —</option>'+cts.map(c=>`<option value="${c.id}" ${c.id==cur?'selected':''}>${c.numero} — ${c.comprador}</option>`).join('');
+  // Só mostra contratos ATIVOS (não encerrados) e filtra pela empresa global se selecionada
+  const ativos=cts.filter(c=>!c.encerrado&&(!_empresaFiltro||c.empresa===_empresaFiltro));
+  sel.innerHTML='<option value="">— selecione —</option>'+ativos.map(c=>`<option value="${c.id}" ${c.id==cur?'selected':''}>${c.numero} — ${c.comprador}</option>`).join('');
 }
 function preencherDoCt(){
   const id=parseInt(document.getElementById('f_contrato').value);
@@ -1625,7 +1666,7 @@ function renderSaidas(){
   const ano=(document.getElementById('f-saidas-ano')||{value:'2026'}).value;
   const prod=(document.getElementById('f-saidas-prod')||{value:''}).value;
   const ct=(document.getElementById('f-saidas-ct')||{value:''}).value;
-  const emp=(document.getElementById('f-saidas-emp')||{value:''}).value;
+  const emp=(document.getElementById('f-saidas-emp')||{value:''}).value||_empresaFiltro;
   const ctS=document.getElementById('f-saidas-ct');
   if(ctS){const cs=[...new Set(embs.filter(d=>!d.cancelada).map(d=>d.contrato))].sort();const cur=ctS.value;ctS.innerHTML='<option value="">Todos contratos</option>'+cs.map(c=>`<option ${c===cur?'selected':''}>${c}</option>`).join('');}
   const f=embs.filter(d=>!d.cancelada&&d.embarque).filter(d=>{
@@ -1778,7 +1819,7 @@ function renderFrete(){
   const st=(document.getElementById('f-frete-status')||{value:''}).value;
   const ctS=document.getElementById('f-frete-ct');
   if(ctS){const cs=[...new Set(embs.map(d=>d.contrato))].sort();const cur=ctS.value;ctS.innerHTML='<option value="">Todos contratos</option>'+cs.map(c=>`<option ${c===cur?'selected':''}>${c}</option>`).join('');}
-  const ativos=embs.filter(d=>!d.cancelada&&(d.frete_total||0)>0);
+  const ativos=embs.filter(d=>!d.cancelada&&(d.frete_total||0)>0&&(!_empresaFiltro||d.empresa===_empresaFiltro));
   const f=ativos.filter(d=>{
     if(q&&!d.motorista?.toLowerCase().includes(q)&&!d.cpf?.includes(q)&&!String(d.contrato||'').includes(q))return false;
     if(ct&&d.contrato!=ct)return false;
@@ -1831,7 +1872,7 @@ function renderFrete(){
 // ===== PAINEL =====
 function renderPainel(){
   const fCt=(document.getElementById('f-painel-ct')||{value:''}).value;
-  const fEmp=(document.getElementById('f-painel-emp')||{value:''}).value;
+  const fEmp=(document.getElementById('f-painel-emp')||{value:''}).value||_empresaFiltro;
   // Update contrato filter
   const ctS=document.getElementById('f-painel-ct');
   if(ctS){const cs=[...new Set(embs.filter(d=>!d.cancelada).map(d=>d.contrato))].sort();const cur=ctS.value;ctS.innerHTML='<option value="">Todos contratos</option>'+cs.map(c=>`<option ${c===cur?'selected':''}>${c}</option>`).join('');}
@@ -1910,7 +1951,7 @@ function renderEmbarques(){
   const st=(document.getElementById('f-emb-st')||{value:''}).value;
   const ct=(document.getElementById('f-emb-ct')||{value:''}).value;
   const canc=(document.getElementById('f-emb-canc')||{value:''}).value;
-  const emp=(document.getElementById('f-emb-emp')||{value:''}).value;
+  const emp=(document.getElementById('f-emb-emp')||{value:''}).value||_empresaFiltro;
   const ctS=document.getElementById('f-emb-ct');
   if(ctS){const cs=[...new Set(embs.map(d=>d.contrato))].sort();const cur=ctS.value;ctS.innerHTML='<option value="">Todos contratos</option>'+cs.map(c=>`<option ${c===cur?'selected':''}>${c}</option>`).join('');}
   const f=embs.filter(d=>(!q||String(d.contrato||'').includes(q)||String(d.nf||'').toLowerCase().includes(q)||String(d.motorista||'').toLowerCase().includes(q)||String(d.cpf||'').includes(q))&&(!st||d.status===st)&&(!ct||d.contrato==ct)&&(canc===''||(canc==='0'&&!d.cancelada)||(canc==='1'&&d.cancelada))&&(!emp||d.empresa===emp));
@@ -2069,7 +2110,7 @@ function exportEmb(tipo='csv'){
 function initFechContrato(){
   const sel=document.getElementById('fc-contrato');if(!sel)return;
   const cur=sel.value;
-  const ctNums=[...new Set(embs.filter(d=>!d.cancelada).map(d=>d.contrato))].sort();
+  const ctNums=[...new Set(embs.filter(d=>!d.cancelada&&(!_empresaFiltro||d.empresa===_empresaFiltro)).map(d=>d.contrato))].sort();
   sel.innerHTML='<option value="">— selecione um contrato —</option>'+ctNums.map(c=>`<option ${c===cur?'selected':''}>${c}</option>`).join('');
   if(cur)gerarFechContrato();
   else{document.getElementById('fc-result').style.display='none';document.getElementById('fc-vazio').style.display='block';}
@@ -2236,7 +2277,8 @@ function exportFechContrato(tipo='csv'){
 
 
 function initFech(){
-  const ns=[...new Set(embs.filter(d=>!d.cancelada).map(d=>d.contrato))].sort();
+  const embsFilt=embs.filter(d=>!d.cancelada&&(!_empresaFiltro||d.empresa===_empresaFiltro));
+  const ns=[...new Set(embsFilt.map(d=>d.contrato))].sort();
   const box=document.getElementById('ct-checks');
   box.innerHTML=ns.length?ns.map(ct=>{const co=cts.find(c=>c.numero==ct);return`<label class="ct-check" onclick="this.classList.toggle('on',this.querySelector('input').checked)"><input type="checkbox" value="${ct}"> ${ct}${co?` — ${co.comprador}`:''}</label>`;}).join(''):'<span style="color:var(--text-faint);font-size:13px">Nenhum embarque ativo cadastrado.</span>';
   document.getElementById('fech-result').style.display='none';document.getElementById('fech-vazio').style.display='none';
