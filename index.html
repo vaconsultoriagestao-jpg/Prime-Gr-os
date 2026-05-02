@@ -200,7 +200,10 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
   <nav class="sidebar-nav">
     <div class="nav-label">Principal</div>
     <div class="nav-item active" id="nav-fechamento" onclick="irPara('fechamento',this)">
-      <svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>Fechamento
+      <svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>Fechamento Indústria
+    </div>
+    <div class="nav-item" id="nav-fech-contrato" onclick="irPara('fech-contrato',this)">
+      <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>Fechamento por Contrato
     </div>
     <div class="nav-item" id="nav-painel" onclick="irPara('painel',this)">
       <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>Painel
@@ -346,7 +349,61 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
     <div id="fech-vazio" style="display:none;color:var(--text-faint);font-size:13px;padding:1rem 0">Selecione ao menos um contrato e clique em "Gerar fechamento".</div>
   </div>
 
-  <!-- PAINEL -->
+  <!-- FECHAMENTO POR CONTRATO -->
+  <div class="page" id="page-fech-contrato">
+    <h1 class="section-heading">Fechamento por Contrato</h1>
+    <p class="section-sub">Lucro e custos com parceiros por contrato.</p>
+    <div class="table-card" style="margin-bottom:1rem">
+      <div class="table-header">
+        <h3>Selecionar contrato</h3>
+        <div style="display:flex;gap:8px;align-items:center">
+          <select class="filter-select" id="fc-contrato" onchange="gerarFechContrato()" style="min-width:220px">
+            <option value="">— selecione um contrato —</option>
+          </select>
+          <button class="btn btn-secondary btn-sm" onclick="exportFechContrato('csv')">⬇ Excel</button>
+          <button class="btn btn-secondary btn-sm" onclick="exportFechContrato('pdf')">⬇ PDF</button>
+        </div>
+      </div>
+    </div>
+    <div id="fc-result" style="display:none">
+      <!-- Cards financeiros -->
+      <div class="stats-grid" id="fc-cards" style="margin-bottom:1.25rem"></div>
+      <!-- Resumo financeiro -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.25rem">
+        <!-- Custos por comissionário -->
+        <div class="table-card">
+          <div class="form-card-header">Comissões por comissionário</div>
+          <div class="tbl-wrap"><table><thead><tr>
+            <th>Comissionário</th><th>Sc emb.</th><th>R$/sc</th><th>Total</th><th>Status</th>
+          </tr></thead><tbody id="fc-tbody-com"></tbody></table></div>
+        </div>
+        <!-- Custos por transportadora -->
+        <div class="table-card">
+          <div class="form-card-header">CTE por transportadora</div>
+          <div class="tbl-wrap"><table><thead><tr>
+            <th>Transportadora</th><th>Embarques</th><th>Total CTE</th><th>Pago</th><th>Em aberto</th>
+          </tr></thead><tbody id="fc-tbody-transp"></tbody></table></div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.25rem">
+        <!-- Custos por fornecedor NF -->
+        <div class="table-card">
+          <div class="form-card-header">Notas fiscais por fornecedor</div>
+          <div class="tbl-wrap"><table><thead><tr>
+            <th>Fornecedor</th><th>Embarques</th><th>Total NF</th><th>Pago</th><th>Em aberto</th>
+          </tr></thead><tbody id="fc-tbody-nf"></tbody></table></div>
+        </div>
+        <!-- Frete -->
+        <div class="table-card">
+          <div class="form-card-header">Frete por motorista</div>
+          <div class="tbl-wrap"><table><thead><tr>
+            <th>Motorista</th><th>CPF</th><th>Frete total</th><th>80% pago</th><th>20% saldo</th>
+          </tr></thead><tbody id="fc-tbody-frete"></tbody></table></div>
+        </div>
+      </div>
+    </div>
+    <div id="fc-vazio" style="color:var(--text-faint);font-size:13px;padding:1rem 0">Selecione um contrato para gerar o fechamento.</div>
+  </div>
   <div class="page" id="page-painel">
     <h1 class="section-heading">Painel geral</h1>
     <p class="section-sub">Visão consolidada de todos os contratos e embarques.</p>
@@ -1027,7 +1084,7 @@ async function fazerLogin(){
 function logout(){localStorage.removeItem(AK);usuarioLogado=null;location.reload();}
 
 // ===== NAV =====
-const ptitles={fechamento:'Fechamento',painel:'Painel',saidas:'Saídas de produto',contratos:'Contratos',embarques:'Embarques',novo:'Novo embarque',frete:'Frete — Motoristas','cap-transp':'CTE — Transportadoras','cap-com':'Comissões a Pagar','cap-nota':'Notas Fiscais a Pagar',transportadoras:'Transportadoras',comissionarios:'Cadastro Comissionários',fornecedores:'Fornecedores de Nota',config:'Configurações'};
+const ptitles={fechamento:'Fechamento Indústria',painel:'Painel','fech-contrato':'Fechamento por Contrato',saidas:'Saídas de produto',contratos:'Contratos',embarques:'Embarques',novo:'Novo embarque',frete:'Frete — Motoristas','cap-transp':'CTE — Transportadoras','cap-com':'Comissões a Pagar','cap-nota':'Notas Fiscais a Pagar',transportadoras:'Transportadoras',comissionarios:'Cadastro Comissionários',fornecedores:'Fornecedores de Nota',config:'Configurações'};
 function irPara(id,el){
   if(id==='config'&&usuarioLogado?.perfil!=='admin'){toast('Acesso restrito ao administrador.',true);return;}
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
@@ -1037,6 +1094,7 @@ function irPara(id,el){
   else{const n=document.getElementById('nav-'+id);if(n)n.classList.add('active');}
   document.getElementById('page-title').textContent=ptitles[id]||'';
   if(id==='fechamento')initFech();
+  if(id==='fech-contrato')initFechContrato();
   if(id==='saidas')renderSaidas();
   if(id==='painel')renderPainel();
   if(id==='contratos')renderContratos();
@@ -1905,23 +1963,30 @@ function gerarCSV(cab,rows,nome){
 const _LOGO_PDF='data:image/png;base64,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';
 function gerarPDF(titulo,cab,rows,nome){
   const {jsPDF}=window.jspdf;
-  const doc=new jsPDF({orientation:cab.length>8?'landscape':'portrait'});
+  const landscape=cab.length>7;
+  const doc=new jsPDF({orientation:landscape?'landscape':'portrait'});
+  const pw=doc.internal.pageSize.width;
   const hoje=new Date().toLocaleDateString('pt-BR');
-  // Cabeçalho
-  doc.setFillColor(45,106,79);doc.rect(0,0,doc.internal.pageSize.width,26,'F');
+  doc.setFillColor(45,106,79);doc.rect(0,0,pw,26,'F');
   try{doc.addImage(_LOGO_PDF,'PNG',14,3,18,18);}catch(e){}
   doc.setTextColor(255,255,255);doc.setFontSize(14);doc.setFont('helvetica','bold');
   doc.text('Prime Grãos',36,11);
   doc.setFontSize(10);doc.setFont('helvetica','normal');
-  doc.text(titulo,14,17);
-  doc.setFontSize(8);doc.text('Gerado em: '+hoje,doc.internal.pageSize.width-14,17,{align:'right'});
+  doc.text(titulo,36,18);
+  doc.setFontSize(8);doc.text('Gerado em: '+hoje,pw-14,18,{align:'right'});
   doc.setTextColor(0,0,0);
+  // Calcular largura de colunas dinamicamente
+  const margem=14;
+  const larguraUtil=pw-(margem*2);
+  const larguraCol=Math.max(12,Math.floor(larguraUtil/cab.length));
   doc.autoTable({
-    head:[cab],body:rows,startY:26,
-    styles:{fontSize:7,cellPadding:2},
-    headStyles:{fillColor:[45,106,79],textColor:255,fontStyle:'bold'},
+    head:[cab],body:rows,startY:30,
+    styles:{fontSize:landscape?6:8,cellPadding:2,overflow:'ellipsize',cellWidth:'wrap'},
+    headStyles:{fillColor:[45,106,79],textColor:255,fontStyle:'bold',fontSize:landscape?6:8},
     alternateRowStyles:{fillColor:[240,250,242]},
-    margin:{left:14,right:14}
+    columnStyles:Object.fromEntries(cab.map((_,i)=>([i,{cellWidth:larguraCol}]))),
+    margin:{left:margem,right:margem},
+    tableWidth:'auto'
   });
   doc.save(nome+'.pdf');toast('PDF exportado!');
 }
@@ -1994,8 +2059,165 @@ function exportEmb(tipo='csv'){
   tipo==='pdf'?gerarPDF('Embarques',cab,rows,'prime-graos-embarques'):gerarCSV(cab,rows,'prime-graos-embarques');
 }
 
-// ===== FECHAMENTO =====
-let _fech=[];
+// ===== FECHAMENTO POR CONTRATO =====
+function initFechContrato(){
+  const sel=document.getElementById('fc-contrato');if(!sel)return;
+  const cur=sel.value;
+  const ctNums=[...new Set(embs.filter(d=>!d.cancelada).map(d=>d.contrato))].sort();
+  sel.innerHTML='<option value="">— selecione um contrato —</option>'+ctNums.map(c=>`<option ${c===cur?'selected':''}>${c}</option>`).join('');
+  if(cur)gerarFechContrato();
+  else{document.getElementById('fc-result').style.display='none';document.getElementById('fc-vazio').style.display='block';}
+}
+function gerarFechContrato(){
+  const ct=document.getElementById('fc-contrato').value;
+  if(!ct){document.getElementById('fc-result').style.display='none';document.getElementById('fc-vazio').style.display='block';return;}
+  document.getElementById('fc-result').style.display='block';
+  document.getElementById('fc-vazio').style.display='none';
+  const its=embs.filter(d=>!d.cancelada&&d.contrato==ct);
+  const ctObj=cts.find(c=>c.numero==ct);
+  // Totais
+  const total_venda=its.reduce((s,d)=>s+(d.total_venda||0),0);
+  const total_compra=its.reduce((s,d)=>s+(d.total_compra||0),0);
+  const frete_total=its.reduce((s,d)=>s+(d.frete_total||0),0);
+  const com_total=its.reduce((s,d)=>s+(d.com_total||0),0);
+  const cte_total=its.reduce((s,d)=>s+(d.cte||0),0);
+  const nf_total=its.reduce((s,d)=>s+(d.cn_val||0),0);
+  const fundo_total=its.reduce((s,d)=>s+(d.fundo||0),0);
+  const desc_total=its.reduce((s,d)=>s+(d.desc_quebra||0)+(d.imp_desc||0),0);
+  const lucro=its.reduce((s,d)=>s+(d.lucro||0),0);
+  const lucro_pct=total_venda>0?lucro/total_venda*100:0;
+  const sc_emb=its.reduce((s,d)=>s+(d.sc_emb||0),0);
+  const sc_falt=Math.max(0,(ctObj?.qtd||0)-sc_emb);
+
+  // Cards
+  document.getElementById('fc-cards').innerHTML=`
+    <div class="stat-card ${lucro>=0?'green':'red'}"><div class="s-label">Lucro R$</div><div class="s-value">${fmt(lucro)}</div><div class="s-sub">${fmtP(lucro_pct)}</div></div>
+    <div class="stat-card"><div class="s-label">Total venda</div><div class="s-value">${fmt(total_venda)}</div></div>
+    <div class="stat-card"><div class="s-label">Total compra</div><div class="s-value">${fmt(total_compra)}</div></div>
+    <div class="stat-card"><div class="s-label">Frete total</div><div class="s-value">${fmt(frete_total)}</div></div>
+    <div class="stat-card"><div class="s-label">Comissões</div><div class="s-value">${fmt(com_total)}</div></div>
+    <div class="stat-card"><div class="s-label">CTE total</div><div class="s-value">${fmt(cte_total)}</div></div>
+    <div class="stat-card"><div class="s-label">Notas fiscais</div><div class="s-value">${fmt(nf_total)}</div></div>
+    <div class="stat-card ${fundo_total>0?'amber':''}"><div class="s-label">Fundo</div><div class="s-value">${fmt(fundo_total)}</div></div>
+    <div class="stat-card ${desc_total>0?'red':''}"><div class="s-label">Descontos (quebra/imp.)</div><div class="s-value">${fmt(desc_total)}</div></div>
+    <div class="stat-card ${sc_falt>0?'amber':'green'}"><div class="s-label">Sc faltantes</div><div class="s-value">${fmtN(sc_falt,0)}</div><div class="s-sub">de ${fmtN(ctObj?.qtd||0,0)} sc</div></div>
+  `;
+
+  // Comissões por comissionário
+  const porCom={};
+  its.forEach(d=>(d.comissoes||[]).forEach(c=>{
+    if(!porCom[c.nome])porCom[c.nome]={nome:c.nome,sc:0,valor_sc:c.valor,total:0,pago:0,aberto:0};
+    porCom[c.nome].sc+=d.sc_emb||0;
+    const t=(c.valor||0)*(d.sc_emb||0);
+    porCom[c.nome].total+=t;
+    const pg=!!(d.comissoes_pago&&d.comissoes_pago[c.id]);
+    if(pg)porCom[c.nome].pago+=t;else porCom[c.nome].aberto+=t;
+  }));
+  document.getElementById('fc-tbody-com').innerHTML=Object.values(porCom).length
+    ?Object.values(porCom).map(c=>`<tr><td><strong>${c.nome}</strong></td><td class="mono">${fmtN(c.sc)}</td><td class="mono">${fmt(c.valor_sc)}</td><td class="mono">${fmt(c.total)}</td><td><span class="badge ${c.aberto>0?'badge-amber':'badge-green'}">${c.aberto>0?fmt(c.aberto)+' aberto':'Quitado'}</span></td></tr>`).join('')
+    :'<tr><td colspan="5" class="empty-state">Nenhuma comissão.</td></tr>';
+
+  // CTE por transportadora
+  const porTransp={};
+  its.filter(d=>d.transportadora&&(d.cte||0)>0).forEach(d=>{
+    const t=d.transportadora;
+    if(!porTransp[t])porTransp[t]={nome:t,qtd:0,total:0,pago:0,aberto:0};
+    porTransp[t].qtd++;porTransp[t].total+=d.cte||0;
+    if(d.cte_pago)porTransp[t].pago+=d.cte||0;else porTransp[t].aberto+=d.cte||0;
+  });
+  document.getElementById('fc-tbody-transp').innerHTML=Object.values(porTransp).length
+    ?Object.values(porTransp).map(t=>`<tr><td><strong>${t.nome}</strong></td><td>${t.qtd}</td><td class="mono">${fmt(t.total)}</td><td class="mono pos">${fmt(t.pago)}</td><td class="mono ${t.aberto>0?'amber-txt':''}">${fmt(t.aberto)}</td></tr>`).join('')
+    :'<tr><td colspan="5" class="empty-state">Nenhum CTE.</td></tr>';
+
+  // NF por fornecedor
+  const porNF={};
+  its.filter(d=>d.fornecedor_nota&&(d.cn_val||0)>0).forEach(d=>{
+    const f=d.fornecedor_nota;
+    if(!porNF[f])porNF[f]={nome:f,qtd:0,total:0,pago:0,aberto:0};
+    porNF[f].qtd++;porNF[f].total+=d.cn_val||0;
+    if(d.nota_pago)porNF[f].pago+=d.cn_val||0;else porNF[f].aberto+=d.cn_val||0;
+  });
+  document.getElementById('fc-tbody-nf').innerHTML=Object.values(porNF).length
+    ?Object.values(porNF).map(f=>`<tr><td><strong>${f.nome}</strong></td><td>${f.qtd}</td><td class="mono">${fmt(f.total)}</td><td class="mono pos">${fmt(f.pago)}</td><td class="mono ${f.aberto>0?'amber-txt':''}">${fmt(f.aberto)}</td></tr>`).join('')
+    :'<tr><td colspan="5" class="empty-state">Nenhuma NF.</td></tr>';
+
+  // Frete por motorista
+  const porMot={};
+  its.filter(d=>(d.frete_total||0)>0).forEach(d=>{
+    const k=d.cpf||d.motorista;
+    if(!porMot[k])porMot[k]={nome:d.motorista,cpf:d.cpf,total:0,pago80:0,saldo20:0};
+    porMot[k].total+=d.frete_total||0;
+    if(d.frete80_pago)porMot[k].pago80+=d.frete80||0;
+    const desc=(d.desc_quebra||0)+(d.imp_desc||0);
+    const f20=Math.max(0,(d.frete20||0)-desc);
+    if(!d.frete20_pago)porMot[k].saldo20+=f20;
+  });
+  document.getElementById('fc-tbody-frete').innerHTML=Object.values(porMot).length
+    ?Object.values(porMot).map(m=>`<tr><td><strong>${m.nome}</strong></td><td class="mono">${m.cpf||'—'}</td><td class="mono">${fmt(m.total)}</td><td class="mono pos">${fmt(m.pago80)}</td><td class="mono ${m.saldo20>0?'amber-txt':''}">${fmt(m.saldo20)}</td></tr>`).join('')
+    :'<tr><td colspan="5" class="empty-state">Nenhum frete.</td></tr>';
+}
+
+function exportFechContrato(tipo='csv'){
+  const ct=document.getElementById('fc-contrato').value;
+  if(!ct){toast('Selecione um contrato!',true);return;}
+  const its=embs.filter(d=>!d.cancelada&&d.contrato==ct);
+  const ctObj=cts.find(c=>c.numero==ct);
+  const total_venda=its.reduce((s,d)=>s+(d.total_venda||0),0);
+  const total_compra=its.reduce((s,d)=>s+(d.total_compra||0),0);
+  const frete_total=its.reduce((s,d)=>s+(d.frete_total||0),0);
+  const com_total=its.reduce((s,d)=>s+(d.com_total||0),0);
+  const cte_total=its.reduce((s,d)=>s+(d.cte||0),0);
+  const nf_total=its.reduce((s,d)=>s+(d.cn_val||0),0);
+  const fundo_total=its.reduce((s,d)=>s+(d.fundo||0),0);
+  const lucro=its.reduce((s,d)=>s+(d.lucro||0),0);
+  const lucro_pct=total_venda>0?lucro/total_venda*100:0;
+
+  if(tipo==='pdf'){
+    const {jsPDF}=window.jspdf;
+    const doc=new jsPDF();
+    const pw=doc.internal.pageSize.width;
+    const hoje=new Date().toLocaleDateString('pt-BR');
+    doc.setFillColor(45,106,79);doc.rect(0,0,pw,26,'F');
+    try{doc.addImage(_LOGO_PDF,'PNG',14,3,18,18);}catch(e){}
+    doc.setTextColor(255,255,255);doc.setFontSize(14);doc.setFont('helvetica','bold');
+    doc.text('Prime Grãos',36,11);
+    doc.setFontSize(10);doc.setFont('helvetica','normal');
+    doc.text(`Fechamento — Contrato ${ct}`,36,18);
+    doc.setFontSize(8);doc.text('Gerado em: '+hoje,pw-14,18,{align:'right'});
+    doc.setTextColor(0,0,0);
+    let y=32;
+    // Resumo financeiro
+    doc.setFontSize(11);doc.setFont('helvetica','bold');doc.text('Resumo Financeiro',14,y);y+=6;
+    doc.autoTable({head:[['Item','Valor']],body:[
+      ['Total Venda',fmt(total_venda)],['Total Compra',fmt(total_compra)],
+      ['Frete Total',fmt(frete_total)],['Comissões',fmt(com_total)],
+      ['CTE Total',fmt(cte_total)],['Notas Fiscais',fmt(nf_total)],
+      ['Fundo',fmt(fundo_total)],['LUCRO R$',fmt(lucro)],['LUCRO %',fmtP(lucro_pct)]
+    ],startY:y,styles:{fontSize:9},headStyles:{fillColor:[45,106,79],textColor:255},
+    columnStyles:{0:{fontStyle:'bold'},1:{halign:'right'}},margin:{left:14,right:14},tableWidth:100});
+    y=doc.lastAutoTable.finalY+8;
+    // Comissões
+    const porCom={};
+    its.forEach(d=>(d.comissoes||[]).forEach(c=>{if(!porCom[c.nome])porCom[c.nome]={nome:c.nome,total:0,aberto:0};porCom[c.nome].total+=(c.valor||0)*(d.sc_emb||0);if(!(d.comissoes_pago&&d.comissoes_pago[c.id]))porCom[c.nome].aberto+=(c.valor||0)*(d.sc_emb||0);}));
+    if(Object.keys(porCom).length){doc.setFontSize(11);doc.setFont('helvetica','bold');doc.text('Comissões por Comissionário',14,y);y+=4;
+      doc.autoTable({head:[['Comissionário','Total','Em aberto']],body:Object.values(porCom).map(c=>[c.nome,fmt(c.total),fmt(c.aberto)]),startY:y,styles:{fontSize:9},headStyles:{fillColor:[45,106,79],textColor:255},margin:{left:14,right:14}});y=doc.lastAutoTable.finalY+8;}
+    // CTE
+    const porT={};its.filter(d=>d.transportadora&&d.cte>0).forEach(d=>{if(!porT[d.transportadora])porT[d.transportadora]={nome:d.transportadora,total:0,aberto:0};porT[d.transportadora].total+=d.cte||0;if(!d.cte_pago)porT[d.transportadora].aberto+=d.cte||0;});
+    if(Object.keys(porT).length){doc.setFontSize(11);doc.setFont('helvetica','bold');doc.text('CTE por Transportadora',14,y);y+=4;
+      doc.autoTable({head:[['Transportadora','Total CTE','Em aberto']],body:Object.values(porT).map(t=>[t.nome,fmt(t.total),fmt(t.aberto)]),startY:y,styles:{fontSize:9},headStyles:{fillColor:[45,106,79],textColor:255},margin:{left:14,right:14}});y=doc.lastAutoTable.finalY+8;}
+    // NF
+    const porN={};its.filter(d=>d.fornecedor_nota&&d.cn_val>0).forEach(d=>{if(!porN[d.fornecedor_nota])porN[d.fornecedor_nota]={nome:d.fornecedor_nota,total:0,aberto:0};porN[d.fornecedor_nota].total+=d.cn_val||0;if(!d.nota_pago)porN[d.fornecedor_nota].aberto+=d.cn_val||0;});
+    if(Object.keys(porN).length){doc.setFontSize(11);doc.setFont('helvetica','bold');doc.text('Notas Fiscais por Fornecedor',14,y);y+=4;
+      doc.autoTable({head:[['Fornecedor','Total NF','Em aberto']],body:Object.values(porN).map(f=>[f.nome,fmt(f.total),fmt(f.aberto)]),startY:y,styles:{fontSize:9},headStyles:{fillColor:[45,106,79],textColor:255},margin:{left:14,right:14}});}
+    doc.save(`prime-graos-fech-contrato-${ct}.pdf`);toast('PDF exportado!');
+  }else{
+    const cab=['Item','Valor'];
+    const rows=[['Contrato',ct],['Comprador',ctObj?.comprador||'—'],['Total Venda',fmt(total_venda)],['Total Compra',fmt(total_compra)],['Frete Total',fmt(frete_total)],['Comissões',fmt(com_total)],['CTE Total',fmt(cte_total)],['Notas Fiscais',fmt(nf_total)],['Fundo',fmt(fundo_total)],['Lucro R$',fmt(lucro)],['Lucro %',fmtP(lucro_pct)]];
+    gerarCSV(cab,rows,`prime-graos-fech-contrato-${ct}`);
+  }
+}
+
+
 function initFech(){
   const ns=[...new Set(embs.filter(d=>!d.cancelada).map(d=>d.contrato))].sort();
   const box=document.getElementById('ct-checks');
@@ -2145,6 +2367,7 @@ async function recarregarDados(){
   if(active==='embarques')renderEmbarques();
   if(active==='contratos')renderContratos();
   if(active==='fechamento')initFech();
+  if(active==='fech-contrato')initFechContrato();
   if(active==='saidas')renderSaidas();
   if(active==='cap-nota')renderCapNota();
   if(active==='frete')renderFrete();
