@@ -2448,7 +2448,8 @@ function gerarFechamento(){
     const qtd_contrato=(co&&co.qtd)||0;
     const sc_faltantes=Math.max(0,qtd_contrato-sc_emb);
     return{ct,empresa:(co&&co.empresa)||'Prime Grãos',comprador:(co&&co.comprador)||'—',produto:(co&&co.produto)||'—',qtd:its.length,sc_emb,sc_ent,sc_faltantes,total_venda,recebido,a_receber,vencido};
-  });((s,r)=>s+r.total_venda,0),tR=_fech.reduce((s,r)=>s+r.recebido,0);
+  });
+  const tV=_fech.reduce((s,r)=>s+r.total_venda,0),tR=_fech.reduce((s,r)=>s+r.recebido,0);
   const tA=_fech.reduce((s,r)=>s+r.a_receber,0),tVe=_fech.reduce((s,r)=>s+r.vencido,0);
   const tSe=_fech.reduce((s,r)=>s+r.sc_emb,0),tSn=_fech.reduce((s,r)=>s+r.sc_ent,0);
   const tSf=_fech.reduce((s,r)=>s+r.sc_faltantes,0);
