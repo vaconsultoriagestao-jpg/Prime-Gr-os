@@ -1943,7 +1943,7 @@ function exportFrete(tipo='csv'){
   if(!ativos.length){toast('Nenhum dado.',true);return;}
   const cab=['Motorista','CPF','Contrato','NF','Embarque','Frete Total','80% À vista','Pago 80%','20% Descarga','Pago 20%','Desc. quebra','Desc. impureza','Saldo'];
   const rows=ativos.map(d=>{
-    const desc=(d.desc_quebra||0)+(d.imp_desc||0);
+    const desc=(d.desc_quebra||0);
     const f20=Math.max(0,(d.frete20||0)-desc);
     const saldo=(!d.frete80_pago?(d.frete80||0):0)+(!d.frete20_pago?f20:0);
     return[d.motorista,d.cpf,d.contrato,d.nf,d.embarque,(d.frete_total||0).toFixed(2),(d.frete80||0).toFixed(2),d.frete80_pago?'Pago':'Aberto',f20.toFixed(2),d.frete20_pago?'Pago':'Aberto',(d.desc_quebra||0).toFixed(2),(d.imp_desc||0).toFixed(2),saldo.toFixed(2)];
@@ -1978,7 +1978,7 @@ function renderFrete(){
   if(!f.length){lista.innerHTML='<div class="empty-state">Nenhum embarque com frete encontrado.</div>';return;}
   lista.innerHTML=f.map(d=>{
     const temDescarga=!!(d.descarga);
-    const desc_total=(d.desc_quebra||0)+(d.imp_desc||0);
+    const desc_total=(d.desc_quebra||0);
     // Desconto abate do saldo do 20%
     const frete20_ajustado=Math.max(0,(d.frete20||0)-desc_total);
     const saldo80=d.frete80_pago?0:(d.frete80||0);
@@ -2280,7 +2280,7 @@ function gerarFechContrato(){
   },0);  const cte_total=its.reduce((s,d)=>s+(d.cte||0),0);
   const nf_total=its.reduce((s,d)=>s+(d.cn_val||0),0);
   const fundo_total=its.reduce((s,d)=>s+(d.fundo||0),0);
-  const desc_total=its.reduce((s,d)=>s+(d.desc_quebra||0)+(d.imp_desc||0),0);
+  const desc_total=its.reduce((s,d)=>s+(d.desc_quebra||0),0); // impureza não desconta do motorista
   const lucro=its.reduce((s,d)=>s+(d.lucro||0),0);
   const lucro_pct=total_venda>0?lucro/total_venda*100:0;
   const sc_emb=its.reduce((s,d)=>s+(d.sc_emb||0),0);
@@ -2352,7 +2352,7 @@ function gerarFechContrato(){
     if(!porMot[k])porMot[k]={nome:d.motorista,cpf:d.cpf,total:0,pago80:0,saldo20:0};
     porMot[k].total+=d.frete_total||0;
     if(d.frete80_pago)porMot[k].pago80+=d.frete80||0;
-    const desc=(d.desc_quebra||0)+(d.imp_desc||0);
+    const desc=(d.desc_quebra||0); // impureza não desconta do motorista
     const f20=Math.max(0,(d.frete20||0)-desc);
     if(!d.frete20_pago)porMot[k].saldo20+=f20;
   });
