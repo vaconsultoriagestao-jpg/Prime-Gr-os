@@ -800,8 +800,12 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
             <div class="fg"><label>Usuário (login) <span class="star">*</span></label><input id="u_user" type="text"></div>
             <div class="fg"><label>Senha <span class="star">*</span></label><input id="u_senha" type="password"></div>
             <div class="fg"><label>Perfil</label>
-              <select id="u_perfil"><option value="admin">Admin — acesso total</option><option value="operador">Operador</option></select>
+              <select id="u_perfil" onchange="togglePermissoesUI()"><option value="admin">Admin — acesso total</option><option value="operador">Operador</option></select>
             </div>
+          </div>
+          <div id="u_permissoes_div" style="margin-top:14px;display:none">
+            <p style="font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px">Menus liberados para este usuário</p>
+            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px" id="u_perm_checks"></div>
           </div>
           <div style="display:flex;gap:8px;margin-top:12px">
             <button class="btn btn-primary btn-sm" onclick="salvarUsuario()">Salvar usuário</button>
@@ -959,9 +963,9 @@ let usuarioLogado=null;
 let _empresaFiltro=''; // Filtro global de empresa
 
 function aplicarFiltroEmpresa(){
-  _empresaFiltro=document.getElementById('filtro-empresa-global')?.value||'';
+  _empresaFiltro=(document.getElementById('filtro-empresa-global')||{value:''}).value||'';
   // Reaplicar em todas as telas abertas
-  const active=document.querySelector('.page.active')?.id?.replace('page-','');
+  const active=((document.querySelector('.page.active')||{}).id||'').replace('page-','');
   if(active==='painel')renderPainel();
   if(active==='fechamento')initFech();
   if(active==='fech-contrato')initFechContrato();
@@ -1044,6 +1048,18 @@ async function saveCfg(){
     await sbPost('configuracoes',[{id:1,data:cfg}]);
   }catch(e){console.error(e);}
 }
+function loadCfgUI(){
+  const ta=document.getElementById('cfg_taxa');if(ta)ta.value=cfg.taxa||5;
+  const pr=document.getElementById('cfg_prazo');if(pr)pr.value=cfg.prazo||72;
+  const tol=document.getElementById('cfg_tolerancia');if(tol)tol.value=cfg.tolerancia||3;
+  renderUsuarios();
+}
+async function salvarCfgUI(){
+  cfg.taxa=parseFloat(document.getElementById('cfg_taxa').value)||5;
+  cfg.prazo=parseFloat(document.getElementById('cfg_prazo').value)||72;
+  cfg.tolerancia=parseFloat(document.getElementById('cfg_tolerancia').value)||3;
+  await saveCfg();toast('Configurações salvas!');
+}
 async function saveUsers(){
   try{
     // Deletar e reinserir todos usuários
@@ -1105,10 +1121,135 @@ async function fazerLogin(){
 }
 function logout(){localStorage.removeItem(AK);usuarioLogado=null;location.reload();}
 
-// ===== NAV =====
+// ===== PERMISSÕES =====
+const _MENUS=[
+  {id:'fechamento',label:'Fechamento Indústria'},
+  {id:'fech-contrato',label:'Fechamento por Contrato'},
+  {id:'painel',label:'Painel'},
+  {id:'saidas',label:'Saídas de produto'},
+  {id:'contratos',label:'Contratos'},
+  {id:'embarques',label:'Embarques'},
+  {id:'novo',label:'Novo embarque'},
+  {id:'frete',label:'Frete motoristas'},
+  {id:'cap-transp',label:'CTE Transportadoras'},
+  {id:'cap-com',label:'Comissões a Pagar'},
+  {id:'cap-nota',label:'Notas Fiscais'},
+  {id:'transportadoras',label:'Transportadoras (cadastro)'},
+  {id:'comissionarios',label:'Comissionários (cadastro)'},
+  {id:'fornecedores',label:'Fornecedores (cadastro)'},
+];
+function temPermissao(id){
+  if(!usuarioLogado)return false;
+  if(usuarioLogado.perfil==='admin')return true;
+  if(id==='config')return false; // config sempre só admin
+  const perms=usuarioLogado.permissoes||[];
+  return perms.includes(id);
+}
+function togglePermissoesUI(){
+  const perfil=document.getElementById('u_perfil').value;
+  const div=document.getElementById('u_permissoes_div');
+  if(perfil==='admin'){div.style.display='none';return;}
+  div.style.display='block';
+  const checks=document.getElementById('u_perm_checks');
+  if(!checks.innerHTML){
+    checks.innerHTML=_MENUS.map(m=>`
+      <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;padding:4px 0">
+        <input type="checkbox" id="uperm_${m.id}" value="${m.id}" style="accent-color:var(--green);width:14px;height:14px">
+        ${m.label}
+      </label>`).join('');
+  }
+}
+function getPermissoesForm(){
+  return _MENUS.filter(m=>(document.getElementById('uperm_'+m.id)||{}).checked).map(m=>m.id);
+}
+function setPermissoesForm(perms){
+  _MENUS.forEach(m=>{
+    const el=document.getElementById('uperm_'+m.id);
+    if(el)el.checked=perms.includes(m.id);
+  });
+}
+function aplicarMenuPermissoes(){
+  if(!usuarioLogado)return;
+  _MENUS.forEach(m=>{
+    const nav=document.getElementById('nav-'+m.id);
+    if(nav)nav.style.display=temPermissao(m.id)?'':'none';
+  });
+  const navCfg=document.getElementById('nav-config');
+  if(navCfg)navCfg.style.display=usuarioLogado.perfil==='admin'?'':'none';
+}
+
+// ===== USUÁRIOS =====
+let editUserId=null;
+function renderUsuarios(){
+  const lista=document.getElementById('usuarios-lista');if(!lista)return;
+  lista.innerHTML=usuarios.map(u=>`
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:.5px solid var(--border)">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div style="width:34px;height:34px;border-radius:50%;background:${u.perfil==='admin'?'var(--green-pale)':'var(--blue-pale)'};display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:${u.perfil==='admin'?'var(--green)':'var(--blue)'};flex-shrink:0">${u.nome.charAt(0).toUpperCase()}</div>
+        <div>
+          <div style="font-size:13px;font-weight:500">${u.nome}</div>
+          <div style="font-size:11px;color:var(--text-faint)">@${u.user} · <span class="badge ${u.perfil==='admin'?'badge-green':'badge-blue'}" style="font-size:9px">${u.perfil==='admin'?'Admin':'Operador'}</span>${u.perfil!=='admin'&&u.permissoes&&u.permissoes.length?` · ${u.permissoes.length} menu(s)`:''}</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:6px;align-items:center">
+        ${u.id===(usuarioLogado&&usuarioLogado.id)?'<span style="font-size:11px;color:var(--text-faint)">você</span>':`<button class="btn-edit" onclick="editarUsuario(${u.id})">Editar</button><button class="btn btn-danger" onclick="delUsuario(${u.id})">×</button>`}
+      </div>
+    </div>`).join('');
+}
+function editarUsuario(id){
+  const u=usuarios.find(x=>x.id===id);if(!u)return;
+  editUserId=id;
+  document.getElementById('u_nome').value=u.nome;
+  document.getElementById('u_user').value=u.user;
+  document.getElementById('u_senha').value=u.senha;
+  document.getElementById('u_perfil').value=u.perfil;
+  document.getElementById('form-user-titulo').textContent='Editar usuário';
+  togglePermissoesUI();
+  setTimeout(()=>{
+    const perms=u.permissoes||[];
+    _MENUS.forEach(m=>{const el=document.getElementById('uperm_'+m.id);if(el)el.checked=perms.includes(m.id);});
+  },50);
+}
+function cancelarEdicaoUser(){
+  editUserId=null;
+  ['u_nome','u_user','u_senha'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  document.getElementById('u_perfil').value='operador';
+  const div=document.getElementById('u_permissoes_div');if(div)div.style.display='none';
+  document.getElementById('form-user-titulo').textContent='Novo usuário';
+}
+async function salvarUsuario(){
+  const nome=document.getElementById('u_nome').value.trim(),user=document.getElementById('u_user').value.trim().toLowerCase(),senha=document.getElementById('u_senha').value.trim(),perfil=document.getElementById('u_perfil').value;
+  if(!nome||!user||!senha){toast('Preencha nome, usuário e senha!',true);return;}
+  const dup=usuarios.find(x=>x.user.toLowerCase()===user&&x.id!==editUserId);
+  if(dup){toast('Usuário já existe!',true);return;}
+  const permissoes=perfil==='admin'?[]:_MENUS.filter(m=>{const el=document.getElementById('uperm_'+m.id);return el&&el.checked;}).map(m=>m.id);
+  if(editUserId)usuarios=usuarios.map(x=>x.id===editUserId?{...x,nome,user,senha,perfil,permissoes}:x);
+  else usuarios.push({id:Date.now(),nome,user,senha,perfil,permissoes});
+  showLoading('Salvando usuário...');
+  await saveUsers();
+  try{const ru=await fetch(`${SB_URL}/rest/v1/usuarios?select=data&order=id`,{headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}}).then(r=>r.json()).then(d=>d.map?d.map(x=>x.data):[]);if(ru&&ru.length)usuarios=ru;}catch(e){}
+  hideLoading();
+  renderUsuarios();cancelarEdicaoUser();toast(editUserId?'Usuário atualizado!':'Usuário criado!');
+}
+async function delUsuario(id){
+  if(usuarios.length<=1){toast('Deve haver ao menos um usuário!',true);return;}
+  if(!confirm('Remover?'))return;
+  usuarios=usuarios.filter(x=>x.id!==id);await saveUsers();renderUsuarios();toast('Removido.');
+}
+async function trocarMinhaSenha(){
+  const sa=document.getElementById('cfg_sa').value,sn=document.getElementById('cfg_sn').value;
+  if(!sa||!sn){toast('Preencha as senhas!',true);return;}
+  if(sa!==(usuarioLogado&&usuarioLogado.senha)){toast('Senha atual incorreta!',true);return;}
+  usuarios=usuarios.map(x=>x.id===usuarioLogado.id?{...x,senha:sn}:x);
+  usuarioLogado={...usuarioLogado,senha:sn};
+  await saveUsers();document.getElementById('cfg_sa').value='';document.getElementById('cfg_sn').value='';toast('Senha alterada!');
+}
+
+
 const ptitles={fechamento:'Fechamento Indústria',painel:'Painel','fech-contrato':'Fechamento por Contrato',saidas:'Saídas de produto',contratos:'Contratos',embarques:'Embarques',novo:'Novo embarque',frete:'Frete — Motoristas','cap-transp':'CTE — Transportadoras','cap-com':'Comissões a Pagar','cap-nota':'Notas Fiscais a Pagar',transportadoras:'Transportadoras',comissionarios:'Cadastro Comissionários',fornecedores:'Fornecedores de Nota',config:'Configurações'};
 function irPara(id,el){
-  if(id==='config'&&usuarioLogado?.perfil!=='admin'){toast('Acesso restrito ao administrador.',true);return;}
+  if(id==='config'&&(!usuarioLogado||usuarioLogado.perfil!=='admin')){toast('Acesso restrito ao administrador.',true);return;}
+  if(!temPermissao(id)){toast('Você não tem permissão para acessar esta área.',true);return;}
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   document.getElementById('page-'+id).classList.add('active');
@@ -1173,7 +1314,7 @@ async function salvarTransp(){
   if(editTranspId)transp=transp.map(x=>x.id===editTranspId?obj:x);else transp.push(obj);
   await saveTransp();fecharModalTransp();renderTransp();updSelTransp();toast(editTranspId?'Atualizada!':'Transportadora salva!');
 }
-async function delTransp(id){if(!confirm('Remover?'))return;transp=transp.filter(x=>x.id!==id);await saveTransp();renderTransp();updSelTransp();toast('Removida.');}
+async function delTransp(id){if((!usuarioLogado||usuarioLogado.perfil!=='admin')){toast('Apenas o administrador pode excluir!',true);return;}if(!confirm('Remover?'))return;transp=transp.filter(x=>x.id!==id);await saveTransp();renderTransp();updSelTransp();toast('Removida.');}
 function renderTransp(){
   document.getElementById('tbody-transp').innerHTML=transp.length
     ?transp.map(t=>`<tr><td><strong>${t.nome}</strong></td><td>${t.tel||'—'}</td><td>${t.resp||'—'}</td><td>${t.obs||'—'}</td>
@@ -1216,7 +1357,7 @@ async function salvarCom(){
   if(editComId)coms=coms.map(x=>x.id===editComId?obj:x);else coms.push(obj);
   await saveComs();fecharModalCom();renderComs();toast(editComId?'Atualizado!':'Comissionário salvo!');
 }
-async function delCom(id){if(!confirm('Remover?'))return;coms=coms.filter(x=>x.id!==id);await saveComs();renderComs();toast('Removido.');}
+async function delCom(id){if((!usuarioLogado||usuarioLogado.perfil!=='admin')){toast('Apenas o administrador pode excluir!',true);return;}if(!confirm('Remover?'))return;coms=coms.filter(x=>x.id!==id);await saveComs();renderComs();toast('Removido.');}
 function renderComs(){
   document.getElementById('tbody-coms').innerHTML=coms.length
     ?coms.map(c=>`<tr><td><strong>${c.nome}</strong></td><td>${c.comprador}</td><td class="mono">${fmt(c.valor)}/sc</td><td>${c.obs||'—'}</td>
@@ -1249,7 +1390,7 @@ function abrirModalCt(id=null){
       const ctComs=c.comissionarios_ct||[];
       comsEl.innerHTML=coms.map(cm=>{
         // Busca por ID ou por nome (fallback)
-        const vinc=ctComs.find(x=>x.id===cm.id||x.nome?.toUpperCase()===cm.nome?.toUpperCase());
+        const vinc=ctComs.find(x=>x.id===cm.id||(x.nome&&x.nome.toUpperCase())===(cm.nome&&cm.nome.toUpperCase()));
         return`<div style="display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:.5px solid var(--border)">
           <input type="checkbox" id="mc_com_${cm.id}" value="${cm.id}" ${vinc?'checked':''} style="accent-color:var(--green);width:15px;height:15px">
           <label for="mc_com_${cm.id}" style="flex:1;font-size:13px;cursor:pointer">${cm.nome}</label>
@@ -1266,8 +1407,8 @@ async function salvarCt(){
   const num=document.getElementById('mc_numero').value.trim(),comp=document.getElementById('mc_comprador').value.trim();
   if(!num||!comp){toast('Preencha Nº e Comprador!',true);return;}
   // Coletar comissionários selecionados
-  const comissionarios_ct=coms.filter(cm=>document.getElementById(`mc_com_${cm.id}`)?.checked).map(cm=>({
-    id:cm.id,nome:cm.nome,valor:parseFloat(document.getElementById(`mc_com_val_${cm.id}`)?.value)||cm.valor||0
+  const comissionarios_ct=coms.filter(cm=>{const el=document.getElementById('mc_com_'+cm.id);return el&&el.checked;}).map(cm=>({
+    id:cm.id,nome:cm.nome,valor:parseFloat((document.getElementById('mc_com_val_'+cm.id)||{value:'0'}).value)||cm.valor||0
   }));
   const obj={id:editCt||Date.now(),numero:num,comprador:comp,empresa:document.getElementById('mc_empresa').value,produto:document.getElementById('mc_produto').value,industria:document.getElementById('mc_industria').value,qtd:parseFloat(document.getElementById('mc_qtd').value)||0,valor:parseFloat(document.getElementById('mc_valor').value)||0,prazo:parseFloat(document.getElementById('mc_prazo').value)||72,tem_fundo:document.getElementById('mc_tem_fundo').checked,fundo_pct:parseFloat(document.getElementById('mc_fundo_pct').value)||5,fundo_dias:parseFloat(document.getElementById('mc_fundo_dias').value)||75,frete:document.getElementById('mc_frete').value,vendedor:document.getElementById('mc_vendedor').value,data:document.getElementById('mc_data').value,vencimento:document.getElementById('mc_vencimento').value,obs:document.getElementById('mc_obs').value,comissionarios_ct};
   if(editCt)cts=cts.map(c=>c.id===editCt?obj:c);else cts.push(obj);
@@ -1282,12 +1423,16 @@ async function salvarCt(){
   fecharModalCt();renderContratos();updSelCts();
   toast(editCt?'Contrato atualizado!':'Contrato salvo!');
 }
-async function delCt(id){if(!confirm('Remover?'))return;cts=cts.filter(c=>c.id!==id);await saveCts();renderContratos();updSelCts();toast('Contrato removido.');}
+async function delCt(id){
+  if((!usuarioLogado||usuarioLogado.perfil!=='admin')){toast('Apenas o administrador pode remover contratos!',true);return;}
+  if(!confirm('Remover este contrato?'))return;
+  cts=cts.filter(c=>c.id!==id);await saveCts();renderContratos();updSelCts();toast('Contrato removido.');
+}
 function renderContratos(){
   const q=(document.getElementById('f-ct-q')||{value:''}).value.toLowerCase();
   const pr=(document.getElementById('f-ct-prod')||{value:''}).value;
   const emp=(document.getElementById('f-ct-emp')||{value:''}).value||_empresaFiltro;
-  const f=cts.filter(c=>(!q||c.numero?.toLowerCase().includes(q)||c.comprador?.toLowerCase().includes(q))&&(!pr||c.produto===pr)&&(!emp||c.empresa===emp));
+  const f=cts.filter(c=>(!q||(c.numero&&c.numero.toLowerCase().includes(q))||(c.comprador&&c.comprador.toLowerCase().includes(q)))&&(!pr||c.produto===pr)&&(!emp||c.empresa===emp));
   document.getElementById('tbody-cts').innerHTML=f.length
     ?f.map(c=>`<tr style="${c.encerrado?'opacity:.6':''}"><td><strong>${c.numero}</strong></td>
       <td><span class="badge ${c.empresa==='ZF Grãos'?'badge-blue':'badge-green'}">${c.empresa||'Prime Grãos'}</span></td>
@@ -1305,6 +1450,7 @@ function renderContratos(){
     :'<tr><td colspan="15" class="empty-state">Nenhum contrato cadastrado.</td></tr>';
 }
 async function encerrarCt(id){
+  if((!usuarioLogado||usuarioLogado.perfil!=='admin')){toast('Apenas o administrador pode encerrar/reabrir contratos!',true);return;}
   const c=cts.find(x=>x.id===id);if(!c)return;
   const msg=c.encerrado?'Reabrir este contrato?':'Encerrar este contrato? Ele não aparecerá mais na lista de novos embarques.';
   if(!confirm(msg))return;
@@ -1363,8 +1509,8 @@ function calcular(){
   const venda=parseFloat(document.getElementById('f_venda').value)||0;
   const rs_ton=parseFloat(document.getElementById('f_rs_ton').value)||0;
   const recebido=parseFloat(document.getElementById('f_recebido').value)||0;
-  const cn_val_sc=parseFloat(document.getElementById('f_cn_sc')?.value)||0;
-  const cte_sc=parseFloat(document.getElementById('f_cte_sc')?.value)||0;
+  const cn_val_sc=parseFloat((document.getElementById('f_cn_sc')||{value:'0'}).value)||0;
+  const cte_sc=parseFloat((document.getElementById('f_cte_sc')||{value:'0'}).value)||0;
   const outros=parseFloat(document.getElementById('f_outros').value)||0;
   const impureza=parseFloat(document.getElementById('f_impureza').value)||0;
   const descarga=document.getElementById('f_descarga').value;
@@ -1406,11 +1552,11 @@ function calcular(){
   const imp_desc=impureza*rkg;
 
   // Fundo: 5% sobre total venda
-  const temFundo=document.getElementById('f_tem_fundo')?.checked||false;
+  const temFundo=!!(document.getElementById('f_tem_fundo')&&document.getElementById('f_tem_fundo').checked);
   const fundo=temFundo?total_venda*0.05:0;
 
   // Comissões do contrato (por contrato, não por comprador)
-  const comsVinc=ctObj?.comissionarios_ct||[];
+  const comsVinc=(ctObj&&ctObj.comissionarios_ct)||[];
   const com_total=comsVinc.reduce((s,c)=>s+((c.valor||0)*sc_emb),0);
 
   const lucro=total_venda-total_compra-frete_total-cn_val-cte-com_total-fundo-imposto-desc_fin-imp_desc-desc_quebra-outros+comp_desc;
@@ -1470,14 +1616,14 @@ async function salvarEmb(){
   const transpId=parseInt(document.getElementById('f_transportadora_id').value)||0;
   const transpObj=transp.find(x=>x.id===transpId);
   const ctObj=cts.find(x=>x.id===parseInt(ctId));
-  const comsVinc=ctObj?.comissionarios_ct||[];
+  const comsVinc=(ctObj&&ctObj.comissionarios_ct)||[];
 
   // Frete split: 80% à vista, 20% na descarga
   const frete80=c.frete_total*0.8;
   const frete20=c.frete_total*0.2;
 
   const obj={id:Date.now(),cancelada,
-    lancado_por:usuarioLogado?.nome||'—',
+    lancado_por:(usuarioLogado&&usuarioLogado.nome)||'—',
     dono_carga,
     empresa:document.getElementById('f_empresa').value||'Prime Grãos',
     contrato:ctObj?ctObj.numero:ctId,contrato_id:parseInt(ctId),
@@ -1488,8 +1634,8 @@ async function salvarEmb(){
     embarque:emb_dt,descarga:document.getElementById('f_descarga').value,
     prazo_rec:document.getElementById('f_prazo_rec').value,
     data_rec:document.getElementById('f_data_rec').value,
-    transportadora:transpObj?.nome||'',transportadora_id:transpId,
-    fornecedor_nota:forn.find(x=>x.id===parseInt(document.getElementById('f_fornecedor_id').value))?.nome||'',
+    transportadora:(transpObj&&transpObj.nome)||'',transportadora_id:transpId,
+    fornecedor_nota:(forn.find(x=>x.id===parseInt(document.getElementById('f_fornecedor_id').value))||{nome:''}).nome||'',
     fornecedor_id:parseInt(document.getElementById('f_fornecedor_id').value)||0,
     motorista:mot,cpf,placa:document.getElementById('f_placa').value,
     tem_fundo:document.getElementById('f_tem_fundo').checked,
@@ -1577,7 +1723,7 @@ async function salvarEdit(){
   e.comp_desc=re-e.total_venda;e.rkg=ve/60;e.imp_desc=(imp)*e.rkg;
   e.fundo=e.tem_fundo?e.total_venda*0.05:0;
   const ctEd=cts.find(c=>c.numero==e.contrato);
-  const comsVE=ctEd?.comissionarios_ct||[];
+  const comsVE=(ctEd&&ctEd.comissionarios_ct)||[];
   e.com_total=comsVE.reduce((s,c)=>s+((c.valor||0)*e.sc_emb),0);
   e.lucro=e.total_venda-e.total_compra-e.frete_total-cn-ct-e.com_total-e.fundo-im-df-e.imp_desc-e.desc_quebra-ou+e.comp_desc;
   e.lucro_pct=e.total_venda>0?(e.lucro/e.total_venda)*100:0;
@@ -1586,7 +1732,7 @@ async function salvarEdit(){
   embs[idx]=e;await saveEmb(e);fecharModalEdit();renderEmbarques();renderPainel();toast('Embarque atualizado!');
 }
 async function delEmb(id){
-  if(usuarioLogado?.perfil!=='admin'){toast('Apenas o administrador pode excluir embarques!',true);return;}
+  if((!usuarioLogado||usuarioLogado.perfil!=='admin')){toast('Apenas o administrador pode excluir embarques!',true);return;}
   if(!confirm('Remover este embarque? Esta ação não pode ser desfeita.'))return;
   await deleteEmb(id);
   embs=embs.filter(d=>d.id!==id);
@@ -1609,7 +1755,7 @@ async function salvarForn(){
   if(editFornId)forn=forn.map(x=>x.id===editFornId?obj:x);else forn.push(obj);
   await saveForn();fecharModalForn();renderForn();updSelForn();toast(editFornId?'Atualizado!':'Fornecedor salvo!');
 }
-async function delForn(id){if(!confirm('Remover?'))return;forn=forn.filter(x=>x.id!==id);await saveForn();renderForn();updSelForn();toast('Removido.');}
+async function delForn(id){if((!usuarioLogado||usuarioLogado.perfil!=='admin')){toast('Apenas o administrador pode excluir!',true);return;}if(!confirm('Remover?'))return;forn=forn.filter(x=>x.id!==id);await saveForn();renderForn();updSelForn();toast('Removido.');}
 function renderForn(){
   document.getElementById('tbody-forn').innerHTML=forn.length
     ?forn.map(f=>`<tr><td><strong>${f.nome}</strong></td><td>${f.tel||'—'}</td><td>${f.resp||'—'}</td><td>${f.obs||'—'}</td>
@@ -1695,7 +1841,7 @@ function renderSaidas(){
     ?f.sort((a,b)=>a.embarque>b.embarque?1:-1).map(d=>`<tr>
       <td>${d.embarque||'—'}</td><td><strong>${d.contrato}</strong></td>
       <td><span class="badge ${d.empresa==='ZF Grãos'?'badge-blue':'badge-green'}">${d.empresa||'Prime Grãos'}</span></td>
-      <td>${cts.find(c=>c.numero==d.contrato)?.comprador||'—'}</td>
+      <td>${(cts.find(c=>c.numero==d.contrato)||{comprador:'—'}).comprador||'—'}</td>
       <td>${d.produto||'—'}</td><td>${d.nf||'—'}</td><td>${d.motorista||'—'}</td>
       <td class="mono">${fmtN(d.pliq,0)}</td><td class="mono">${fmtN(d.sc_emb)}</td><td class="mono">${fmtN(d.sc_ent)}</td>
     </tr>`).join('')
@@ -1707,7 +1853,7 @@ function exportSaidas(tipo='csv'){
   const f=embs.filter(d=>!d.cancelada&&d.embarque).filter(d=>{const [y,m]=(d.embarque||'').split('-');if(ano&&y!==ano)return false;if(mes&&m!==mes)return false;return true;});
   if(!f.length){toast('Nenhum dado.',true);return;}
   const cab=['Data Embarque','Contrato','Empresa','Comprador','Produto','NF','Motorista','Peso Liq (kg)','Sc Embarcadas','Sc Entregues'];
-  const rows=f.map(d=>[d.embarque,d.contrato,d.empresa,cts.find(c=>c.numero==d.contrato)?.comprador||'—',d.produto,d.nf,d.motorista,(d.pliq||0).toFixed(0),(d.sc_emb||0).toFixed(2),(d.sc_ent||0).toFixed(2)]);
+  const rows=f.map(d=>[d.embarque,d.contrato,d.empresa,(cts.find(c=>c.numero==d.contrato)||{comprador:'—'}).comprador||'—',d.produto,d.nf,d.motorista,(d.pliq||0).toFixed(0),(d.sc_emb||0).toFixed(2),(d.sc_ent||0).toFixed(2)]);
   tipo==='pdf'?gerarPDF('Saídas de Produto',cab,rows,'prime-graos-saidas'):gerarCSV(cab,rows,'prime-graos-saidas');
 }
 
@@ -1764,7 +1910,7 @@ function renderCapCom(){
     (d.comissoes||[]).forEach(c=>{
       const pago=!!(d.comissoes_pago&&d.comissoes_pago[c.id]);
       const total=(c.valor||0)*(d.sc_emb||0);
-      linhas.push({embId:d.id,comId:c.id,nome:c.nome,comprador:cts.find(x=>x.numero==d.contrato)?.comprador||'—',contrato:d.contrato,nf:d.nf,embarque:d.embarque,sc_emb:d.sc_emb,valor_sc:c.valor,total,pago});
+      linhas.push({embId:d.id,comId:c.id,nome:c.nome,comprador:(cts.find(x=>x.numero==d.contrato)||{comprador:'—'}).comprador||'—',contrato:d.contrato,nf:d.nf,embarque:d.embarque,sc_emb:d.sc_emb,valor_sc:c.valor,total,pago});
     });
   });
   if(sel){const ns=[...new Set(linhas.map(l=>l.nome))].sort();const cur=sel.value;sel.innerHTML='<option value="">Todos comissionários</option>'+ns.map(n=>`<option ${n===cur?'selected':''}>${n}</option>`).join('');}
@@ -1821,7 +1967,7 @@ function renderFrete(){
   if(ctS){const cs=[...new Set(embs.map(d=>d.contrato))].sort();const cur=ctS.value;ctS.innerHTML='<option value="">Todos contratos</option>'+cs.map(c=>`<option ${c===cur?'selected':''}>${c}</option>`).join('');}
   const ativos=embs.filter(d=>!d.cancelada&&(d.frete_total||0)>0&&(!_empresaFiltro||d.empresa===_empresaFiltro));
   const f=ativos.filter(d=>{
-    if(q&&!d.motorista?.toLowerCase().includes(q)&&!d.cpf?.includes(q)&&!String(d.contrato||'').includes(q))return false;
+    if(q&&!(d.motorista&&d.motorista.toLowerCase().includes(q))&&!(d.cpf&&d.cpf.includes(q))&&!String(d.contrato||'').includes(q))return false;
     if(ct&&d.contrato!=ct)return false;
     if(st&&st==='aberto'&&(d.frete20_pago&&d.frete80_pago))return false;
     if(st&&st==='pago'&&(!d.frete20_pago||!d.frete80_pago))return false;
@@ -1936,8 +2082,8 @@ function renderPainel(){
       const pct=venda>0?lucro/venda*100:0;
       const co=cts.find(c=>c.numero==ct);
       return`<tr><td><strong>${ct}</strong></td>
-        <td><span class="badge ${co?.empresa==='ZF Grãos'?'badge-blue':'badge-green'}">${co?.empresa||'Prime Grãos'}</span></td>
-        <td>${co?.comprador||'—'}</td><td>${co?.produto||'—'}</td><td>${its.length}</td>
+        <td><span class="badge ${(co&&co.empresa)==='ZF Grãos'?'badge-blue':'badge-green'}">${(co&&co.empresa)||'Prime Grãos'}</span></td>
+        <td>${(co&&co.comprador)||'—'}</td><td>${(co&&co.produto)||'—'}</td><td>${its.length}</td>
         <td class="mono">${fmt(venda)}</td><td class="mono">${fmt(compra)}</td>
         <td class="mono ${lucro>=0?'pos':'neg'}">${fmt(lucro)}</td>
         <td class="${pct>=0?'pos':'neg'}">${fmtP(pct)}</td></tr>`;
@@ -2042,7 +2188,7 @@ function exportContratos(tipo){
   const q=(document.getElementById('f-ct-q')||{value:''}).value.toLowerCase();
   const pr=(document.getElementById('f-ct-prod')||{value:''}).value;
   const emp=(document.getElementById('f-ct-emp')||{value:''}).value;
-  const f=cts.filter(c=>(!q||c.numero?.toLowerCase().includes(q)||c.comprador?.toLowerCase().includes(q))&&(!pr||c.produto===pr)&&(!emp||c.empresa===emp));
+  const f=cts.filter(c=>(!q||(c.numero&&c.numero.toLowerCase().includes(q))||(c.comprador&&c.comprador.toLowerCase().includes(q)))&&(!pr||c.produto===pr)&&(!emp||c.empresa===emp));
   if(!f.length){toast('Nenhum dado.',true);return;}
   const cab=['Nº','Empresa','Comprador','Produto','Qtd (sc)','Valor R$/sc','Total R$','Prazo','Fundo','Frete','Vendedor','Vencimento'];
   const rows=f.map(c=>[c.numero,c.empresa,c.comprador,c.produto,c.qtd,c.valor,((c.qtd||0)*(c.valor||0)).toFixed(2),c.prazo+'h',c.tem_fundo?'Sim':'Não',c.frete,c.vendedor,c.vencimento]);
@@ -2058,7 +2204,7 @@ function exportPainel(tipo){
     const venda=its.reduce((s,d)=>s+(d.total_venda||0),0);
     const compra=its.reduce((s,d)=>s+(d.total_compra||0),0);
     const co=cts.find(c=>c.numero==ct);
-    return[ct,co?.empresa||'Prime Grãos',co?.comprador||'—',co?.produto||'—',its.length,venda.toFixed(2),compra.toFixed(2),lucro.toFixed(2),(venda>0?lucro/venda*100:0).toFixed(2)+'%'];
+    return[ct,(co&&co.empresa)||'Prime Grãos',(co&&co.comprador)||'—',(co&&co.produto)||'—',its.length,venda.toFixed(2),compra.toFixed(2),lucro.toFixed(2),(venda>0?lucro/venda*100:0).toFixed(2)+'%'];
   });
   tipo==='pdf'?gerarPDF('Painel — Resumo por Contrato',cab,rows,'prime-graos-painel'):gerarCSV(cab,rows,'prime-graos-painel');
 }
@@ -2087,7 +2233,7 @@ function exportCapCom(tipo){
   embs.filter(d=>!d.cancelada).forEach(d=>{
     (d.comissoes||[]).forEach(c=>{
       const pago=!!(d.comissoes_pago&&d.comissoes_pago[c.id]);
-      linhas.push({nome:c.nome,comprador:cts.find(x=>x.numero==d.contrato)?.comprador||'—',contrato:d.contrato,nf:d.nf,embarque:d.embarque,sc_emb:d.sc_emb,valor_sc:c.valor,total:(c.valor||0)*(d.sc_emb||0),pago});
+      linhas.push({nome:c.nome,comprador:(cts.find(x=>x.numero==d.contrato)||{comprador:'—'}).comprador||'—',contrato:d.contrato,nf:d.nf,embarque:d.embarque,sc_emb:d.sc_emb,valor_sc:c.valor,total:(c.valor||0)*(d.sc_emb||0),pago});
     });
   });
   const f=linhas.filter(l=>(!fCom||l.nome===fCom)&&(!fSt||(fSt==='aberto'&&!l.pago)||(fSt==='pago'&&l.pago)));
@@ -2127,7 +2273,7 @@ function gerarFechContrato(){
   const total_compra=its.reduce((s,d)=>s+(d.total_compra||0),0);
   const frete_total=its.reduce((s,d)=>s+(d.frete_total||0),0);
   // Comissão recalculada com comissionários ATUAIS do contrato
-  const comsAtuaisCalc=ctObj?.comissionarios_ct||[];
+  const comsAtuaisCalc=(ctObj&&ctObj.comissionarios_ct)||[];
   const com_total=its.reduce((s,d)=>{
     const cl=comsAtuaisCalc.length>0?comsAtuaisCalc:(d.comissoes||[]);
     return s+cl.reduce((cs,c)=>cs+((c.valor||0)*(d.sc_emb||0)),0);
@@ -2138,7 +2284,7 @@ function gerarFechContrato(){
   const lucro=its.reduce((s,d)=>s+(d.lucro||0),0);
   const lucro_pct=total_venda>0?lucro/total_venda*100:0;
   const sc_emb=its.reduce((s,d)=>s+(d.sc_emb||0),0);
-  const sc_falt=Math.max(0,(ctObj?.qtd||0)-sc_emb);
+  const sc_falt=Math.max(0,((ctObj&&ctObj.qtd)||0)-sc_emb);
 
   // Cards
   document.getElementById('fc-cards').innerHTML=`
@@ -2151,11 +2297,11 @@ function gerarFechContrato(){
     <div class="stat-card"><div class="s-label">Notas fiscais</div><div class="s-value">${fmt(nf_total)}</div></div>
     <div class="stat-card ${fundo_total>0?'amber':''}"><div class="s-label">Fundo</div><div class="s-value">${fmt(fundo_total)}</div></div>
     <div class="stat-card ${desc_total>0?'red':''}"><div class="s-label">Descontos (quebra/imp.)</div><div class="s-value">${fmt(desc_total)}</div></div>
-    <div class="stat-card ${sc_falt>0?'amber':'green'}"><div class="s-label">Sc faltantes</div><div class="s-value">${fmtN(sc_falt,0)}</div><div class="s-sub">de ${fmtN(ctObj?.qtd||0,0)} sc</div></div>
+    <div class="stat-card ${sc_falt>0?'amber':'green'}"><div class="s-label">Sc faltantes</div><div class="s-value">${fmtN(sc_falt,0)}</div><div class="s-sub">de ${fmtN((ctObj&&ctObj.qtd)||0,0)} sc</div></div>
   `;
 
   // Comissões por comissionário — usa comissionários ATUAIS do contrato
-  const comsAtuais=ctObj?.comissionarios_ct||[];
+  const comsAtuais=(ctObj&&ctObj.comissionarios_ct)||[];
   const porCom={};
   its.forEach(d=>{
     // Usa os comissionários atuais do contrato
@@ -2166,7 +2312,7 @@ function gerarFechContrato(){
       const t=(c.valor||0)*(d.sc_emb||0);
       porCom[c.nome].total+=t;
       // Busca flag pago por id ou por nome
-      const comOriginal=(d.comissoes||[]).find(x=>x.nome?.toUpperCase()===c.nome?.toUpperCase());
+      const comOriginal=(d.comissoes||[]).find(x=>(x.nome&&x.nome.toUpperCase())===(c.nome&&c.nome.toUpperCase()));
       const pg=comOriginal&&!!(d.comissoes_pago&&d.comissoes_pago[comOriginal.id]);
       if(pg)porCom[c.nome].pago+=t;else porCom[c.nome].aberto+=t;
     });
@@ -2270,7 +2416,7 @@ function exportFechContrato(tipo='csv'){
     doc.save(`prime-graos-fech-contrato-${ct}.pdf`);toast('PDF exportado!');
   }else{
     const cab=['Item','Valor'];
-    const rows=[['Contrato',ct],['Comprador',ctObj?.comprador||'—'],['Total Venda',fmt(total_venda)],['Total Compra',fmt(total_compra)],['Frete Total',fmt(frete_total)],['Comissões',fmt(com_total)],['CTE Total',fmt(cte_total)],['Notas Fiscais',fmt(nf_total)],['Fundo',fmt(fundo_total)],['Lucro R$',fmt(lucro)],['Lucro %',fmtP(lucro_pct)]];
+    const rows=[['Contrato',ct],['Comprador',(ctObj&&ctObj.comprador)||'—'],['Total Venda',fmt(total_venda)],['Total Compra',fmt(total_compra)],['Frete Total',fmt(frete_total)],['Comissões',fmt(com_total)],['CTE Total',fmt(cte_total)],['Notas Fiscais',fmt(nf_total)],['Fundo',fmt(fundo_total)],['Lucro R$',fmt(lucro)],['Lucro %',fmtP(lucro_pct)]];
     gerarCSV(cab,rows,`prime-graos-fech-contrato-${ct}`);
   }
 }
@@ -2282,28 +2428,14 @@ function initFech(){
   const box=document.getElementById('ct-checks');
   box.innerHTML=ns.length?ns.map(ct=>{const co=cts.find(c=>c.numero==ct);return`<label class="ct-check" onclick="this.classList.toggle('on',this.querySelector('input').checked)"><input type="checkbox" value="${ct}"> ${ct}${co?` — ${co.comprador}`:''}</label>`;}).join(''):'<span style="color:var(--text-faint);font-size:13px">Nenhum embarque ativo cadastrado.</span>';
   document.getElementById('fech-result').style.display='none';document.getElementById('fech-vazio').style.display='none';
-}
-function selTodos(m){document.querySelectorAll('#ct-checks input[type=checkbox]').forEach(cb=>{cb.checked=m;cb.closest('.ct-check').classList.toggle('on',m);});}
-function gerarFechamento(){
-  const sel=[...document.querySelectorAll('#ct-checks input[type=checkbox]:checked')].map(cb=>cb.value);
-  if(!sel.length){document.getElementById('fech-vazio').style.display='block';document.getElementById('fech-result').style.display='none';return;}
-  document.getElementById('fech-vazio').style.display='none';document.getElementById('fech-result').style.display='block';
-  const hoje=new Date();
-  const ativos=embs.filter(d=>!d.cancelada&&sel.includes(String(d.contrato)));
-  _fech=sel.map(ct=>{
-    const its=ativos.filter(d=>String(d.contrato)===ct);
-    const co=cts.find(c=>c.numero==ct);
-    const ph=co?co.prazo:(cfg.prazo||72);
-    const sc_emb=its.reduce((s,d)=>s+(d.sc_emb||0),0);
-    const sc_ent=its.reduce((s,d)=>s+(d.sc_ent||0),0);
     const total_venda=its.reduce((s,d)=>s+(d.total_venda||0),0);
     const recebido=its.reduce((s,d)=>s+(d.recebido||0),0);
     const a_receber=its.filter(d=>!d.recebido||d.recebido===0).reduce((s,d)=>s+(d.total_venda||0),0);
     const vencido=its.filter(d=>{if(d.recebido&&d.recebido>0)return false;if(!d.descarga)return false;const p=prazoData(d.descarga,ph);return hoje>p&&!d.data_rec;}).reduce((s,d)=>s+(d.total_venda||0),0);
     // Sacas faltantes = qtd contrato - sc embarcadas
-    const qtd_contrato=co?.qtd||0;
+    const qtd_contrato=(co&&co.qtd)||0;
     const sc_faltantes=Math.max(0,qtd_contrato-sc_emb);
-    return{ct,empresa:co?.empresa||'Prime Grãos',comprador:co?.comprador||'—',produto:co?.produto||'—',qtd:its.length,sc_emb,sc_ent,sc_faltantes,total_venda,recebido,a_receber,vencido};
+    return{ct,empresa:(co&&co.empresa)||'Prime Grãos',comprador:(co&&co.comprador)||'—',produto:(co&&co.produto)||'—',qtd:its.length,sc_emb,sc_ent,sc_faltantes,total_venda,recebido,a_receber,vencido};
   });
   const tV=_fech.reduce((s,r)=>s+r.total_venda,0),tR=_fech.reduce((s,r)=>s+r.recebido,0);
   const tA=_fech.reduce((s,r)=>s+r.a_receber,0),tVe=_fech.reduce((s,r)=>s+r.vencido,0);
@@ -2341,13 +2473,6 @@ function gerarFechamento(){
       <td class="mono ${pv>0?'neg':''}">${fmt(pv)}</td></tr>`;}).join('')
     :'<tr><td colspan="9" class="empty-state">Nenhuma nota com recebimento pendente.</td></tr>';
 }
-function exportEmb(tipo='csv'){
-  if(!embs.length){toast('Nenhum dado.',true);return;}
-  const n=v=>Number(v||0).toFixed(2);
-  const cab=['Contrato','Empresa','NF','Status','Nota','Produto','Dono carga','Embarque','Descarga','Motorista','CPF','Transportadora','Sc Emb','Sc Ent','Quebra','Impureza kg','Compra/sc','Venda/sc','Total Compra','Total Venda','Frete Total','Custo Nota','CTE','Comissao','Fundo','Lucro R$','Lucro %','Lancado Por'];
-  const rows=embs.map(d=>[d.contrato,d.empresa,d.nf,d.status,d.cancelada?'Cancelada':'Ativa',d.produto,d.dono_carga,d.embarque,d.descarga,d.motorista,d.cpf,d.transportadora,n(d.sc_emb),n(d.sc_ent),n(d.quebra_sc),n(d.impureza||0),n(d.compra),n(d.venda),n(d.total_compra),n(d.total_venda),n(d.frete_total),n(d.cn_val),n(d.cte||0),n(d.com_total),n(d.fundo),n(d.lucro),n(d.lucro_pct),d.lancado_por]);
-  tipo==='pdf'?gerarPDF('Embarques',cab,rows,'prime-graos-embarques'):gerarCSV(cab,rows,'prime-graos-embarques');
-}
 function exportFech(tipo='csv'){
   if(!_fech.length){toast('Gere o fechamento primeiro.',true);return;}
   const cab=['Contrato','Empresa','Comprador','Produto','Embarques','Sc Embarcadas','Sc Entregues','Sc Faltantes','Total Venda','Total Recebido','A Receber','Saldo Vencido'];
@@ -2355,73 +2480,10 @@ function exportFech(tipo='csv'){
   tipo==='pdf'?gerarPDF('Fechamento por Contrato',cab,rows,'prime-graos-fechamento'):gerarCSV(cab,rows,'prime-graos-fechamento');
 }
 
-// ===== CONFIG =====
-function loadCfgUI(){
-  document.getElementById('cfg_taxa').value=cfg.taxa||5;
-  document.getElementById('cfg_prazo').value=cfg.prazo||72;
-  document.getElementById('cfg_tolerancia').value=cfg.tolerancia||3;
-  renderUsuarios();
-}
-async function salvarCfgUI(){
-  cfg.taxa=parseFloat(document.getElementById('cfg_taxa').value)||5;
-  cfg.prazo=parseFloat(document.getElementById('cfg_prazo').value)||72;
-  cfg.tolerancia=parseFloat(document.getElementById('cfg_tolerancia').value)||3;
-  await saveCfg();toast('Configurações salvas!');
-}
-let editUserId=null;
-function renderUsuarios(){
-  const lista=document.getElementById('usuarios-lista');if(!lista)return;
-  lista.innerHTML=usuarios.map(u=>`
-    <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:.5px solid var(--border)">
-      <div style="display:flex;align-items:center;gap:10px">
-        <div style="width:34px;height:34px;border-radius:50%;background:${u.perfil==='admin'?'var(--green-pale)':'var(--blue-pale)'};display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:${u.perfil==='admin'?'var(--green)':'var(--blue)'};flex-shrink:0">${u.nome.charAt(0).toUpperCase()}</div>
-        <div>
-          <div style="font-size:13px;font-weight:500">${u.nome}</div>
-          <div style="font-size:11px;color:var(--text-faint)">@${u.user} · <span class="badge ${u.perfil==='admin'?'badge-green':'badge-blue'}" style="font-size:9px">${u.perfil==='admin'?'Admin':'Operador'}</span></div>
-        </div>
-      </div>
-      <div style="display:flex;gap:6px;align-items:center">
-        ${u.id===usuarioLogado?.id?'<span style="font-size:11px;color:var(--text-faint)">você</span>':`<button class="btn-edit" onclick="editarUsuario(${u.id})">Editar</button><button class="btn btn-danger" onclick="delUsuario(${u.id})">×</button>`}
-      </div>
-    </div>`).join('');
-}
-function editarUsuario(id){const u=usuarios.find(x=>x.id===id);if(!u)return;editUserId=id;document.getElementById('u_nome').value=u.nome;document.getElementById('u_user').value=u.user;document.getElementById('u_senha').value=u.senha;document.getElementById('u_perfil').value=u.perfil;document.getElementById('form-user-titulo').textContent='Editar usuário';}
-function cancelarEdicaoUser(){editUserId=null;['u_nome','u_user','u_senha'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});document.getElementById('u_perfil').value='operador';document.getElementById('form-user-titulo').textContent='Novo usuário';}
-async function salvarUsuario(){
-  const nome=document.getElementById('u_nome').value.trim(),user=document.getElementById('u_user').value.trim().toLowerCase(),senha=document.getElementById('u_senha').value.trim(),perfil=document.getElementById('u_perfil').value;
-  if(!nome||!user||!senha){toast('Preencha nome, usuário e senha!',true);return;}
-  const dup=usuarios.find(x=>x.user.toLowerCase()===user&&x.id!==editUserId);
-  if(dup){toast('Usuário já existe!',true);return;}
-  if(editUserId)usuarios=usuarios.map(x=>x.id===editUserId?{...x,nome,user,senha,perfil}:x);
-  else usuarios.push({id:Date.now(),nome,user,senha,perfil});
-  showLoading('Salvando usuário...');
-  await saveUsers();
-  hideLoading();
-  // Recarregar do banco para confirmar
-  try{
-    const ru=await fetch(`${SB_URL}/rest/v1/usuarios?select=data&order=id`,{headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}}).then(r=>r.json()).then(d=>d.map?d.map(x=>x.data):[]);
-    if(ru&&ru.length)usuarios=ru;
-  }catch(e){}
-  renderUsuarios();cancelarEdicaoUser();toast(editUserId?'Usuário atualizado!':'Usuário criado! Pode fazer login agora.');
-}
-async function delUsuario(id){
-  if(usuarios.length<=1){toast('Deve haver ao menos um usuário!',true);return;}
-  if(!confirm('Remover?'))return;
-  usuarios=usuarios.filter(x=>x.id!==id);await saveUsers();renderUsuarios();toast('Removido.');
-}
-async function trocarMinhaSenha(){
-  const sa=document.getElementById('cfg_sa').value,sn=document.getElementById('cfg_sn').value;
-  if(!sa||!sn){toast('Preencha as senhas!',true);return;}
-  if(sa!==usuarioLogado?.senha){toast('Senha atual incorreta!',true);return;}
-  usuarios=usuarios.map(x=>x.id===usuarioLogado.id?{...x,senha:sn}:x);
-  usuarioLogado={...usuarioLogado,senha:sn};
-  await saveUsers();document.getElementById('cfg_sa').value='';document.getElementById('cfg_sn').value='';toast('Senha alterada!');
-}
-
 // ===== REFRESH =====
 async function recarregarDados(){
   await load();
-  const active=document.querySelector('.page.active')?.id?.replace('page-','');
+  const active=((document.querySelector('.page.active')||{}).id||'').replace('page-','');
   if(active==='painel')renderPainel();
   if(active==='embarques')renderEmbarques();
   if(active==='contratos')renderContratos();
@@ -2446,8 +2508,7 @@ function iniciar(){
     if(av)av.textContent=usuarioLogado.nome.charAt(0).toUpperCase();
     if(nm)nm.textContent=usuarioLogado.nome;
     if(rl)rl.textContent=usuarioLogado.perfil==='admin'?'Administrador':'Operador';
-    const navCfg=document.getElementById('nav-config');
-    if(navCfg&&usuarioLogado.perfil!=='admin')navCfg.style.display='none';
+    aplicarMenuPermissoes();
   }
   initFech();updSelCts();updSelTransp();updSelForn();calcular();
 }
