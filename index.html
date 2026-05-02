@@ -2428,15 +2428,7 @@ function initFech(){
   const box=document.getElementById('ct-checks');
   box.innerHTML=ns.length?ns.map(ct=>{const co=cts.find(c=>c.numero==ct);return`<label class="ct-check" onclick="this.classList.toggle('on',this.querySelector('input').checked)"><input type="checkbox" value="${ct}"> ${ct}${co?` — ${co.comprador}`:''}</label>`;}).join(''):'<span style="color:var(--text-faint);font-size:13px">Nenhum embarque ativo cadastrado.</span>';
   document.getElementById('fech-result').style.display='none';document.getElementById('fech-vazio').style.display='none';
-    const total_venda=its.reduce((s,d)=>s+(d.total_venda||0),0);
-    const recebido=its.reduce((s,d)=>s+(d.recebido||0),0);
-    const a_receber=its.filter(d=>!d.recebido||d.recebido===0).reduce((s,d)=>s+(d.total_venda||0),0);
-    const vencido=its.filter(d=>{if(d.recebido&&d.recebido>0)return false;if(!d.descarga)return false;const p=prazoData(d.descarga,ph);return hoje>p&&!d.data_rec;}).reduce((s,d)=>s+(d.total_venda||0),0);
-    // Sacas faltantes = qtd contrato - sc embarcadas
-    const qtd_contrato=(co&&co.qtd)||0;
-    const sc_faltantes=Math.max(0,qtd_contrato-sc_emb);
-    return{ct,empresa:(co&&co.empresa)||'Prime Grãos',comprador:(co&&co.comprador)||'—',produto:(co&&co.produto)||'—',qtd:its.length,sc_emb,sc_ent,sc_faltantes,total_venda,recebido,a_receber,vencido};
-  });
+}
   const tV=_fech.reduce((s,r)=>s+r.total_venda,0),tR=_fech.reduce((s,r)=>s+r.recebido,0);
   const tA=_fech.reduce((s,r)=>s+r.a_receber,0),tVe=_fech.reduce((s,r)=>s+r.vencido,0);
   const tSe=_fech.reduce((s,r)=>s+r.sc_emb,0),tSn=_fech.reduce((s,r)=>s+r.sc_ent,0);
