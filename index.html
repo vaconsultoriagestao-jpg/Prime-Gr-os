@@ -343,7 +343,7 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
         <div class="tbl-wrap"><table><thead><tr>
           <th>Contrato</th><th>Empresa</th><th>Comprador</th><th>Produto</th><th>Embarques</th>
           <th>Sc embarcadas</th><th>Sc entregues</th><th>Sc faltantes</th>
-          <th>Total venda</th><th>Total recebido</th><th>A receber</th><th>Saldo vencido</th><th>Situação</th>
+          <th>Total venda</th><th>Total recebido</th><th>A receber</th><th>Desc. fundo</th><th>A receber líq.</th><th>Saldo vencido</th><th>Situação</th>
         </tr></thead><tbody id="tbody-fech"></tbody></table></div>
       </div>
       <div class="table-card">
@@ -724,6 +724,10 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
     <p class="section-sub">Controle do custo de nota por fornecedor e embarque.</p>
     <div class="table-filters" style="margin-bottom:1rem;gap:8px;display:flex;flex-wrap:wrap">
       <select class="filter-select" id="f-capn-forn" onchange="renderCapNota()"><option value="">Todos fornecedores</option></select>
+      <select class="filter-select" id="f-capn-ct" onchange="renderCapNota()"><option value="">Todos contratos</option></select>
+      <select class="filter-select" id="f-capn-emp" onchange="renderCapNota()">
+        <option value="">Todas empresas</option><option>Prime Grãos</option><option>ZF Grãos</option>
+      </select>
       <select class="filter-select" id="f-capn-st" onchange="renderCapNota()">
         <option value="">Todos</option><option value="aberto">Em aberto</option><option value="pago">Pagos</option>
       </select>
@@ -732,7 +736,7 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
     <div class="table-card">
       <div class="table-header"><h3>Notas por embarque</h3><div style="display:flex;gap:6px"><button class="btn btn-secondary btn-sm" onclick="exportCapNota('csv')">⬇ Excel</button><button class="btn btn-secondary btn-sm" onclick="exportCapNota('pdf')">⬇ PDF</button></div></div>
       <div class="tbl-wrap"><table><thead><tr>
-        <th>Fornecedor</th><th>Contrato</th><th>NF</th><th>Motorista</th>
+        <th>Fornecedor</th><th>Empresa</th><th>Contrato</th><th>NF</th><th>Motorista</th>
         <th>Embarque</th><th>Sc emb.</th><th>Custo R$/sc</th><th>Custo total</th><th>Status</th><th></th>
       </tr></thead><tbody id="tbody-capn"></tbody></table></div>
     </div>
@@ -742,16 +746,19 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
     <p class="section-sub">Controle do CTE por transportadora por embarque.</p>
     <div class="table-filters" style="margin-bottom:1rem;gap:8px;display:flex;flex-wrap:wrap">
       <select class="filter-select" id="f-capt-transp" onchange="renderCapTransp()"><option value="">Todas transportadoras</option></select>
+      <select class="filter-select" id="f-capt-ct" onchange="renderCapTransp()"><option value="">Todos contratos</option></select>
+      <select class="filter-select" id="f-capt-emp" onchange="renderCapTransp()">
+        <option value="">Todas empresas</option><option>Prime Grãos</option><option>ZF Grãos</option>
+      </select>
       <select class="filter-select" id="f-capt-st" onchange="renderCapTransp()">
         <option value="">Todos</option><option value="aberto">Em aberto</option><option value="pago">Pagos</option>
       </select>
     </div>
-    <!-- Cards resumo -->
     <div class="stats-grid" id="capt-cards" style="margin-bottom:1rem"></div>
     <div class="table-card">
       <div class="table-header"><h3>CTE por embarque</h3><div style="display:flex;gap:6px"><button class="btn btn-secondary btn-sm" onclick="exportCapTransp('csv')">⬇ Excel</button><button class="btn btn-secondary btn-sm" onclick="exportCapTransp('pdf')">⬇ PDF</button></div></div>
       <div class="tbl-wrap"><table><thead><tr>
-        <th>Transportadora</th><th>Contrato</th><th>NF</th><th>Motorista</th>
+        <th>Transportadora</th><th>Empresa</th><th>Contrato</th><th>NF</th><th>Motorista</th>
         <th>Embarque</th><th>Sc emb.</th><th>CTE R$/sc</th><th>CTE Total</th><th>Status</th><th></th>
       </tr></thead><tbody id="tbody-capt"></tbody></table></div>
     </div>
@@ -763,6 +770,10 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
     <p class="section-sub">Controle de comissões por comissionário e embarque.</p>
     <div class="table-filters" style="margin-bottom:1rem;gap:8px;display:flex;flex-wrap:wrap">
       <select class="filter-select" id="f-capc-com" onchange="renderCapCom()"><option value="">Todos comissionários</option></select>
+      <select class="filter-select" id="f-capc-ct" onchange="renderCapCom()"><option value="">Todos contratos</option></select>
+      <select class="filter-select" id="f-capc-emp" onchange="renderCapCom()">
+        <option value="">Todas empresas</option><option>Prime Grãos</option><option>ZF Grãos</option>
+      </select>
       <select class="filter-select" id="f-capc-st" onchange="renderCapCom()">
         <option value="">Todos</option><option value="aberto">Em aberto</option><option value="pago">Pagos</option>
       </select>
@@ -771,7 +782,7 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
     <div class="table-card">
       <div class="table-header"><h3>Comissões por embarque</h3><div style="display:flex;gap:6px"><button class="btn btn-secondary btn-sm" onclick="exportCapCom('csv')">⬇ Excel</button><button class="btn btn-secondary btn-sm" onclick="exportCapCom('pdf')">⬇ PDF</button></div></div>
       <div class="tbl-wrap"><table><thead><tr>
-        <th>Comissionário</th><th>Comprador</th><th>Contrato</th><th>NF</th>
+        <th>Comissionário</th><th>Empresa</th><th>Comprador</th><th>Contrato</th><th>NF</th>
         <th>Embarque</th><th>Sc emb.</th><th>R$/sc</th><th>Total</th><th>Status</th><th></th>
       </tr></thead><tbody id="tbody-capc"></tbody></table></div>
     </div>
@@ -1778,12 +1789,16 @@ async function toggleCapNotaPago(embId){
   await saveEmb(embs[idx]);renderCapNota();toast('Status atualizado!');
 }
 function renderCapNota(){
-  const sel=document.getElementById('f-capn-forn');
-  if(sel){const fs=[...new Set(embs.filter(d=>!d.cancelada&&d.fornecedor_nota).map(d=>d.fornecedor_nota))].sort();const cur=sel.value;sel.innerHTML='<option value="">Todos fornecedores</option>'+fs.map(f=>`<option ${f===cur?'selected':''}>${f}</option>`).join('');}
   const fForn=(document.getElementById('f-capn-forn')||{value:''}).value;
+  const fCt=(document.getElementById('f-capn-ct')||{value:''}).value;
+  const fEmp=(document.getElementById('f-capn-emp')||{value:''}).value||_empresaFiltro;
   const fSt=(document.getElementById('f-capn-st')||{value:''}).value;
+  const sel=document.getElementById('f-capn-forn');
+  if(sel){const fs=[...new Set(embs.filter(d=>!d.cancelada&&d.fornecedor_nota).map(d=>d.fornecedor_nota))].sort();const cur=fForn;sel.innerHTML='<option value="">Todos fornecedores</option>'+fs.map(f=>`<option ${f===cur?'selected':''}>${f}</option>`).join('');}
+  const ctS=document.getElementById('f-capn-ct');
+  if(ctS){const cs=[...new Set(embs.filter(d=>!d.cancelada).map(d=>String(d.contrato)))].sort();const cur=fCt;ctS.innerHTML='<option value="">Todos contratos</option>'+cs.map(c=>`<option ${c===cur?'selected':''}>${c}</option>`).join('');}
   const ativos=embs.filter(d=>!d.cancelada&&(d.cn_val||0)>0&&d.fornecedor_nota);
-  const f=ativos.filter(d=>(!fForn||d.fornecedor_nota===fForn)&&(!fSt||(fSt==='aberto'&&!d.nota_pago)||(fSt==='pago'&&d.nota_pago)));
+  const f=ativos.filter(d=>(!fForn||d.fornecedor_nota===fForn)&&(!fCt||String(d.contrato)===fCt)&&(!fEmp||d.empresa===fEmp)&&(!fSt||(fSt==='aberto'&&!d.nota_pago)||(fSt==='pago'&&d.nota_pago)));
   const totTotal=f.reduce((s,d)=>s+(d.cn_val||0),0);
   const totAberto=f.filter(d=>!d.nota_pago).reduce((s,d)=>s+(d.cn_val||0),0);
   const totPago=f.filter(d=>d.nota_pago).reduce((s,d)=>s+(d.cn_val||0),0);
@@ -1868,9 +1883,13 @@ function renderCapTransp(){
   const sel=document.getElementById('f-capt-transp');
   if(sel){const ts=[...new Set(embs.filter(d=>!d.cancelada&&d.transportadora).map(d=>d.transportadora))].sort();const cur=sel.value;sel.innerHTML='<option value="">Todas transportadoras</option>'+ts.map(t=>`<option ${t===cur?'selected':''}>${t}</option>`).join('');}
   const fTransp=(document.getElementById('f-capt-transp')||{value:''}).value;
+  const fCt=(document.getElementById('f-capt-ct')||{value:''}).value;
+  const fEmp=(document.getElementById('f-capt-emp')||{value:''}).value||_empresaFiltro;
   const fSt=(document.getElementById('f-capt-st')||{value:''}).value;
+  const ctS=document.getElementById('f-capt-ct');
+  if(ctS){const cs=[...new Set(embs.filter(d=>!d.cancelada).map(d=>String(d.contrato)))].sort();const cur=fCt;ctS.innerHTML='<option value="">Todos contratos</option>'+cs.map(c=>`<option ${c===cur?'selected':''}>${c}</option>`).join('');}
   const ativos=embs.filter(d=>!d.cancelada&&(d.cte||0)>0&&d.transportadora);
-  const f=ativos.filter(d=>(!fTransp||d.transportadora===fTransp)&&(!fSt||(fSt==='aberto'&&!d.cte_pago)||(fSt==='pago'&&d.cte_pago)));
+  const f=ativos.filter(d=>(!fTransp||d.transportadora===fTransp)&&(!fCt||String(d.contrato)===fCt)&&(!fEmp||d.empresa===fEmp)&&(!fSt||(fSt==='aberto'&&!d.cte_pago)||(fSt==='pago'&&d.cte_pago)));
   // Cards
   const totTotal=f.reduce((s,d)=>s+(d.cte||0),0);
   const totAberto=f.filter(d=>!d.cte_pago).reduce((s,d)=>s+(d.cte||0),0);
@@ -1884,6 +1903,7 @@ function renderCapTransp(){
   document.getElementById('tbody-capt').innerHTML=f.length
     ?f.map(d=>`<tr>
       <td><strong>${d.transportadora||'—'}</strong></td>
+      <td><span class="badge ${d.empresa==='ZF Grãos'?'badge-blue':'badge-green'}">${d.empresa||'Prime Grãos'}</span></td>
       <td>${d.contrato}</td><td>${d.nf||'—'}</td><td>${d.motorista||'—'}</td>
       <td>${d.embarque||'—'}</td><td class="mono">${fmtN(d.sc_emb)}</td>
       <td class="mono">${fmtN(d.cte_sc||0)}</td>
@@ -1910,12 +1930,17 @@ function renderCapCom(){
     (d.comissoes||[]).forEach(c=>{
       const pago=!!(d.comissoes_pago&&d.comissoes_pago[c.id]);
       const total=(c.valor||0)*(d.sc_emb||0);
-      linhas.push({embId:d.id,comId:c.id,nome:c.nome,comprador:(cts.find(x=>x.numero==d.contrato)||{comprador:'—'}).comprador||'—',contrato:d.contrato,nf:d.nf,embarque:d.embarque,sc_emb:d.sc_emb,valor_sc:c.valor,total,pago});
+      linhas.push({embId:d.id,comId:c.id,nome:c.nome,empresa:d.empresa||'Prime Grãos',comprador:(cts.find(x=>x.numero==d.contrato)||{comprador:'—'}).comprador||'—',contrato:d.contrato,nf:d.nf,embarque:d.embarque,sc_emb:d.sc_emb,valor_sc:c.valor,total,pago});
     });
   });
-  if(sel){const ns=[...new Set(linhas.map(l=>l.nome))].sort();const cur=sel.value;sel.innerHTML='<option value="">Todos comissionários</option>'+ns.map(n=>`<option ${n===cur?'selected':''}>${n}</option>`).join('');}
+  const fCt2=(document.getElementById('f-capc-ct')||{value:''}).value;
+  const fEmp2=(document.getElementById('f-capc-emp')||{value:''}).value||_empresaFiltro;
+  const fCom2=(document.getElementById('f-capc-com')||{value:''}).value;
+  if(sel){const ns=[...new Set(linhas.map(l=>l.nome))].sort();const cur=fCom2;sel.innerHTML='<option value="">Todos comissionários</option>'+ns.map(n=>`<option ${n===cur?'selected':''}>${n}</option>`).join('');}
+  const ctSC=document.getElementById('f-capc-ct');
+  if(ctSC){const cs=[...new Set(embs.filter(d=>!d.cancelada).map(d=>String(d.contrato)))].sort();const cur=fCt2;ctSC.innerHTML='<option value="">Todos contratos</option>'+cs.map(c=>`<option ${c===cur?'selected':''}>${c}</option>`).join('');}
   const fCom=(document.getElementById('f-capc-com')||{value:''}).value;
-  const f=linhas.filter(l=>(!fCom||l.nome===fCom)&&(!fSt||(fSt==='aberto'&&!l.pago)||(fSt==='pago'&&l.pago)));
+  const f=linhas.filter(l=>(!fCom||l.nome===fCom)&&(!fCt2||String(l.contrato)===fCt2)&&(!fEmp2||l.empresa===fEmp2)&&(!fSt||(fSt==='aberto'&&!l.pago)||(fSt==='pago'&&l.pago)));
   const totTotal=f.reduce((s,l)=>s+l.total,0);
   const totAberto=f.filter(l=>!l.pago).reduce((s,l)=>s+l.total,0);
   const totPago=f.filter(l=>l.pago).reduce((s,l)=>s+l.total,0);
@@ -2286,17 +2311,26 @@ function gerarFechContrato(){
   const sc_emb=its.reduce((s,d)=>s+(d.sc_emb||0),0);
   const sc_falt=Math.max(0,((ctObj&&ctObj.qtd)||0)-sc_emb);
 
+  // A receber líquido (com desconto de fundo)
+  const a_receber_total=its.filter(d=>!d.recebido||d.recebido===0).reduce((s,d)=>s+(d.total_venda||0),0);
+  const fundo_pct_ct=(ctObj&&ctObj.tem_fundo)?(ctObj.fundo_pct||5)/100:0;
+  const fundo_desc_rec=a_receber_total*fundo_pct_ct;
+  const a_receber_liq=a_receber_total-fundo_desc_rec;
+
   // Cards
   document.getElementById('fc-cards').innerHTML=`
     <div class="stat-card ${lucro>=0?'green':'red'}"><div class="s-label">Lucro R$</div><div class="s-value">${fmt(lucro)}</div><div class="s-sub">${fmtP(lucro_pct)}</div></div>
     <div class="stat-card"><div class="s-label">Total venda</div><div class="s-value">${fmt(total_venda)}</div></div>
     <div class="stat-card"><div class="s-label">Total compra</div><div class="s-value">${fmt(total_compra)}</div></div>
+    <div class="stat-card ${a_receber_total>0?'amber':'green'}"><div class="s-label">A receber (bruto)</div><div class="s-value">${fmt(a_receber_total)}</div></div>
+    <div class="stat-card ${fundo_desc_rec>0?'amber':''}"><div class="s-label">Desc. fundo (${(ctObj&&ctObj.tem_fundo)?(ctObj.fundo_pct||5):0}%)</div><div class="s-value">${fmt(fundo_desc_rec)}</div></div>
+    <div class="stat-card ${a_receber_liq>0?'amber':'green'}"><div class="s-label">A receber (líquido)</div><div class="s-value">${fmt(a_receber_liq)}</div></div>
     <div class="stat-card"><div class="s-label">Frete total</div><div class="s-value">${fmt(frete_total)}</div></div>
     <div class="stat-card"><div class="s-label">Comissões</div><div class="s-value">${fmt(com_total)}</div></div>
     <div class="stat-card"><div class="s-label">CTE total</div><div class="s-value">${fmt(cte_total)}</div></div>
     <div class="stat-card"><div class="s-label">Notas fiscais</div><div class="s-value">${fmt(nf_total)}</div></div>
-    <div class="stat-card ${fundo_total>0?'amber':''}"><div class="s-label">Fundo</div><div class="s-value">${fmt(fundo_total)}</div></div>
-    <div class="stat-card ${desc_total>0?'red':''}"><div class="s-label">Descontos (quebra/imp.)</div><div class="s-value">${fmt(desc_total)}</div></div>
+    <div class="stat-card ${fundo_total>0?'amber':''}"><div class="s-label">Fundo (embarques)</div><div class="s-value">${fmt(fundo_total)}</div></div>
+    <div class="stat-card ${desc_total>0?'red':''}"><div class="s-label">Descontos quebra</div><div class="s-value">${fmt(desc_total)}</div></div>
     <div class="stat-card ${sc_falt>0?'amber':'green'}"><div class="s-label">Sc faltantes</div><div class="s-value">${fmtN(sc_falt,0)}</div><div class="s-sub">de ${fmtN((ctObj&&ctObj.qtd)||0,0)} sc</div></div>
   `;
 
@@ -2444,19 +2478,26 @@ function gerarFechamento(){
     const total_venda=its.reduce((s,d)=>s+(d.total_venda||0),0);
     const recebido=its.reduce((s,d)=>s+(d.recebido||0),0);
     const a_receber=its.filter(d=>!d.recebido||d.recebido===0).reduce((s,d)=>s+(d.total_venda||0),0);
+    const fundo_pct=(co&&co.tem_fundo)?(co.fundo_pct||5)/100:0;
+    const fundo_valor=a_receber*fundo_pct;
+    const a_receber_liq=a_receber-fundo_valor;
     const vencido=its.filter(d=>{if(d.recebido&&d.recebido>0)return false;if(!d.descarga)return false;const p=prazoData(d.descarga,ph);return hoje>p&&!d.data_rec;}).reduce((s,d)=>s+(d.total_venda||0),0);
     const qtd_contrato=(co&&co.qtd)||0;
     const sc_faltantes=Math.max(0,qtd_contrato-sc_emb);
-    return{ct,empresa:(co&&co.empresa)||'Prime Grãos',comprador:(co&&co.comprador)||'—',produto:(co&&co.produto)||'—',qtd:its.length,sc_emb,sc_ent,sc_faltantes,total_venda,recebido,a_receber,vencido};
+    return{ct,empresa:(co&&co.empresa)||'Prime Grãos',comprador:(co&&co.comprador)||'—',produto:(co&&co.produto)||'—',qtd:its.length,sc_emb,sc_ent,sc_faltantes,total_venda,recebido,a_receber,a_receber_liq,fundo_valor,tem_fundo:!!(co&&co.tem_fundo),vencido};
   });
   const tV=_fech.reduce((s,r)=>s+r.total_venda,0),tR=_fech.reduce((s,r)=>s+r.recebido,0);
   const tA=_fech.reduce((s,r)=>s+r.a_receber,0),tVe=_fech.reduce((s,r)=>s+r.vencido,0);
+  const tAL=_fech.reduce((s,r)=>s+r.a_receber_liq,0);
+  const tF=_fech.reduce((s,r)=>s+r.fundo_valor,0);
   const tSe=_fech.reduce((s,r)=>s+r.sc_emb,0),tSn=_fech.reduce((s,r)=>s+r.sc_ent,0);
   const tSf=_fech.reduce((s,r)=>s+r.sc_faltantes,0);
   document.getElementById('fech-cards').innerHTML=`
     <div class="stat-card"><div class="s-label">Total de vendas</div><div class="s-value">${fmt(tV)}</div></div>
     <div class="stat-card green"><div class="s-label">Total recebido</div><div class="s-value">${fmt(tR)}</div></div>
-    <div class="stat-card ${tA>0?'amber':'green'}"><div class="s-label">A receber</div><div class="s-value">${fmt(tA)}</div></div>
+    <div class="stat-card ${tA>0?'amber':'green'}"><div class="s-label">A receber (bruto)</div><div class="s-value">${fmt(tA)}</div></div>
+    <div class="stat-card ${tF>0?'amber':''}"><div class="s-label">Desconto fundo</div><div class="s-value">${fmt(tF)}</div></div>
+    <div class="stat-card ${tAL>0?'amber':'green'}"><div class="s-label">A receber (líquido)</div><div class="s-value">${fmt(tAL)}</div></div>
     <div class="stat-card ${tVe>0?'red':'green'}"><div class="s-label">Saldo vencido</div><div class="s-value">${fmt(tVe)}</div></div>
     <div class="stat-card"><div class="s-label">Sc embarcadas</div><div class="s-value">${fmtN(tSe,0)}</div></div>
     <div class="stat-card"><div class="s-label">Sc entregues</div><div class="s-value">${fmtN(tSn,0)}</div></div>
@@ -2472,6 +2513,8 @@ function gerarFechamento(){
       <td class="mono ${r.sc_faltantes>0?'amber-txt':''}">${fmtN(r.sc_faltantes,0)}</td>
       <td class="mono">${fmt(r.total_venda)}</td><td class="mono pos">${fmt(r.recebido)}</td>
       <td class="mono ${r.a_receber>0?'amber-txt':''}">${fmt(r.a_receber)}</td>
+      <td class="mono neg">${r.tem_fundo?fmt(r.fundo_valor):'—'}</td>
+      <td class="mono ${r.a_receber_liq>0?'amber-txt':''}">${fmt(r.a_receber_liq)}</td>
       <td class="mono ${r.vencido>0?'neg':''}">${fmt(r.vencido)}</td>
       <td><span class="badge ${bc}">${sit}</span></td></tr>`;
   }).join('');
