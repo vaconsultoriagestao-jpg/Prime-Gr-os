@@ -334,17 +334,25 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
       <div style="padding:1rem 1.25rem"><div id="ct-checks" style="display:flex;flex-wrap:wrap;gap:8px"></div></div>
     </div>
     <div id="fech-result" style="display:none">
-      <div id="fech-cards" class="stats-grid"></div>
+      <div id="fech-cards" class="stats-grid" style="margin-bottom:1rem"></div>
+      <div style="display:flex;gap:6px;margin-bottom:1rem">
+        <button class="btn btn-secondary btn-sm" onclick="exportFech('csv')">⬇ Excel</button>
+        <button class="btn btn-secondary btn-sm" onclick="exportFech('pdf')">⬇ PDF</button>
+      </div>
       <div class="table-card">
-        <div style="display:flex;gap:6px">
-          <button class="btn btn-secondary btn-sm" onclick="exportFech('csv')">⬇ Excel</button>
-          <button class="btn btn-secondary btn-sm" onclick="exportFech('pdf')">⬇ PDF</button>
-        </div>
+        <div class="table-header"><h3>Notas com recebimento pendente</h3></div>
         <div class="tbl-wrap"><table><thead><tr>
-          <th>Contrato</th><th>Empresa</th><th>Comprador</th><th>Produto</th><th>Embarques</th>
-          <th>Sc embarcadas</th><th>Sc entregues</th><th>Sc faltantes</th>
-          <th>Total venda</th><th>Total recebido</th><th>A receber</th><th>Desc. fundo</th><th>A receber líq.</th><th>Saldo vencido</th><th>Situação</th>
-        </tr></thead><tbody id="tbody-fech"></tbody></table></div>
+          <th onclick="sortTable('tbody-pend',0)" style="cursor:pointer">Contrato ↕</th>
+          <th onclick="sortTable('tbody-pend',1)" style="cursor:pointer">NF ↕</th>
+          <th onclick="sortTable('tbody-pend',2)" style="cursor:pointer">Motorista ↕</th>
+          <th onclick="sortTable('tbody-pend',3)" style="cursor:pointer">Descarga ↕</th>
+          <th onclick="sortTable('tbody-pend',4)" style="cursor:pointer">Prazo receb. ↕</th>
+          <th>Situação prazo</th>
+          <th onclick="sortTable('tbody-pend',6,true)" style="cursor:pointer">Total venda ↕</th>
+          <th onclick="sortTable('tbody-pend',7,true)" style="cursor:pointer">Recebido ↕</th>
+          <th onclick="sortTable('tbody-pend',8,true)" style="cursor:pointer">Pendente ↕</th>
+        </tr></thead><tbody id="tbody-pend"></tbody></table></div>
+      </div>
     </div>
     <div id="fech-vazio" style="display:none;color:var(--text-faint);font-size:13px;padding:1rem 0">Selecione ao menos um contrato e clique em "Gerar fechamento".</div>
   </div>
@@ -487,9 +495,9 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
         </div>
       </div>
       <div class="tbl-wrap"><table><thead><tr>
-        <th>Contrato</th><th>Empresa</th><th>NF</th><th>Status</th><th>Nota</th><th>Produto</th>
+        <th onclick="sortTable('tbody-embs',0)" style="cursor:pointer">Contrato ↕</th><th>Empresa</th><th onclick="sortTable('tbody-embs',2)" style="cursor:pointer">NF ↕</th><th>Status</th><th>Nota</th><th>Produto</th>
         <th>Dono da carga</th>
-        <th>Embarque</th><th>Descarga</th><th>Prazo receb.</th><th>Data receb.</th><th>Prazo</th>
+        <th onclick="sortTable('tbody-embs',7)" style="cursor:pointer">Embarque ↕</th><th onclick="sortTable('tbody-embs',8)" style="cursor:pointer">Descarga ↕</th><th>Prazo receb.</th><th>Data receb.</th><th>Prazo</th>
         <th>Transportadora</th><th>Motorista</th><th>CPF</th><th>Placa</th>
         <th>Peso líq.</th><th>Sc emb.</th><th>Quebra sc</th><th>Desc.quebra</th><th>Scs ent.</th>
         <th>Impureza (kg)</th><th>Desc.impureza</th>
@@ -730,8 +738,8 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
     <div class="table-card">
       <div class="table-header"><h3>Notas por embarque</h3><div style="display:flex;gap:6px"><button class="btn btn-secondary btn-sm" onclick="exportCapNota('csv')">⬇ Excel</button><button class="btn btn-secondary btn-sm" onclick="exportCapNota('pdf')">⬇ PDF</button></div></div>
       <div class="tbl-wrap"><table><thead><tr>
-        <th>Fornecedor</th><th>Empresa</th><th>Contrato</th><th>NF</th><th>Motorista</th>
-        <th>Embarque</th><th>Sc emb.</th><th>Custo R$/sc</th><th>Custo total</th><th>Status</th><th></th>
+        <th onclick="sortTable('tbody-capn',0)" style="cursor:pointer">Fornecedor ↕</th><th>Empresa</th><th onclick="sortTable('tbody-capn',2)" style="cursor:pointer">Contrato ↕</th><th>NF</th><th>Motorista</th>
+        <th onclick="sortTable('tbody-capn',5)" style="cursor:pointer">Embarque ↕</th><th>Sc emb.</th><th>Custo R$/sc</th><th onclick="sortTable('tbody-capn',8,true)" style="cursor:pointer">Custo total ↕</th><th>Status</th><th></th>
       </tr></thead><tbody id="tbody-capn"></tbody></table></div>
     </div>
   </div>
@@ -752,8 +760,8 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
     <div class="table-card">
       <div class="table-header"><h3>CTE por embarque</h3><div style="display:flex;gap:6px"><button class="btn btn-secondary btn-sm" onclick="exportCapTransp('csv')">⬇ Excel</button><button class="btn btn-secondary btn-sm" onclick="exportCapTransp('pdf')">⬇ PDF</button></div></div>
       <div class="tbl-wrap"><table><thead><tr>
-        <th>Transportadora</th><th>Empresa</th><th>Contrato</th><th>NF</th><th>Motorista</th>
-        <th>Embarque</th><th>Sc emb.</th><th>CTE R$/sc</th><th>CTE Total</th><th>Status</th><th></th>
+        <th onclick="sortTable('tbody-capt',0)" style="cursor:pointer">Transportadora ↕</th><th>Empresa</th><th onclick="sortTable('tbody-capt',2)" style="cursor:pointer">Contrato ↕</th><th>NF</th><th>Motorista</th>
+        <th onclick="sortTable('tbody-capt',5)" style="cursor:pointer">Embarque ↕</th><th>Sc emb.</th><th>CTE R$/sc</th><th onclick="sortTable('tbody-capt',8,true)" style="cursor:pointer">CTE Total ↕</th><th>Status</th><th></th>
       </tr></thead><tbody id="tbody-capt"></tbody></table></div>
     </div>
   </div>
@@ -776,8 +784,8 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
     <div class="table-card">
       <div class="table-header"><h3>Comissões por embarque</h3><div style="display:flex;gap:6px"><button class="btn btn-secondary btn-sm" onclick="exportCapCom('csv')">⬇ Excel</button><button class="btn btn-secondary btn-sm" onclick="exportCapCom('pdf')">⬇ PDF</button></div></div>
       <div class="tbl-wrap"><table><thead><tr>
-        <th>Comissionário</th><th>Empresa</th><th>Comprador</th><th>Contrato</th><th>NF</th>
-        <th>Embarque</th><th>Sc emb.</th><th>R$/sc</th><th>Total</th><th>Status</th><th></th>
+        <th onclick="sortTable('tbody-capc',0)" style="cursor:pointer">Comissionário ↕</th><th>Empresa</th><th>Comprador</th><th onclick="sortTable('tbody-capc',3)" style="cursor:pointer">Contrato ↕</th><th>NF</th>
+        <th onclick="sortTable('tbody-capc',5)" style="cursor:pointer">Embarque ↕</th><th>Sc emb.</th><th>R$/sc</th><th onclick="sortTable('tbody-capc',8,true)" style="cursor:pointer">Total ↕</th><th>Status</th><th></th>
       </tr></thead><tbody id="tbody-capc"></tbody></table></div>
     </div>
   </div>
@@ -2195,7 +2203,38 @@ function renderEmbarques(){
     :'<tr><td colspan="45" class="empty-state">Nenhum embarque encontrado.</td></tr>';
 }
 
-// ===== EXPORT HELPERS =====
+// ===== ORDENAÇÃO DE TABELAS =====
+const _sortState={};
+function sortTable(tbodyId, colIndex, isNumeric=false){
+  const tbody=document.getElementById(tbodyId);
+  if(!tbody)return;
+  const key=tbodyId+'-'+colIndex;
+  _sortState[key]=!_sortState[key]; // toggle asc/desc
+  const asc=_sortState[key];
+  const rows=[...tbody.querySelectorAll('tr')];
+  rows.sort((a,b)=>{
+    const ac=a.cells[colIndex]?.textContent?.trim()||'';
+    const bc=b.cells[colIndex]?.textContent?.trim()||'';
+    if(isNumeric){
+      const an=parseFloat(ac.replace(/[^0-9,.-]/g,'').replace(',','.'))||0;
+      const bn=parseFloat(bc.replace(/[^0-9,.-]/g,'').replace(',','.'))||0;
+      return asc?an-bn:bn-an;
+    }
+    return asc?ac.localeCompare(bc,'pt-BR'):bc.localeCompare(ac,'pt-BR');
+  });
+  rows.forEach(r=>tbody.appendChild(r));
+  // Update header arrows
+  const table=tbody.closest('table');
+  if(table){
+    table.querySelectorAll('th[onclick]').forEach((th,i)=>{
+      const base=th.textContent.replace(' ↑','').replace(' ↓','').replace(' ↕','');
+      if(i===colIndex)th.textContent=base+(asc?' ↑':' ↓');
+      else th.textContent=base.includes('↕')?base:base+' ↕';
+    });
+  }
+}
+
+
 function gerarCSV(cab,rows,nome){
   const csv=[cab,...rows].map(r=>r.map(c=>`"${String(c||'').replace(/"/g,'""')}"`).join(';')).join('\n');
   const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'}));a.download=nome+'.csv';a.click();toast('Excel exportado!');
