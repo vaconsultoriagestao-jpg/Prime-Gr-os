@@ -345,14 +345,6 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
           <th>Sc embarcadas</th><th>Sc entregues</th><th>Sc faltantes</th>
           <th>Total venda</th><th>Total recebido</th><th>A receber</th><th>Desc. fundo</th><th>A receber líq.</th><th>Saldo vencido</th><th>Situação</th>
         </tr></thead><tbody id="tbody-fech"></tbody></table></div>
-      </div>
-      <div class="table-card">
-        <div class="table-header"><h3>Notas com recebimento pendente</h3></div>
-        <div class="tbl-wrap"><table><thead><tr>
-          <th>Contrato</th><th>NF</th><th>Motorista</th><th>Descarga</th>
-          <th>Prazo receb.</th><th>Situação prazo</th><th>Total venda</th><th>Recebido</th><th>Pendente</th>
-        </tr></thead><tbody id="tbody-pend"></tbody></table></div>
-      </div>
     </div>
     <div id="fech-vazio" style="display:none;color:var(--text-faint);font-size:13px;padding:1rem 0">Selecione ao menos um contrato e clique em "Gerar fechamento".</div>
   </div>
@@ -410,6 +402,8 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
     <p class="section-sub">Visão consolidada de todos os contratos e embarques.</p>
     <!-- Alerta motoristas atrasados -->
     <div id="alerta-motoristas" style="display:none;background:var(--red-pale);border:1px solid var(--red);border-radius:var(--radius);padding:.85rem 1.25rem;margin-bottom:1rem"></div>
+    <!-- Alerta notas pendentes de recebimento -->
+    <div id="alerta-notas-pend" style="display:none;background:#fff8e1;border:1px solid #f59e0b;border-radius:var(--radius);padding:.85rem 1.25rem;margin-bottom:1rem"></div>
     <div class="stats-grid" id="stats-grid"></div>
     <div class="table-card">
       <div class="table-header">
@@ -1371,7 +1365,7 @@ async function salvarCom(){
 async function delCom(id){if((!usuarioLogado||usuarioLogado.perfil!=='admin')){toast('Apenas o administrador pode excluir!',true);return;}if(!confirm('Remover?'))return;coms=coms.filter(x=>x.id!==id);await saveComs();renderComs();toast('Removido.');}
 function renderComs(){
   document.getElementById('tbody-coms').innerHTML=coms.length
-    ?coms.map(c=>`<tr><td><strong>${c.nome}</strong></td><td>${c.comprador}</td><td class="mono">${fmt(c.valor)}/sc</td><td>${c.obs||'—'}</td>
+    ?coms.map(c=>`<tr ondblclick="abrirModalCom(${c.id})" style="cursor:pointer" title="Duplo clique para editar"><td><strong>${c.nome}</strong></td><td>${c.comprador}</td><td class="mono">${fmt(c.valor)}/sc</td><td>${c.obs||'—'}</td>
       <td style="display:flex;gap:4px"><button class="btn-edit" onclick="abrirModalCom(${c.id})">Editar</button><button class="btn btn-danger" onclick="delCom(${c.id})">×</button></td></tr>`).join('')
     :'<tr><td colspan="5" class="empty-state">Nenhum comissionário cadastrado.</td></tr>';
 }
@@ -1445,7 +1439,7 @@ function renderContratos(){
   const emp=(document.getElementById('f-ct-emp')||{value:''}).value||_empresaFiltro;
   const f=cts.filter(c=>(!q||(c.numero&&c.numero.toLowerCase().includes(q))||(c.comprador&&c.comprador.toLowerCase().includes(q)))&&(!pr||c.produto===pr)&&(!emp||c.empresa===emp));
   document.getElementById('tbody-cts').innerHTML=f.length
-    ?f.map(c=>`<tr style="${c.encerrado?'opacity:.6':''}"><td><strong>${c.numero}</strong></td>
+    ?f.map(c=>`<tr ondblclick="abrirModalCt(${c.id})" style="cursor:pointer;${c.encerrado?'opacity:.6':''}" title="Duplo clique para editar"><td><strong>${c.numero}</strong></td>
       <td><span class="badge ${c.empresa==='ZF Grãos'?'badge-blue':'badge-green'}">${c.empresa||'Prime Grãos'}</span></td>
       <td>${c.comprador}</td><td>${c.produto}</td><td class="mono">${fmtN(c.qtd,0)}</td><td class="mono">${fmt(c.valor)}</td>
       <td class="mono">${fmt((c.qtd||0)*(c.valor||0))}</td><td>${c.prazo||72}h</td>
@@ -1769,7 +1763,7 @@ async function salvarForn(){
 async function delForn(id){if((!usuarioLogado||usuarioLogado.perfil!=='admin')){toast('Apenas o administrador pode excluir!',true);return;}if(!confirm('Remover?'))return;forn=forn.filter(x=>x.id!==id);await saveForn();renderForn();updSelForn();toast('Removido.');}
 function renderForn(){
   document.getElementById('tbody-forn').innerHTML=forn.length
-    ?forn.map(f=>`<tr><td><strong>${f.nome}</strong></td><td>${f.tel||'—'}</td><td>${f.resp||'—'}</td><td>${f.obs||'—'}</td>
+    ?forn.map(f=>`<tr ondblclick="abrirModalForn(${f.id})" style="cursor:pointer" title="Duplo clique para editar"><td><strong>${f.nome}</strong></td><td>${f.tel||'—'}</td><td>${f.resp||'—'}</td><td>${f.obs||'—'}</td>
       <td style="display:flex;gap:4px"><button class="btn-edit" onclick="abrirModalForn(${f.id})">Editar</button><button class="btn btn-danger" onclick="delForn(${f.id})">×</button></td></tr>`).join('')
     :'<tr><td colspan="5" class="empty-state">Nenhum fornecedor cadastrado.</td></tr>';
 }
@@ -2048,7 +2042,35 @@ function renderPainel(){
   const ctS=document.getElementById('f-painel-ct');
   if(ctS){const cs=[...new Set(embs.filter(d=>!d.cancelada).map(d=>d.contrato))].sort();const cur=ctS.value;ctS.innerHTML='<option value="">Todos contratos</option>'+cs.map(c=>`<option ${c===cur?'selected':''}>${c}</option>`).join('');}
 
-  // Alerta motoristas sem descarga há mais de 72h
+  // Alerta notas pendentes de recebimento
+  const notasPend=embs.filter(d=>{
+    if(d.cancelada||d.data_rec)return false;
+    if(!d.descarga)return false;
+    const ctO=cts.find(c=>c.numero==d.contrato);
+    const ph=(ctO&&ctO.prazo)||cfg.prazo||72;
+    const p=prazoData(d.descarga,ph);
+    return agora>p;
+  });
+  const alertaNotasEl=document.getElementById('alerta-notas-pend');
+  if(alertaNotasEl){
+    if(notasPend.length){
+      alertaNotasEl.style.display='block';
+      alertaNotasEl.innerHTML=`<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <span style="font-size:16px">💰</span>
+        <strong style="color:#b45309;font-size:13px">${notasPend.length} nota${notasPend.length>1?'s':''} com recebimento vencido!</strong>
+      </div>`+notasPend.map(d=>{
+        const ctO=cts.find(c=>c.numero==d.contrato);
+        const ph=(ctO&&ctO.prazo)||cfg.prazo||72;
+        const p=prazoData(d.descarga,ph);
+        const diasAtraso=Math.floor((agora-p)/86400000);
+        return`<div style="font-size:12px;color:#78350f;padding:4px 0;border-bottom:.5px solid #fde68a">
+          📄 <strong>NF ${d.nf||'—'}</strong> — Contrato ${d.contrato} · Motorista ${d.motorista||'—'} · Descarga ${d.descarga} · <span style="color:#b45309;font-weight:600">${diasAtraso} dia${diasAtraso>1?'s':''} em atraso · ${fmt(d.total_venda-( d.recebido||0))}</span>
+        </div>`;
+      }).join('');
+    }else{
+      alertaNotasEl.style.display='none';
+    }
+  }
   const agora=new Date();
   const atrasados=embs.filter(d=>{
     if(d.cancelada||d.descarga)return false;
@@ -2520,7 +2542,7 @@ function gerarFechamento(){
   }).join('');
   const pendentes=ativos.filter(d=>!d.recebido||d.recebido===0);
   document.getElementById('tbody-pend').innerHTML=pendentes.length
-    ?pendentes.map(d=>{const sp=sprazo(d);const pv=d.total_venda-(d.recebido||0);return`<tr>
+    ?pendentes.map(d=>{const sp=sprazo(d);const pv=d.total_venda-(d.recebido||0);return`<tr ondblclick="abrirModalEdit(${d.id})" style="cursor:pointer" title="Duplo clique para editar">
       <td><strong>${d.contrato}</strong></td><td>${d.nf||'—'}</td><td>${d.motorista||'—'}</td>
       <td>${d.descarga||'—'}</td><td>${d.prazo_rec||'—'}</td>
       <td><span class="badge ${sp.badge}">${sp.txt}</span></td>
