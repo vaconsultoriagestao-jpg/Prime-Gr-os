@@ -2044,6 +2044,7 @@ function renderFrete(){
 
 // ===== PAINEL =====
 function renderPainel(){
+  const agora=new Date();
   const fCt=(document.getElementById('f-painel-ct')||{value:''}).value;
   const fEmp=(document.getElementById('f-painel-emp')||{value:''}).value||_empresaFiltro;
   // Update contrato filter
@@ -2079,7 +2080,6 @@ function renderPainel(){
       alertaNotasEl.style.display='none';
     }
   }
-  const agora=new Date();
   const atrasados=embs.filter(d=>{
     if(d.cancelada||d.descarga)return false;
     if(!d.embarque)return false;
@@ -2579,6 +2579,7 @@ function gerarFechamento(){
       <td class="mono ${r.vencido>0?'neg':''}">${fmt(r.vencido)}</td>
       <td><span class="badge ${bc}">${sit}</span></td></tr>`;
   }).join('');
+  // Notas com recebimento pendente — TODAS sem recebimento dos contratos selecionados
   const pendentes=ativos.filter(d=>!d.recebido||d.recebido===0);
   document.getElementById('tbody-pend').innerHTML=pendentes.length
     ?pendentes.map(d=>{const sp=sprazo(d);const pv=d.total_venda-(d.recebido||0);return`<tr ondblclick="abrirModalEdit(${d.id})" style="cursor:pointer" title="Duplo clique para editar">
