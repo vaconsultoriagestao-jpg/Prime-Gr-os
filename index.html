@@ -2829,7 +2829,6 @@ function gerarFechContrato(){
     const ctO=cts.find(c=>c.numero==d.contrato);
     const comsList=(ctO&&ctO.comissionarios_ct&&ctO.comissionarios_ct.length)?ctO.comissionarios_ct:(d.comissoes||[]);
     comsList.forEach(c=>{
-    comsList.forEach(c=>{
       if(!porCom[c.nome])porCom[c.nome]={nome:c.nome,sc:0,valor_sc:c.valor,total:0,pago:0,aberto:0};
       porCom[c.nome].sc+=d.sc_emb||0;
       const t=(c.valor||0)*(d.sc_emb||0);
