@@ -3007,7 +3007,7 @@ function gerarFechamento(){
   }).join('');
   // Notas com recebimento pendente — TODAS sem recebimento dos contratos selecionados
   const embAtivos=embs.filter(d=>!d.cancelada&&sel.includes(String(d.contrato)));
-  const pendentes=embAtivos.filter(d=>!d.recebido||d.recebido===0);
+  const pendentes=embAtivos.filter(d=>!(d.recebido>0));
   document.getElementById('tbody-pend').innerHTML=pendentes.length
     ?pendentes.map(d=>{const sp=sprazo(d);const pv=d.total_venda-(d.recebido||0);return`<tr ondblclick="abrirModalEdit(${d.id})" style="cursor:pointer" title="Duplo clique para editar">
       <td><strong>${d.contrato}</strong></td><td>${d.nf||'—'}</td><td>${d.motorista||'—'}</td>
