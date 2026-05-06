@@ -2463,6 +2463,7 @@ function exportFluxo(tipo='csv'){
 }
 
 // ===== EXPORT HELPERS =====
+function gerarCSV(cab,rows,nome){
   const csv=[cab,...rows].map(r=>r.map(c=>`"${String(c||'').replace(/"/g,'""')}"`).join(';')).join('\n');
   const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'}));a.download=nome+'.csv';a.click();toast('Excel exportado!');
 }
