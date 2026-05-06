@@ -2879,7 +2879,7 @@ function gerarFechContrato(){
     const f20=Math.max(0,(d.frete20||0)-desc);
     if(!d.frete20_pago)porMot[k].saldo20+=f20;
   });
-  document.getElementById('fc-tbody-frete').innerHTML=Object.values(porMot).length
+    document.getElementById('fc-tbody-frete').innerHTML=Object.values(porMot).length
     ?Object.values(porMot).map(m=>`<tr><td><strong>${m.nome}</strong></td><td class="mono">${m.cpf||'—'}</td><td class="mono">${fmt(m.total)}</td><td class="mono pos">${fmt(m.pago80)}</td><td class="mono ${m.saldo20>0?'amber-txt':''}">${fmt(m.saldo20)}</td></tr>`).join('')
     :'<tr><td colspan="5" class="empty-state">Nenhum frete.</td></tr>';
 }
