@@ -2803,6 +2803,7 @@ function gerarFechContrato(){
     const ar=its.filter(d=>d.contrato==ct&&(!d.recebido||d.recebido===0)).reduce((ss,d)=>ss+(d.total_venda||0),0);
     return s+ar*fp;
   },0);
+  const a_receber_liq=a_receber_total-fundo_desc_rec;
   const totalQtd=sels.reduce((s,ct)=>{const co=cts.find(c=>c.numero==ct);return s+((co&&co.qtd)||0);},0);
 
   // Cards
