@@ -2990,21 +2990,6 @@ function gerarFechamento(){
     <div class="stat-card"><div class="s-label">Sc entregues</div><div class="s-value">${fmtN(tSn,0)}</div></div>
     <div class="stat-card ${tSf>0?'amber':'green'}"><div class="s-label">Sc faltantes</div><div class="s-value">${fmtN(tSf,0)}</div></div>
   `;
-  document.getElementById('tbody-fech').innerHTML=_fech.map(r=>{
-    const sit=r.vencido>0?'Saldo vencido':r.a_receber>0?'Pendente':'Quitado';
-    const bc=sit==='Quitado'?'badge-green':sit==='Saldo vencido'?'badge-red':'badge-amber';
-    return`<tr><td><strong>${r.ct}</strong></td>
-      <td><span class="badge ${r.empresa==='ZF Grãos'?'badge-blue':'badge-green'}">${r.empresa}</span></td>
-      <td>${r.comprador}</td><td>${r.produto}</td><td>${r.qtd}</td>
-      <td class="mono">${fmtN(r.sc_emb)}</td><td class="mono">${fmtN(r.sc_ent)}</td>
-      <td class="mono ${r.sc_faltantes>0?'amber-txt':''}">${fmtN(r.sc_faltantes,0)}</td>
-      <td class="mono">${fmt(r.total_venda)}</td><td class="mono pos">${fmt(r.recebido)}</td>
-      <td class="mono ${r.a_receber>0?'amber-txt':''}">${fmt(r.a_receber)}</td>
-      <td class="mono neg">${r.tem_fundo?fmt(r.fundo_valor):'—'}</td>
-      <td class="mono ${r.a_receber_liq>0?'amber-txt':''}">${fmt(r.a_receber_liq)}</td>
-      <td class="mono ${r.vencido>0?'neg':''}">${fmt(r.vencido)}</td>
-      <td><span class="badge ${bc}">${sit}</span></td></tr>`;
-  }).join('');
   // Notas com recebimento pendente — TODAS sem recebimento dos contratos selecionados
   const selStr=sel.map(s=>String(s));
   const embAtivos=embs.filter(d=>!d.cancelada&&selStr.includes(String(d.contrato)));
