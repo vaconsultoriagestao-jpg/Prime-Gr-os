@@ -460,18 +460,19 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
   <!-- FECHAMENTO POR CONTRATO -->
   <div class="page" id="page-fech-contrato">
     <h1 class="section-heading">Fechamento por Contrato</h1>
-    <p class="section-sub">Lucro e custos com parceiros por contrato.</p>
+    <p class="section-sub">Selecione um ou mais contratos para gerar o fechamento consolidado.</p>
     <div class="table-card" style="margin-bottom:1rem">
       <div class="table-header">
-        <h3>Selecionar contrato</h3>
-        <div style="display:flex;gap:8px;align-items:center">
-          <select class="filter-select" id="fc-contrato" onchange="gerarFechContrato()" style="min-width:220px">
-            <option value="">— selecione um contrato —</option>
-          </select>
+        <h3>Selecionar contratos</h3>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-secondary btn-sm" onclick="selTodosFc(true)">Todos</button>
+          <button class="btn btn-secondary btn-sm" onclick="selTodosFc(false)">Limpar</button>
+          <button class="btn btn-primary btn-sm" onclick="gerarFechContrato()">Gerar fechamento</button>
           <button class="btn btn-secondary btn-sm" onclick="exportFechContrato('csv')">⬇ Excel</button>
           <button class="btn btn-secondary btn-sm" onclick="exportFechContrato('pdf')">⬇ PDF</button>
         </div>
       </div>
+      <div id="fc-ct-checks" style="display:flex;flex-wrap:wrap;gap:8px;padding:.75rem 0"></div>
     </div>
     <div id="fc-result" style="display:none">
       <!-- Cards financeiros -->
@@ -2323,8 +2324,8 @@ function sortTable(tbodyId, colIndex, isNumeric=false){
   const asc=_sortState[key];
   const rows=[...tbody.querySelectorAll('tr')];
   rows.sort((a,b)=>{
-    const ac=a.cells[colIndex]?.textContent?.trim()||'';
-    const bc=b.cells[colIndex]?.textContent?.trim()||'';
+    const ac=(a.cells[colIndex]&&a.cells[colIndex].textContent&&a.cells[colIndex].textContent.trim())||'';
+    const bc=(b.cells[colIndex]&&b.cells[colIndex].textContent&&b.cells[colIndex].textContent.trim())||'';
     if(isNumeric){
       const an=parseFloat(ac.replace(/[^0-9,.-]/g,'').replace(',','.'))||0;
       const bn=parseFloat(bc.replace(/[^0-9,.-]/g,'').replace(',','.'))||0;
@@ -2385,7 +2386,12 @@ function renderFluxo(){
   const totalSai=f.filter(l=>l.tipo==='saida').reduce((s,l)=>s+(l.valor||0),0);
   const saldo=totalEnt-totalSai;
   const aReceberEmbs=embs.filter(d=>!d.cancelada&&(!d.recebido||d.recebido===0));
-  const aReceberTotal=aReceberEmbs.reduce((s,d)=>s+(d.total_venda||0),0);
+  // A receber LÍQUIDO — desconta fundo por contrato
+  const aReceberTotal=aReceberEmbs.reduce((s,d)=>{
+    const ctO=cts.find(c=>c.numero==d.contrato);
+    const fp=(ctO&&ctO.tem_fundo)?(ctO.fundo_pct||5)/100:0;
+    return s+(d.total_venda||0)*(1-fp);
+  },0);
   const aPagarCTE=embs.filter(d=>!d.cancelada&&!d.cte_pago&&(d.cte||0)>0).reduce((s,d)=>s+(d.cte||0),0);
   const aPagarNota=embs.filter(d=>!d.cancelada&&!d.nota_pago&&(d.cn_val||0)>0).reduce((s,d)=>s+(d.cn_val||0),0);
   const aPagarFrete=embs.filter(d=>!d.cancelada&&(d.frete_total||0)>0).reduce((s,d)=>{
@@ -2739,43 +2745,66 @@ function exportEmb(tipo='csv'){
 
 // ===== FECHAMENTO POR CONTRATO =====
 function initFechContrato(){
-  const sel=document.getElementById('fc-contrato');if(!sel)return;
-  const cur=sel.value;
+  const box=document.getElementById('fc-ct-checks');if(!box)return;
   const ctNums=[...new Set(embs.filter(d=>!d.cancelada&&(!_empresaFiltro||d.empresa===_empresaFiltro)).map(d=>d.contrato))].sort();
-  sel.innerHTML='<option value="">— selecione um contrato —</option>'+ctNums.map(c=>`<option ${c===cur?'selected':''}>${c}</option>`).join('');
-  if(cur)gerarFechContrato();
-  else{document.getElementById('fc-result').style.display='none';document.getElementById('fc-vazio').style.display='block';}
+  box.innerHTML=ctNums.length?ctNums.map(ct=>{
+    const co=cts.find(c=>c.numero==ct);
+    return`<label class="ct-check" onclick="this.classList.toggle('on',this.querySelector('input').checked)">
+      <input type="checkbox" value="${ct}"> ${ct}${co?` — ${co.comprador}`:''}
+    </label>`;
+  }).join(''):'<span style="color:var(--text-faint);font-size:13px">Nenhum embarque ativo cadastrado.</span>';
+  document.getElementById('fc-result').style.display='none';
+  document.getElementById('fc-vazio').style.display='none';
+}
+function selTodos(sel){
+  document.querySelectorAll('#ct-checks input[type=checkbox]').forEach(cb=>{
+    cb.checked=sel;
+    cb.closest('label').classList.toggle('on',sel);
+  });
+}
+function selTodosFc(sel){
+  document.querySelectorAll('#fc-ct-checks input[type=checkbox]').forEach(cb=>{
+    cb.checked=sel;
+    cb.closest('label').classList.toggle('on',sel);
+  });
 }
 function gerarFechContrato(){
-  const ct=document.getElementById('fc-contrato').value;
-  if(!ct){document.getElementById('fc-result').style.display='none';document.getElementById('fc-vazio').style.display='block';return;}
+  const sels=[...document.querySelectorAll('#fc-ct-checks input[type=checkbox]:checked')].map(cb=>cb.value);
+  if(!sels.length){document.getElementById('fc-result').style.display='none';document.getElementById('fc-vazio').style.display='block';return;}
   document.getElementById('fc-result').style.display='block';
   document.getElementById('fc-vazio').style.display='none';
-  const its=embs.filter(d=>!d.cancelada&&d.contrato==ct);
-  const ctObj=cts.find(c=>c.numero==ct);
+  const its=embs.filter(d=>!d.cancelada&&sels.includes(String(d.contrato)));
+  // Para múltiplos contratos, pega o primeiro ctObj para referência
+  const ctObj=sels.length===1?cts.find(c=>c.numero==sels[0]):null;
   // Totais
   const total_venda=its.reduce((s,d)=>s+(d.total_venda||0),0);
   const total_compra=its.reduce((s,d)=>s+(d.total_compra||0),0);
   const frete_total=its.reduce((s,d)=>s+(d.frete_total||0),0);
   // Comissão recalculada com comissionários ATUAIS do contrato
-  const comsAtuaisCalc=(ctObj&&ctObj.comissionarios_ct)||[];
   const com_total=its.reduce((s,d)=>{
-    const cl=comsAtuaisCalc.length>0?comsAtuaisCalc:(d.comissoes||[]);
+    const ctO=cts.find(c=>c.numero==d.contrato);
+    const cl=(ctO&&ctO.comissionarios_ct&&ctO.comissionarios_ct.length)?ctO.comissionarios_ct:(d.comissoes||[]);
     return s+cl.reduce((cs,c)=>cs+((c.valor||0)*(d.sc_emb||0)),0);
-  },0);  const cte_total=its.reduce((s,d)=>s+(d.cte||0),0);
+  },0);
+  const cte_total=its.reduce((s,d)=>s+(d.cte||0),0);
   const nf_total=its.reduce((s,d)=>s+(d.cn_val||0),0);
   const fundo_total=its.reduce((s,d)=>s+(d.fundo||0),0);
-  const desc_total=its.reduce((s,d)=>s+(d.desc_quebra||0),0); // impureza não desconta do motorista
+  const desc_total=its.reduce((s,d)=>s+(d.desc_quebra||0),0);
   const lucro=its.reduce((s,d)=>s+(d.lucro||0),0);
   const lucro_pct=total_venda>0?lucro/total_venda*100:0;
   const sc_emb=its.reduce((s,d)=>s+(d.sc_emb||0),0);
-  const sc_falt=Math.max(0,((ctObj&&ctObj.qtd)||0)-sc_emb);
+  const sc_falt=sels.reduce((s,ct)=>{const co=cts.find(c=>c.numero==ct);return s+Math.max(0,((co&&co.qtd)||0)-its.filter(d=>d.contrato==ct).reduce((ss,d)=>ss+(d.sc_emb||0),0));},0);
 
   // A receber líquido (com desconto de fundo)
   const a_receber_total=its.filter(d=>!d.recebido||d.recebido===0).reduce((s,d)=>s+(d.total_venda||0),0);
-  const fundo_pct_ct=(ctObj&&ctObj.tem_fundo)?(ctObj.fundo_pct||5)/100:0;
-  const fundo_desc_rec=a_receber_total*fundo_pct_ct;
-  const a_receber_liq=a_receber_total-fundo_desc_rec;
+  // Calcular fundo por contrato
+  const fundo_desc_rec=sels.reduce((s,ct)=>{
+    const co=cts.find(c=>c.numero==ct);
+    const fp=(co&&co.tem_fundo)?(co.fundo_pct||5)/100:0;
+    const ar=its.filter(d=>d.contrato==ct&&(!d.recebido||d.recebido===0)).reduce((ss,d)=>ss+(d.total_venda||0),0);
+    return s+ar*fp;
+  },0);
+  const totalQtd=sels.reduce((s,ct)=>{const co=cts.find(c=>c.numero==ct);return s+((co&&co.qtd)||0);},0);
 
   // Cards
   document.getElementById('fc-cards').innerHTML=`
@@ -2791,15 +2820,15 @@ function gerarFechContrato(){
     <div class="stat-card"><div class="s-label">Notas fiscais</div><div class="s-value">${fmt(nf_total)}</div></div>
     <div class="stat-card ${fundo_total>0?'amber':''}"><div class="s-label">Fundo (embarques)</div><div class="s-value">${fmt(fundo_total)}</div></div>
     <div class="stat-card ${desc_total>0?'red':''}"><div class="s-label">Descontos quebra</div><div class="s-value">${fmt(desc_total)}</div></div>
-    <div class="stat-card ${sc_falt>0?'amber':'green'}"><div class="s-label">Sc faltantes</div><div class="s-value">${fmtN(sc_falt,0)}</div><div class="s-sub">de ${fmtN((ctObj&&ctObj.qtd)||0,0)} sc</div></div>
+    <div class="stat-card ${sc_falt>0?'amber':'green'}"><div class="s-label">Sc faltantes</div><div class="s-value">${fmtN(sc_falt,0)}</div><div class="s-sub">de ${fmtN(totalQtd,0)} sc</div></div>
   `;
 
-  // Comissões por comissionário — usa comissionários ATUAIS do contrato
-  const comsAtuais=(ctObj&&ctObj.comissionarios_ct)||[];
+  // Comissões por comissionário — usa comissionários ATUAIS de cada contrato
   const porCom={};
   its.forEach(d=>{
-    // Usa os comissionários atuais do contrato
-    const comsList=comsAtuais.length>0?comsAtuais:(d.comissoes||[]);
+    const ctO=cts.find(c=>c.numero==d.contrato);
+    const comsList=(ctO&&ctO.comissionarios_ct&&ctO.comissionarios_ct.length)?ctO.comissionarios_ct:(d.comissoes||[]);
+    comsList.forEach(c=>{
     comsList.forEach(c=>{
       if(!porCom[c.nome])porCom[c.nome]={nome:c.nome,sc:0,valor_sc:c.valor,total:0,pago:0,aberto:0};
       porCom[c.nome].sc+=d.sc_emb||0;
