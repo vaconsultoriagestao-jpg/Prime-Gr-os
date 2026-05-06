@@ -2749,8 +2749,7 @@ function initFechContrato(){
   const ctNums=[...new Set(embs.filter(d=>!d.cancelada&&(!_empresaFiltro||d.empresa===_empresaFiltro)).map(d=>d.contrato))].sort();
   box.innerHTML=ctNums.length?ctNums.map(ct=>{
     const co=cts.find(c=>c.numero==ct);
-    return`<label class="ct-check" onclick="this.classList.toggle('on',this.querySelector('input').checked)">
-      <input type="checkbox" value="${ct}"> ${ct}${co?` — ${co.comprador}`:''}
+    return`<label class="ct-check"><input type="checkbox" value="${ct}" onchange="this.closest('label').classList.toggle('on',this.checked)"> ${ct}${co?` — ${co.comprador}`:''}
     </label>`;
   }).join(''):'<span style="color:var(--text-faint);font-size:13px">Nenhum embarque ativo cadastrado.</span>';
   document.getElementById('fc-result').style.display='none';
@@ -2773,7 +2772,7 @@ function gerarFechContrato(){
   if(!sels.length){document.getElementById('fc-result').style.display='none';document.getElementById('fc-vazio').style.display='block';return;}
   document.getElementById('fc-result').style.display='block';
   document.getElementById('fc-vazio').style.display='none';
-  const its=embs.filter(d=>!d.cancelada&&sels.includes(String(d.contrato)));
+  const its=embs.filter(d=>!d.cancelada&&sels.map(String).includes(String(d.contrato)));
   // Para múltiplos contratos, pega o primeiro ctObj para referência
   const ctObj=sels.length===1?cts.find(c=>c.numero==sels[0]):null;
   // Totais
@@ -2886,7 +2885,7 @@ function gerarFechContrato(){
 function exportFechContrato(tipo='csv'){
   const sels=[...document.querySelectorAll('#fc-ct-checks input[type=checkbox]:checked')].map(cb=>cb.value);
   if(!sels.length){toast('Selecione ao menos um contrato!',true);return;}
-  const its=embs.filter(d=>!d.cancelada&&sels.includes(String(d.contrato)));
+  const its=embs.filter(d=>!d.cancelada&&sels.map(String).includes(String(d.contrato)));
   const total_venda=its.reduce((s,d)=>s+(d.total_venda||0),0);
   const total_compra=its.reduce((s,d)=>s+(d.total_compra||0),0);
   const frete_total=its.reduce((s,d)=>s+(d.frete_total||0),0);
@@ -2947,7 +2946,7 @@ function initFech(){
   const embsFilt=embs.filter(d=>!d.cancelada&&(!_empresaFiltro||d.empresa===_empresaFiltro));
   const ns=[...new Set(embsFilt.map(d=>d.contrato))].sort();
   const box=document.getElementById('ct-checks');
-  box.innerHTML=ns.length?ns.map(ct=>{const co=cts.find(c=>c.numero==ct);return`<label class="ct-check" onclick="this.classList.toggle('on',this.querySelector('input').checked)"><input type="checkbox" value="${ct}"> ${ct}${co?` — ${co.comprador}`:''}</label>`;}).join(''):'<span style="color:var(--text-faint);font-size:13px">Nenhum embarque ativo cadastrado.</span>';
+  box.innerHTML=ns.length?ns.map(ct=>{const co=cts.find(c=>c.numero==ct);return`<label class="ct-check"><input type="checkbox" value="${ct}" onchange="this.closest('label').classList.toggle('on',this.checked)"> ${ct}${co?` — ${co.comprador}`:''}</label>`;}).join(''):'<span style="color:var(--text-faint);font-size:13px">Nenhum embarque ativo cadastrado.</span>';
   document.getElementById('fech-result').style.display='none';document.getElementById('fech-vazio').style.display='none';
 }
 function gerarFechamento(){
@@ -2991,10 +2990,9 @@ function gerarFechamento(){
     <div class="stat-card ${tSf>0?'amber':'green'}"><div class="s-label">Sc faltantes</div><div class="s-value">${fmtN(tSf,0)}</div></div>
   `;
   // Notas com recebimento pendente — TODAS sem recebimento dos contratos selecionados
-  const selStr=sel.map(s=>String(s));
-  const embAtivos=embs.filter(d=>!d.cancelada&&selStr.includes(String(d.contrato)));
+  const selStr=sel.map(s=>String(s).trim());
+  const embAtivos=embs.filter(d=>!d.cancelada&&selStr.includes(String(d.contrato).trim()));
   const pendentes=embAtivos.filter(d=>!(d.recebido>0));
-  console.log('sel:', sel, 'embAtivos:', embAtivos.length, 'pendentes:', pendentes.length);
   document.getElementById('tbody-pend').innerHTML=pendentes.length
     ?pendentes.map(d=>{const sp=sprazo(d);const pv=d.total_venda-(d.recebido||0);return`<tr ondblclick="abrirModalEdit(${d.id})" style="cursor:pointer" title="Duplo clique para editar">
       <td><strong>${d.contrato}</strong></td><td>${d.nf||'—'}</td><td>${d.motorista||'—'}</td>
