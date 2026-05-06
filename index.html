@@ -409,6 +409,12 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
           <th>Tipo</th><th>Parceiro</th><th>Valor</th>
         </tr></thead><tbody id="tbody-flx-pagar"></tbody></table></div>
       </div>
+      <div class="table-card">
+        <div class="form-card-header" style="color:var(--red)">Saldo devedor — Parceiros</div>
+        <div class="tbl-wrap"><table><thead><tr>
+          <th>Parceiro</th><th>Aportes</th><th>Retiradas</th><th>Saldo devedor</th>
+        </tr></thead><tbody id="tbody-flx-parceiros"></tbody></table></div>
+      </div>
     </div>
   </div>
 
@@ -2434,18 +2440,7 @@ function renderFluxo(){
     <div class="stat-card red">
       <div class="s-label">Saldo devedor parceiros</div>
       <div class="s-value">${fmt(saldoParceiros>0?saldoParceiros:0)}</div>
-      <div style="margin-top:8px;border-top:1px solid rgba(255,255,255,.2);padding-top:6px">
-        ${Object.entries(fluxoParceiros.reduce((acc,l)=>{
-            const p=l.parceiro||'Sem parceiro';
-            if(!acc[p])acc[p]=0;
-            acc[p]+=(l.tipo==='entrada'?1:-1)*(l.valor||0);
-            return acc;
-          },{}))
-          .filter(([,v])=>v>0)
-          .sort((a,b)=>b[1]-a[1])
-          .map(([p,v])=>`<div style="display:flex;justify-content:space-between;font-size:11px;padding:2px 0;color:var(--text-muted)"><span>${p}</span><span style="font-weight:600">${fmt(v)}</span></div>`)
-          .join('')||'<span style="font-size:11px;color:var(--text-faint)">Nenhum parceiro</span>'}
-      </div>
+      <div class="s-sub">Ver detalhes abaixo</div>
     </div>
     <div class="stat-card red"><div class="s-label" style="font-weight:700">Total obrigações</div><div class="s-value">${fmt(aPagarTotal+(saldoParceiros>0?saldoParceiros:0))}</div></div>
 
@@ -2487,8 +2482,22 @@ function renderFluxo(){
   document.getElementById('tbody-flx-receber').innerHTML=Object.values(porCt).length
     ?Object.values(porCt).map(r=>`<tr><td><strong>${r.ct}</strong></td><td>${r.comprador}</td><td class="mono amber-txt">${fmt(r.total)}</td><td class="mono pos">${fmt(r.total*(1-r.pct))}</td></tr>`).join('')
     :'<tr><td colspan="4" class="empty-state">Nenhum valor a receber.</td></tr>';
-  // A pagar
-  const pl=[];
+  // Tabela saldo por parceiro (exceto Banco)
+  const porParceiro={};
+  fluxoParceiros.forEach(l=>{
+    const p=l.parceiro||'Sem parceiro';
+    if(!porParceiro[p])porParceiro[p]={nome:p,aportes:0,retiradas:0};
+    if(l.tipo==='entrada')porParceiro[p].aportes+=l.valor||0;
+    else porParceiro[p].retiradas+=l.valor||0;
+  });
+  const parceiroRows=Object.values(porParceiro).filter(p=>p.aportes-p.retiradas>0).sort((a,b)=>(b.aportes-b.retiradas)-(a.aportes-a.retiradas));
+  const totalParcDev=parceiroRows.reduce((s,p)=>s+(p.aportes-p.retiradas),0);
+  document.getElementById('tbody-flx-parceiros').innerHTML=parceiroRows.length
+    ?parceiroRows.map(p=>{
+        const saldo=p.aportes-p.retiradas;
+        return`<tr><td><strong>${p.nome}</strong></td><td class="mono pos">${fmt(p.aportes)}</td><td class="mono">${fmt(p.retiradas)}</td><td class="mono neg">${fmt(saldo)}</td></tr>`;
+      }).join('')+`<tr style="font-weight:600;border-top:2px solid var(--border)"><td>Total</td><td></td><td></td><td class="mono neg">${fmt(totalParcDev)}</td></tr>`
+    :'<tr><td colspan="4" class="empty-state">Nenhum saldo devedor.</td></tr>';
   if(aPagarCTE>0)pl.push({tipo:'CTE',valor:aPagarCTE});
   if(aPagarNota>0)pl.push({tipo:'Notas Fiscais',valor:aPagarNota});
   if(aPagarFrete>0)pl.push({tipo:'Frete Motoristas',valor:aPagarFrete});
