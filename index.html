@@ -2443,6 +2443,20 @@ function renderFluxo(){
       <div class="s-sub">Ver detalhes abaixo</div>
     </div>
     <div class="stat-card red"><div class="s-label" style="font-weight:700">Total obrigações</div><div class="s-value">${fmt(aPagarTotal+(saldoParceiros>0?saldoParceiros:0))}</div></div>
+    <div class="table-card" style="grid-column:1/-1;margin-top:.5rem">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+        <div>
+          <div class="form-card-header" style="color:var(--red);padding:.5rem 0;font-size:11px">A pagar (contas em aberto)</div>
+          <table style="width:100%;font-size:12px"><thead><tr style="color:var(--text-muted);font-size:11px"><th style="text-align:left;padding:4px 0">Tipo</th><th style="text-align:right;padding:4px 0">Valor</th></tr></thead>
+          <tbody id="tbody-flx-pagar2"></tbody></table>
+        </div>
+        <div>
+          <div class="form-card-header" style="color:var(--red);padding:.5rem 0;font-size:11px">Saldo devedor por parceiro</div>
+          <table style="width:100%;font-size:12px"><thead><tr style="color:var(--text-muted);font-size:11px"><th style="text-align:left;padding:4px 0">Parceiro</th><th style="text-align:right;padding:4px 0">Saldo devedor</th></tr></thead>
+          <tbody id="tbody-flx-parceiros2"></tbody></table>
+        </div>
+      </div>
+    </div>
 
     <div style="width:100%;grid-column:1/-1;margin-top:.5rem">
       <p style="font-size:12px;font-weight:700;color:var(--text);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">💰 Resultado</p>
@@ -2498,6 +2512,19 @@ function renderFluxo(){
         return`<tr><td><strong>${p.nome}</strong></td><td class="mono pos">${fmt(p.aportes)}</td><td class="mono">${fmt(p.retiradas)}</td><td class="mono neg">${fmt(saldo)}</td></tr>`;
       }).join('')+`<tr style="font-weight:600;border-top:2px solid var(--border)"><td>Total</td><td></td><td></td><td class="mono neg">${fmt(totalParcDev)}</td></tr>`
     :'<tr><td colspan="4" class="empty-state">Nenhum saldo devedor.</td></tr>';
+  // Tabelas inline no bloco O que devo
+  const plInline=[];
+  if(aPagarCTE>0)plInline.push({tipo:'CTE',valor:aPagarCTE});
+  if(aPagarNota>0)plInline.push({tipo:'Notas Fiscais',valor:aPagarNota});
+  if(aPagarFrete>0)plInline.push({tipo:'Frete Motoristas',valor:aPagarFrete});
+  if(aPagarCom>0)plInline.push({tipo:'Comissões',valor:aPagarCom});
+  const p2=document.getElementById('tbody-flx-pagar2');
+  if(p2)p2.innerHTML=plInline.map(p=>`<tr><td style="padding:3px 0">${p.tipo}</td><td style="text-align:right;color:var(--red);font-weight:500">${fmt(p.valor)}</td></tr>`).join('')+`<tr style="font-weight:700;border-top:1px solid var(--border)"><td style="padding:4px 0">Total</td><td style="text-align:right;color:var(--red)">${fmt(aPagarTotal)}</td></tr>`;
+  const pr2=document.getElementById('tbody-flx-parceiros2');
+  if(pr2)pr2.innerHTML=parceiroRows.map(p=>`<tr><td style="padding:3px 0"><strong>${p.nome}</strong></td><td style="text-align:right;color:var(--red);font-weight:500">${fmt(p.aportes-p.retiradas)}</td></tr>`).join('')+`<tr style="font-weight:700;border-top:1px solid var(--border)"><td style="padding:4px 0">Total</td><td style="text-align:right;color:var(--red)">${fmt(totalParcDev)}</td></tr>`;
+
+  // A pagar (tabela principal embaixo)
+  const pl=[];
   if(aPagarCTE>0)pl.push({tipo:'CTE',valor:aPagarCTE});
   if(aPagarNota>0)pl.push({tipo:'Notas Fiscais',valor:aPagarNota});
   if(aPagarFrete>0)pl.push({tipo:'Frete Motoristas',valor:aPagarFrete});
