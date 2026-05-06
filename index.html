@@ -199,6 +199,9 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
   </div>
   <nav class="sidebar-nav">
     <div class="nav-label">Principal</div>
+    <div class="nav-item" id="nav-fluxo" onclick="irPara('fluxo',this)">
+      <svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>Fluxo de Caixa
+    </div>
     <div class="nav-item active" id="nav-fechamento" onclick="irPara('fechamento',this)">
       <svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>Fechamento Indústria
     </div>
@@ -315,6 +318,94 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
         <th>Produto</th><th>NF</th><th>Motorista</th>
         <th>Peso líq. (kg)</th><th>Sc embarcadas</th><th>Sc entregues</th>
       </tr></thead><tbody id="tbody-saidas"></tbody></table></div>
+    </div>
+  </div>
+
+  <!-- FLUXO DE CAIXA -->
+  <div class="page" id="page-fluxo">
+    <h1 class="section-heading">Fluxo de Caixa</h1>
+    <p class="section-sub">Controle de entradas, saídas e saldo financeiro.</p>
+
+    <!-- Filtros -->
+    <div class="table-filters" style="margin-bottom:1rem;gap:8px;display:flex;flex-wrap:wrap;align-items:center">
+      <select class="filter-select" id="flx-mes" onchange="renderFluxo()">
+        <option value="">Todos os meses</option>
+        <option value="01">Janeiro</option><option value="02">Fevereiro</option><option value="03">Março</option>
+        <option value="04">Abril</option><option value="05">Maio</option><option value="06">Junho</option>
+        <option value="07">Julho</option><option value="08">Agosto</option><option value="09">Setembro</option>
+        <option value="10">Outubro</option><option value="11">Novembro</option><option value="12">Dezembro</option>
+      </select>
+      <select class="filter-select" id="flx-ano" onchange="renderFluxo()">
+        <option value="2026">2026</option><option value="2025">2025</option><option value="2024">2024</option>
+      </select>
+      <select class="filter-select" id="flx-tipo" onchange="renderFluxo()">
+        <option value="">Todos</option><option value="entrada">Entradas</option><option value="saida">Saídas</option>
+      </select>
+      <input class="filter-input" id="flx-q" placeholder="Parceiro ou descrição..." oninput="renderFluxo()" style="width:200px">
+    </div>
+
+    <!-- Cards resumo -->
+    <div class="stats-grid" id="flx-cards" style="margin-bottom:1.25rem"></div>
+
+    <!-- Novo lançamento -->
+    <div class="table-card" style="margin-bottom:1rem">
+      <div class="form-card-header">Novo lançamento</div>
+      <div class="form-body">
+        <div class="form-grid">
+          <div class="fg"><label>Data <span class="star">*</span></label><input id="flx-data" type="date"></div>
+          <div class="fg"><label>Tipo <span class="star">*</span></label>
+            <select id="flx-tipo-lanc">
+              <option value="entrada">Entrada</option>
+              <option value="saida">Saída</option>
+            </select>
+          </div>
+          <div class="fg"><label>Valor R$ <span class="star">*</span></label><input id="flx-valor" type="number" step="0.01" placeholder="0,00"></div>
+          <div class="fg"><label>Parceiro</label><input id="flx-parceiro" type="text" placeholder="Nome do parceiro"></div>
+          <div class="fg fg-full"><label>Descrição <span class="star">*</span></label><input id="flx-desc" type="text" placeholder="Ex: Aporte investidor, Pagamento CTE..."></div>
+          <div class="fg"><label>Observação</label><input id="flx-obs" type="text"></div>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:12px">
+          <button class="btn btn-primary btn-sm" onclick="salvarFluxo()">Salvar lançamento</button>
+          <button class="btn btn-secondary btn-sm" onclick="limparFluxo()">Limpar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabela lançamentos -->
+    <div class="table-card">
+      <div class="table-header">
+        <h3>Lançamentos</h3>
+        <div style="display:flex;gap:6px">
+          <button class="btn btn-secondary btn-sm" onclick="exportFluxo('csv')">⬇ Excel</button>
+          <button class="btn btn-secondary btn-sm" onclick="exportFluxo('pdf')">⬇ PDF</button>
+        </div>
+      </div>
+      <div class="tbl-wrap"><table><thead><tr>
+        <th onclick="sortTable('tbody-fluxo',0)" style="cursor:pointer">Data ↕</th>
+        <th>Tipo</th>
+        <th onclick="sortTable('tbody-fluxo',2)" style="cursor:pointer">Descrição ↕</th>
+        <th onclick="sortTable('tbody-fluxo',3)" style="cursor:pointer">Parceiro ↕</th>
+        <th onclick="sortTable('tbody-fluxo',4,true)" style="cursor:pointer">Valor ↕</th>
+        <th>Obs.</th>
+        <th>Lançado por</th>
+        <th></th>
+      </tr></thead><tbody id="tbody-fluxo"></tbody></table></div>
+    </div>
+
+    <!-- Resumo A receber / A pagar -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:1rem">
+      <div class="table-card">
+        <div class="form-card-header" style="color:var(--green)">A receber das indústrias</div>
+        <div class="tbl-wrap"><table><thead><tr>
+          <th>Contrato</th><th>Comprador</th><th>A receber</th><th>Líquido (c/fundo)</th>
+        </tr></thead><tbody id="tbody-flx-receber"></tbody></table></div>
+      </div>
+      <div class="table-card">
+        <div class="form-card-header" style="color:var(--red)">A pagar (contas em aberto)</div>
+        <div class="tbl-wrap"><table><thead><tr>
+          <th>Tipo</th><th>Parceiro</th><th>Valor</th>
+        </tr></thead><tbody id="tbody-flx-pagar"></tbody></table></div>
+      </div>
     </div>
   </div>
 
@@ -968,6 +1059,8 @@ const _h={'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'appli
 
 let embs=[],cts=[],transp=[],coms=[],forn=[],cfg={taxa:5,prazo:72,tolerancia:3};
 let usuarios=[];
+let fluxo=[];
+let editFluxoId=null;
 let _usuariosDefault=[
   {id:1,nome:'Administrador',user:'admin',senha:'admin123',perfil:'admin'},
   {id:2,nome:'Colaborador',user:'colaborador',senha:'colab123',perfil:'operador'}
@@ -979,6 +1072,7 @@ function aplicarFiltroEmpresa(){
   _empresaFiltro=(document.getElementById('filtro-empresa-global')||{value:''}).value||'';
   // Reaplicar em todas as telas abertas
   const active=((document.querySelector('.page.active')||{}).id||'').replace('page-','');
+  if(active==='fluxo')renderFluxo();
   if(active==='painel')renderPainel();
   if(active==='fechamento')initFech();
   if(active==='fech-contrato')initFechContrato();
@@ -1102,6 +1196,11 @@ async function load(){
     ]);
     embs=re||[];cts=rc||[];transp=rt||[];coms=rcom||[];forn=rforn||[];
     if(rf)cfg={...cfg,...rf};
+    // Carregar fluxo de caixa
+    try{
+      const rfl=await fetch(`${SB_URL}/rest/v1/fluxo?select=data&order=id`,{headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}}).then(r=>r.json()).then(d=>d.map?d.map(x=>x.data):[]);
+      if(rfl&&rfl.length)fluxo=rfl;
+    }catch(e){}
     // Usar usuários do banco; só usar padrão se banco vazio
     if(ru&&ru.length){
       usuarios=ru;
@@ -1136,6 +1235,7 @@ function logout(){localStorage.removeItem(AK);usuarioLogado=null;location.reload
 
 // ===== PERMISSÕES =====
 const _MENUS=[
+  {id:'fluxo',label:'Fluxo de Caixa'},
   {id:'fechamento',label:'Fechamento Indústria'},
   {id:'fech-contrato',label:'Fechamento por Contrato'},
   {id:'painel',label:'Painel'},
@@ -1259,7 +1359,7 @@ async function trocarMinhaSenha(){
 }
 
 
-const ptitles={fechamento:'Fechamento Indústria',painel:'Painel','fech-contrato':'Fechamento por Contrato',saidas:'Saídas de produto',contratos:'Contratos',embarques:'Embarques',novo:'Novo embarque',frete:'Frete — Motoristas','cap-transp':'CTE — Transportadoras','cap-com':'Comissões a Pagar','cap-nota':'Notas Fiscais a Pagar',transportadoras:'Transportadoras',comissionarios:'Cadastro Comissionários',fornecedores:'Fornecedores de Nota',config:'Configurações'};
+const ptitles={fluxo:'Fluxo de Caixa',fechamento:'Fechamento Indústria',painel:'Painel','fech-contrato':'Fechamento por Contrato',saidas:'Saídas de produto',contratos:'Contratos',embarques:'Embarques',novo:'Novo embarque',frete:'Frete — Motoristas','cap-transp':'CTE — Transportadoras','cap-com':'Comissões a Pagar','cap-nota':'Notas Fiscais a Pagar',transportadoras:'Transportadoras',comissionarios:'Cadastro Comissionários',fornecedores:'Fornecedores de Nota',config:'Configurações'};
 function irPara(id,el){
   if(id==='config'&&(!usuarioLogado||usuarioLogado.perfil!=='admin')){toast('Acesso restrito ao administrador.',true);return;}
   if(!temPermissao(id)){toast('Você não tem permissão para acessar esta área.',true);return;}
@@ -1269,6 +1369,7 @@ function irPara(id,el){
   if(el)el.classList.add('active');
   else{const n=document.getElementById('nav-'+id);if(n)n.classList.add('active');}
   document.getElementById('page-title').textContent=ptitles[id]||'';
+  if(id==='fluxo')renderFluxo();
   if(id==='fechamento')initFech();
   if(id==='fech-contrato')initFechContrato();
   if(id==='saidas')renderSaidas();
@@ -2235,7 +2336,133 @@ function sortTable(tbodyId, colIndex, isNumeric=false){
 }
 
 
-function gerarCSV(cab,rows,nome){
+// ===== FLUXO DE CAIXA =====
+async function saveFluxo(){
+  try{
+    await fetch(`${SB_URL}/rest/v1/fluxo?id=gte.0`,{method:'DELETE',headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}});
+    if(fluxo.length){
+      const r=await fetch(`${SB_URL}/rest/v1/fluxo`,{method:'POST',headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify(fluxo.map(f=>({id:f.id,data:f})))});
+      if(!r.ok){const t=await r.text();console.error('saveFluxo:',t);}
+    }
+  }catch(e){console.error(e);}
+}
+function renderFluxo(){
+  const mes=(document.getElementById('flx-mes')||{value:''}).value;
+  const ano=(document.getElementById('flx-ano')||{value:'2026'}).value;
+  const tipo=(document.getElementById('flx-tipo')||{value:''}).value;
+  const q=(document.getElementById('flx-q')||{value:''}).value.toLowerCase();
+  const f=fluxo.filter(l=>{
+    if(tipo&&l.tipo!==tipo)return false;
+    if(q&&!(l.descricao||'').toLowerCase().includes(q)&&!(l.parceiro||'').toLowerCase().includes(q))return false;
+    if(!l.data)return false;
+    const[y,m]=l.data.split('-');
+    if(ano&&y!==ano)return false;
+    if(mes&&m!==mes)return false;
+    return true;
+  });
+  const totalEnt=f.filter(l=>l.tipo==='entrada').reduce((s,l)=>s+(l.valor||0),0);
+  const totalSai=f.filter(l=>l.tipo==='saida').reduce((s,l)=>s+(l.valor||0),0);
+  const saldo=totalEnt-totalSai;
+  const aReceberEmbs=embs.filter(d=>!d.cancelada&&(!d.recebido||d.recebido===0));
+  const aReceberTotal=aReceberEmbs.reduce((s,d)=>s+(d.total_venda||0),0);
+  const aPagarCTE=embs.filter(d=>!d.cancelada&&!d.cte_pago&&(d.cte||0)>0).reduce((s,d)=>s+(d.cte||0),0);
+  const aPagarNota=embs.filter(d=>!d.cancelada&&!d.nota_pago&&(d.cn_val||0)>0).reduce((s,d)=>s+(d.cn_val||0),0);
+  const aPagarFrete=embs.filter(d=>!d.cancelada&&(d.frete_total||0)>0).reduce((s,d)=>{
+    const f80=d.frete80_pago?0:(d.frete80||0);
+    const f20=d.frete20_pago?0:Math.max(0,(d.frete20||0)-(d.desc_quebra||0));
+    return s+f80+f20;
+  },0);
+  const aPagarCom=embs.filter(d=>!d.cancelada).reduce((s,d)=>s+(d.comissoes||[]).reduce((cs,c)=>{
+    if(d.comissoes_pago&&d.comissoes_pago[c.id])return cs;
+    return cs+(c.valor||0)*(d.sc_emb||0);
+  },0),0);
+  const aPagarTotal=aPagarCTE+aPagarNota+aPagarFrete+aPagarCom;
+  const saldoGeral=saldo+aReceberTotal-aPagarTotal;
+  document.getElementById('flx-cards').innerHTML=`
+    <div class="stat-card green"><div class="s-label">Total entradas</div><div class="s-value">${fmt(totalEnt)}</div></div>
+    <div class="stat-card red"><div class="s-label">Total saídas</div><div class="s-value">${fmt(totalSai)}</div></div>
+    <div class="stat-card ${saldo>=0?'green':'red'}"><div class="s-label">Saldo período</div><div class="s-value">${fmt(saldo)}</div></div>
+    <div class="stat-card amber"><div class="s-label">A receber indústrias</div><div class="s-value">${fmt(aReceberTotal)}</div></div>
+    <div class="stat-card red"><div class="s-label">Total a pagar</div><div class="s-value">${fmt(aPagarTotal)}</div></div>
+    <div class="stat-card ${saldoGeral>=0?'green':'red'}"><div class="s-label">Saldo líquido geral</div><div class="s-value">${fmt(saldoGeral)}</div></div>
+  `;
+  document.getElementById('tbody-fluxo').innerHTML=f.length
+    ?[...f].sort((a,b)=>b.data>a.data?1:-1).map(l=>`<tr ondblclick="editarFluxo(${l.id})" style="cursor:pointer" title="Duplo clique para editar">
+      <td>${l.data||'—'}</td>
+      <td><span class="badge ${l.tipo==='entrada'?'badge-green':'badge-red'}">${l.tipo==='entrada'?'Entrada':'Saída'}</span></td>
+      <td>${l.descricao||'—'}</td><td>${l.parceiro||'—'}</td>
+      <td class="mono ${l.tipo==='entrada'?'pos':'neg'}">${l.tipo==='saida'?'- ':''}${fmt(l.valor||0)}</td>
+      <td style="color:var(--text-faint);font-size:12px">${l.obs||'—'}</td>
+      <td style="color:var(--text-faint);font-size:11px">${l.lancado_por||'—'}</td>
+      <td><button class="btn btn-danger" onclick="event.stopPropagation();delFluxo(${l.id})">×</button></td>
+    </tr>`).join('')
+    :'<tr><td colspan="8" class="empty-state">Nenhum lançamento encontrado.</td></tr>';
+  // A receber por contrato
+  const porCt={};
+  aReceberEmbs.forEach(d=>{
+    if(!porCt[d.contrato])porCt[d.contrato]={ct:d.contrato,comprador:(cts.find(c=>c.numero==d.contrato)||{comprador:'—'}).comprador,total:0,pct:0};
+    const ctO=cts.find(c=>c.numero==d.contrato);
+    porCt[d.contrato].total+=d.total_venda||0;
+    porCt[d.contrato].pct=(ctO&&ctO.tem_fundo)?(ctO.fundo_pct||5)/100:0;
+  });
+  document.getElementById('tbody-flx-receber').innerHTML=Object.values(porCt).length
+    ?Object.values(porCt).map(r=>`<tr><td><strong>${r.ct}</strong></td><td>${r.comprador}</td><td class="mono amber-txt">${fmt(r.total)}</td><td class="mono pos">${fmt(r.total*(1-r.pct))}</td></tr>`).join('')
+    :'<tr><td colspan="4" class="empty-state">Nenhum valor a receber.</td></tr>';
+  // A pagar
+  const pl=[];
+  if(aPagarCTE>0)pl.push({tipo:'CTE',valor:aPagarCTE});
+  if(aPagarNota>0)pl.push({tipo:'Notas Fiscais',valor:aPagarNota});
+  if(aPagarFrete>0)pl.push({tipo:'Frete Motoristas',valor:aPagarFrete});
+  if(aPagarCom>0)pl.push({tipo:'Comissões',valor:aPagarCom});
+  document.getElementById('tbody-flx-pagar').innerHTML=pl.length
+    ?pl.map(p=>`<tr><td>${p.tipo}</td><td>—</td><td class="mono neg">${fmt(p.valor)}</td></tr>`).join('')+`<tr style="font-weight:600;border-top:2px solid var(--border)"><td colspan="2">Total</td><td class="mono neg">${fmt(aPagarTotal)}</td></tr>`
+    :'<tr><td colspan="3" class="empty-state">Nada a pagar.</td></tr>';
+}
+async function salvarFluxo(){
+  const data=document.getElementById('flx-data').value;
+  const tipo=document.getElementById('flx-tipo-lanc').value;
+  const valor=parseFloat(document.getElementById('flx-valor').value)||0;
+  const desc=document.getElementById('flx-desc').value.trim();
+  const parceiro=document.getElementById('flx-parceiro').value.trim();
+  const obs=document.getElementById('flx-obs').value.trim();
+  if(!data||!desc||!valor){toast('Preencha data, descrição e valor!',true);return;}
+  const obj={id:editFluxoId||Date.now(),data,tipo,valor,descricao:desc,parceiro,obs,lancado_por:(usuarioLogado&&usuarioLogado.nome)||'—'};
+  if(editFluxoId)fluxo=fluxo.map(l=>l.id===editFluxoId?obj:l);
+  else fluxo.push(obj);
+  showLoading('Salvando...');await saveFluxo();hideLoading();
+  limparFluxo();renderFluxo();toast('Lançamento salvo!');
+}
+function editarFluxo(id){
+  const l=fluxo.find(x=>x.id===id);if(!l)return;
+  editFluxoId=id;
+  document.getElementById('flx-data').value=l.data||'';
+  document.getElementById('flx-tipo-lanc').value=l.tipo||'entrada';
+  document.getElementById('flx-valor').value=l.valor||0;
+  document.getElementById('flx-parceiro').value=l.parceiro||'';
+  document.getElementById('flx-desc').value=l.descricao||'';
+  document.getElementById('flx-obs').value=l.obs||'';
+  window.scrollTo(0,0);toast('Editando — faça as alterações e salve.');
+}
+function limparFluxo(){
+  editFluxoId=null;
+  ['flx-data','flx-valor','flx-parceiro','flx-desc','flx-obs'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  const tl=document.getElementById('flx-tipo-lanc');if(tl)tl.value='entrada';
+}
+async function delFluxo(id){
+  if(!usuarioLogado||usuarioLogado.perfil!=='admin'){toast('Apenas o administrador pode excluir!',true);return;}
+  if(!confirm('Remover este lançamento?'))return;
+  fluxo=fluxo.filter(l=>l.id!==id);
+  showLoading('Removendo...');await saveFluxo();hideLoading();
+  renderFluxo();toast('Removido.');
+}
+function exportFluxo(tipo='csv'){
+  if(!fluxo.length){toast('Nenhum lançamento.',true);return;}
+  const cab=['Data','Tipo','Descrição','Parceiro','Valor R$','Observação','Lançado por'];
+  const rows=fluxo.map(l=>[l.data,l.tipo==='entrada'?'Entrada':'Saída',l.descricao,l.parceiro,(l.valor||0).toFixed(2),l.obs,l.lancado_por]);
+  tipo==='pdf'?gerarPDF('Fluxo de Caixa',cab,rows,'prime-graos-fluxo'):gerarCSV(cab,rows,'prime-graos-fluxo');
+}
+
+// ===== EXPORT HELPERS =====
   const csv=[cab,...rows].map(r=>r.map(c=>`"${String(c||'').replace(/"/g,'""')}"`).join(';')).join('\n');
   const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'}));a.download=nome+'.csv';a.click();toast('Excel exportado!');
 }
