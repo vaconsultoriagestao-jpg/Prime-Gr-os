@@ -2885,10 +2885,9 @@ function gerarFechContrato(){
 }
 
 function exportFechContrato(tipo='csv'){
-  const ct=document.getElementById('fc-contrato').value;
-  if(!ct){toast('Selecione um contrato!',true);return;}
-  const its=embs.filter(d=>!d.cancelada&&d.contrato==ct);
-  const ctObj=cts.find(c=>c.numero==ct);
+  const sels=[...document.querySelectorAll('#fc-ct-checks input[type=checkbox]:checked')].map(cb=>cb.value);
+  if(!sels.length){toast('Selecione ao menos um contrato!',true);return;}
+  const its=embs.filter(d=>!d.cancelada&&sels.includes(String(d.contrato)));
   const total_venda=its.reduce((s,d)=>s+(d.total_venda||0),0);
   const total_compra=its.reduce((s,d)=>s+(d.total_compra||0),0);
   const frete_total=its.reduce((s,d)=>s+(d.frete_total||0),0);
