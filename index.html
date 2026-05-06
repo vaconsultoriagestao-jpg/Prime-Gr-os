@@ -2806,13 +2806,43 @@ function gerarFechContrato(){
   const a_receber_liq=a_receber_total-fundo_desc_rec;
   const totalQtd=sels.reduce((s,ct)=>{const co=cts.find(c=>c.numero==ct);return s+((co&&co.qtd)||0);},0);
 
+  // Lucro Parcial — só embarques com recebimento confirmado
+  const itsRecebidos=its.filter(d=>d.recebido>0);
+  const lucro_parcial=itsRecebidos.reduce((s,d)=>s+(d.lucro||0),0);
+  const total_venda_recebido=itsRecebidos.reduce((s,d)=>s+(d.total_venda||0),0);
+  const lucro_parcial_pct=total_venda_recebido>0?lucro_parcial/total_venda_recebido*100:0;
+  const qtd_recebidos=itsRecebidos.length;
+  const qtd_total=its.length;
+  const pct_recebidos=qtd_total>0?Math.round(qtd_recebidos/qtd_total*100):0;
+
   // Cards
   document.getElementById('fc-cards').innerHTML=`
-    <div class="stat-card ${lucro>=0?'green':'red'}"><div class="s-label">Lucro R$</div><div class="s-value">${fmt(lucro)}</div><div class="s-sub">${fmtP(lucro_pct)}</div></div>
+    <div style="width:100%;grid-column:1/-1;padding-bottom:4px">
+      <p style="font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;margin:0">💰 Lucro Parcial — embarques recebidos</p>
+    </div>
+    <div class="stat-card ${lucro_parcial>=0?'green':'red'}" style="border:2px solid ${lucro_parcial>=0?'var(--green)':'var(--red)'}">
+      <div class="s-label" style="font-weight:600">Lucro parcial R$</div>
+      <div class="s-value">${fmt(lucro_parcial)}</div>
+      <div class="s-sub">${fmtP(lucro_parcial_pct)} sobre recebido</div>
+    </div>
+    <div class="stat-card">
+      <div class="s-label">Total recebido</div>
+      <div class="s-value">${fmt(total_venda_recebido)}</div>
+      <div class="s-sub">base do cálculo</div>
+    </div>
+    <div class="stat-card">
+      <div class="s-label">Embarques recebidos</div>
+      <div class="s-value">${qtd_recebidos} / ${qtd_total}</div>
+      <div style="margin-top:8px;height:6px;background:var(--gray-100);border-radius:4px"><div style="width:${pct_recebidos}%;height:100%;background:var(--green);border-radius:4px;transition:width .3s"></div></div>
+    </div>
+    <div style="width:100%;grid-column:1/-1;padding:8px 0 4px">
+      <p style="font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;margin:0">📊 Resultado total do contrato</p>
+    </div>
+    <div class="stat-card ${lucro>=0?'green':'red'}"><div class="s-label">Lucro total R$</div><div class="s-value">${fmt(lucro)}</div><div class="s-sub">${fmtP(lucro_pct)}</div></div>
     <div class="stat-card"><div class="s-label">Total venda</div><div class="s-value">${fmt(total_venda)}</div></div>
     <div class="stat-card"><div class="s-label">Total compra</div><div class="s-value">${fmt(total_compra)}</div></div>
     <div class="stat-card ${a_receber_total>0?'amber':'green'}"><div class="s-label">A receber (bruto)</div><div class="s-value">${fmt(a_receber_total)}</div></div>
-    <div class="stat-card ${fundo_desc_rec>0?'amber':''}"><div class="s-label">Desc. fundo (${(ctObj&&ctObj.tem_fundo)?(ctObj.fundo_pct||5):0}%)</div><div class="s-value">${fmt(fundo_desc_rec)}</div></div>
+    <div class="stat-card ${fundo_desc_rec>0?'amber':''}"><div class="s-label">Desc. fundo</div><div class="s-value">${fmt(fundo_desc_rec)}</div></div>
     <div class="stat-card ${a_receber_liq>0?'amber':'green'}"><div class="s-label">A receber (líquido)</div><div class="s-value">${fmt(a_receber_liq)}</div></div>
     <div class="stat-card"><div class="s-label">Frete total</div><div class="s-value">${fmt(frete_total)}</div></div>
     <div class="stat-card"><div class="s-label">Comissões</div><div class="s-value">${fmt(com_total)}</div></div>
