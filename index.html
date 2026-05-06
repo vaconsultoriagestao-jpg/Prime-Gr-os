@@ -2440,23 +2440,8 @@ function renderFluxo(){
     <div class="stat-card red">
       <div class="s-label">Saldo devedor parceiros</div>
       <div class="s-value">${fmt(saldoParceiros>0?saldoParceiros:0)}</div>
-      <div class="s-sub">Ver detalhes abaixo</div>
     </div>
     <div class="stat-card red"><div class="s-label" style="font-weight:700">Total obrigações</div><div class="s-value">${fmt(aPagarTotal+(saldoParceiros>0?saldoParceiros:0))}</div></div>
-    <div class="table-card" style="grid-column:1/-1;margin-top:.5rem">
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
-        <div>
-          <div class="form-card-header" style="color:var(--red);padding:.5rem 0;font-size:11px">A pagar (contas em aberto)</div>
-          <table style="width:100%;font-size:12px"><thead><tr style="color:var(--text-muted);font-size:11px"><th style="text-align:left;padding:4px 0">Tipo</th><th style="text-align:right;padding:4px 0">Valor</th></tr></thead>
-          <tbody id="tbody-flx-pagar2"></tbody></table>
-        </div>
-        <div>
-          <div class="form-card-header" style="color:var(--red);padding:.5rem 0;font-size:11px">Saldo devedor por parceiro</div>
-          <table style="width:100%;font-size:12px"><thead><tr style="color:var(--text-muted);font-size:11px"><th style="text-align:left;padding:4px 0">Parceiro</th><th style="text-align:right;padding:4px 0">Saldo devedor</th></tr></thead>
-          <tbody id="tbody-flx-parceiros2"></tbody></table>
-        </div>
-      </div>
-    </div>
 
     <div style="width:100%;grid-column:1/-1;margin-top:.5rem">
       <p style="font-size:12px;font-weight:700;color:var(--text);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">💰 Resultado</p>
