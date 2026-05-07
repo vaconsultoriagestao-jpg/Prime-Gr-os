@@ -464,7 +464,12 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
     <div class="table-card" style="margin-bottom:1rem">
       <div class="table-header">
         <h3>Selecionar contratos</h3>
-        <div style="display:flex;gap:8px">
+        <div style="display:flex;gap:8px;align-items:center">
+          <select class="filter-select" id="fc-filtro-status" onchange="initFechContrato()" style="min-width:160px">
+            <option value="">Todos</option>
+            <option value="pendente">Pendentes (a receber)</option>
+            <option value="recebido">Recebidos (100%)</option>
+          </select>
           <button class="btn btn-secondary btn-sm" onclick="selTodosFc(true)">Todos</button>
           <button class="btn btn-secondary btn-sm" onclick="selTodosFc(false)">Limpar</button>
           <button class="btn btn-primary btn-sm" onclick="gerarFechContrato()">Gerar fechamento</button>
@@ -2746,12 +2751,31 @@ function exportEmb(tipo='csv'){
 // ===== FECHAMENTO POR CONTRATO =====
 function initFechContrato(){
   const box=document.getElementById('fc-ct-checks');if(!box)return;
+  const statusFiltro=(document.getElementById('fc-filtro-status')||{value:''}).value;
   const ctNums=[...new Set(embs.filter(d=>!d.cancelada&&(!_empresaFiltro||d.empresa===_empresaFiltro)).map(d=>d.contrato))].sort();
-  box.innerHTML=ctNums.length?ctNums.map(ct=>{
+
+  // Filtrar contratos por status de recebimento
+  const ctsFiltrados=ctNums.filter(ct=>{
+    if(!statusFiltro)return true;
+    const its=embs.filter(d=>!d.cancelada&&String(d.contrato)===String(ct));
+    const totalVenda=its.reduce((s,d)=>s+(d.total_venda||0),0);
+    const totalRecebido=its.reduce((s,d)=>s+(d.recebido||0),0);
+    const recebido100=totalVenda>0&&totalRecebido>=totalVenda*0.99;
+    if(statusFiltro==='recebido')return recebido100;
+    if(statusFiltro==='pendente')return !recebido100;
+    return true;
+  });
+
+  box.innerHTML=ctsFiltrados.length?ctsFiltrados.map(ct=>{
     const co=cts.find(c=>c.numero==ct);
-    return`<label class="ct-check"><input type="checkbox" value="${ct}" onchange="this.closest('label').classList.toggle('on',this.checked)"> ${ct}${co?` — ${co.comprador}`:''}
-    </label>`;
-  }).join(''):'<span style="color:var(--text-faint);font-size:13px">Nenhum embarque ativo cadastrado.</span>';
+    const its=embs.filter(d=>!d.cancelada&&String(d.contrato)===String(ct));
+    const totalVenda=its.reduce((s,d)=>s+(d.total_venda||0),0);
+    const totalRecebido=its.reduce((s,d)=>s+(d.recebido||0),0);
+    const recebido100=totalVenda>0&&totalRecebido>=totalVenda*0.99;
+    const badge=recebido100?'<span style="font-size:9px;background:#d1fae5;color:#065f46;padding:1px 5px;border-radius:4px;margin-left:4px">✓ Recebido</span>':'<span style="font-size:9px;background:#fef3c7;color:#92400e;padding:1px 5px;border-radius:4px;margin-left:4px">Pendente</span>';
+    return`<label class="ct-check"><input type="checkbox" value="${ct}" onchange="this.closest('label').classList.toggle('on',this.checked)"> ${ct}${co?` — ${co.comprador}`:''}${badge}</label>`;
+  }).join(''):'<span style="color:var(--text-faint);font-size:13px">Nenhum contrato encontrado.</span>';
+
   document.getElementById('fc-result').style.display='none';
   document.getElementById('fc-vazio').style.display='none';
 }
