@@ -469,6 +469,8 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
             <option value="">Todos</option>
             <option value="pendente">Pendentes (a receber)</option>
             <option value="recebido">Recebidos (100%)</option>
+            <option value="distribuido">Distribuídos</option>
+            <option value="nao_distribuido">Não distribuídos</option>
           </select>
           <button class="btn btn-secondary btn-sm" onclick="selTodosFc(true)">Todos</button>
           <button class="btn btn-secondary btn-sm" onclick="selTodosFc(false)">Limpar</button>
@@ -2849,6 +2851,8 @@ function initFechContrato(){
     const recebido100=totalVenda>0&&totalRecebido>=totalVenda*0.99;
     if(statusFiltro==='recebido')return recebido100;
     if(statusFiltro==='pendente')return !recebido100;
+    if(statusFiltro==='distribuido')return !!(co&&co.distribuicao_socios&&co.distribuicao_socios.length>0);
+    if(statusFiltro==='nao_distribuido')return !(co&&co.distribuicao_socios&&co.distribuicao_socios.length>0);
     return true;
   });
 
@@ -2858,8 +2862,10 @@ function initFechContrato(){
     const totalVenda=its.reduce((s,d)=>s+(d.total_venda||0),0);
     const totalRecebido=its.reduce((s,d)=>s+(d.recebido||0),0);
     const recebido100=totalVenda>0&&totalRecebido>=totalVenda*0.99;
-    const badge=recebido100?'<span style="font-size:9px;background:#d1fae5;color:#065f46;padding:1px 5px;border-radius:4px;margin-left:4px">✓ Recebido</span>':'<span style="font-size:9px;background:#fef3c7;color:#92400e;padding:1px 5px;border-radius:4px;margin-left:4px">Pendente</span>';
-    return`<label class="ct-check"><input type="checkbox" value="${ct}" onchange="this.closest('label').classList.toggle('on',this.checked)"> ${ct}${co?` — ${co.comprador}`:''}${badge}</label>`;
+    const distribuido=co&&co.distribuicao_socios&&co.distribuicao_socios.length>0;
+    const badgeRec=recebido100?'<span style="font-size:9px;background:#d1fae5;color:#065f46;padding:1px 5px;border-radius:4px;margin-left:4px">✓ Recebido</span>':'<span style="font-size:9px;background:#fef3c7;color:#92400e;padding:1px 5px;border-radius:4px;margin-left:4px">Pendente</span>';
+    const badgeDist=distribuido?'<span style="font-size:9px;background:#e0e7ff;color:#3730a3;padding:1px 5px;border-radius:4px;margin-left:4px">✓ Distribuído</span>':'<span style="font-size:9px;background:#f3f4f6;color:#6b7280;padding:1px 5px;border-radius:4px;margin-left:4px">Não distribuído</span>';
+    return`<label class="ct-check"><input type="checkbox" value="${ct}" onchange="this.closest('label').classList.toggle('on',this.checked)"> ${ct}${co?` — ${co.comprador}`:''}${badgeRec}${badgeDist}</label>`;
   }).join(''):'<span style="color:var(--text-faint);font-size:13px">Nenhum contrato encontrado.</span>';
 
   document.getElementById('fc-result').style.display='none';
