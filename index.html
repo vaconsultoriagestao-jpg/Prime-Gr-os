@@ -508,6 +508,19 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
           </tr></thead><tbody id="fc-tbody-nf"></tbody></table></div>
         </div>
       </div>
+
+      <!-- DISTRIBUIÇÃO DE LUCRO -->
+      <div class="table-card" style="margin-bottom:1.25rem">
+        <div class="form-card-header" style="color:var(--green)">💰 Distribuição de Lucro por Sócio</div>
+        <div class="form-body">
+          <div style="display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap;margin-bottom:1rem">
+            <div class="fg" style="flex:2;min-width:150px"><label>Nome do sócio</label><input id="fc-socio-nome" type="text" placeholder="Ex: João Silva"></div>
+            <div class="fg" style="flex:1;min-width:100px"><label>Percentual %</label><input id="fc-socio-pct" type="number" step="0.01" min="0" max="100" placeholder="Ex: 40"></div>
+            <button class="btn btn-primary btn-sm" onclick="addSocioFc()" style="margin-bottom:2px">+ Adicionar</button>
+          </div>
+          <div id="fc-socios-lista"></div>
+        </div>
+      </div>
     </div>
     <div id="fc-vazio" style="color:var(--text-faint);font-size:13px;padding:1rem 0">Selecione um contrato para gerar o fechamento.</div>
   </div>
@@ -2748,7 +2761,80 @@ function exportEmb(tipo='csv'){
   tipo==='pdf'?gerarPDF('Embarques',cab,rows,'prime-graos-embarques'):gerarCSV(cab,rows,'prime-graos-embarques');
 }
 
-// ===== FECHAMENTO POR CONTRATO =====
+// ===== DISTRIBUIÇÃO DE LUCRO =====
+let _fcSocios = []; // [{nome, pct, pago}]
+let _fcLucroAtual = 0;
+
+function addSocioFc(){
+  const nome = document.getElementById('fc-socio-nome').value.trim();
+  const pct = parseFloat(document.getElementById('fc-socio-pct').value)||0;
+  if(!nome){toast('Informe o nome do sócio!',true);return;}
+  if(pct<=0||pct>100){toast('Informe um percentual válido!',true);return;}
+  const totalPct = _fcSocios.reduce((s,x)=>s+x.pct,0)+pct;
+  if(totalPct>100){toast(`Total de ${totalPct.toFixed(1)}% ultrapassa 100%!`,true);return;}
+  _fcSocios.push({id:Date.now(),nome,pct,pago:false});
+  document.getElementById('fc-socio-nome').value='';
+  document.getElementById('fc-socio-pct').value='';
+  renderSociosFc();
+}
+function remSocioFc(id){
+  _fcSocios=_fcSocios.filter(s=>s.id!==id);
+  renderSociosFc();
+}
+function toggleSocioPago(id){
+  _fcSocios=_fcSocios.map(s=>s.id===id?{...s,pago:!s.pago}:s);
+  renderSociosFc();
+  // Salvar no contrato
+  salvarDistribuicaoFc();
+}
+async function salvarDistribuicaoFc(){
+  const sels=[...document.querySelectorAll('#fc-ct-checks input[type=checkbox]:checked')].map(cb=>cb.value);
+  if(!sels.length)return;
+  // Salvar distribuicao em cada contrato selecionado
+  cts=cts.map(c=>{
+    if(sels.includes(String(c.numero))){
+      return{...c,distribuicao_socios:_fcSocios};
+    }
+    return c;
+  });
+  await saveCts();
+  toast('Distribuição salva!');
+}
+function renderSociosFc(){
+  const lista=document.getElementById('fc-socios-lista');
+  if(!lista)return;
+  const lucro=_fcLucroAtual;
+  const totalPct=_fcSocios.reduce((s,x)=>s+x.pct,0);
+  if(!_fcSocios.length){
+    lista.innerHTML='<p style="font-size:13px;color:var(--text-faint)">Nenhum sócio adicionado. Use o formulário acima para distribuir o lucro.</p>';
+    return;
+  }
+  lista.innerHTML=`
+    <div class="tbl-wrap"><table><thead><tr>
+      <th>Sócio</th><th>%</th><th>Valor a receber</th><th>Status</th><th></th>
+    </tr></thead><tbody>
+    ${_fcSocios.map(s=>{
+      const valor=lucro*(s.pct/100);
+      return`<tr>
+        <td><strong>${s.nome}</strong></td>
+        <td>${s.pct}%</td>
+        <td class="mono ${valor>=0?'pos':'neg'}">${fmt(valor)}</td>
+        <td><span class="badge ${s.pago?'badge-green':'badge-amber'}">${s.pago?'Pago':'Pendente'}</span></td>
+        <td style="display:flex;gap:4px">
+          <button class="btn-edit" onclick="toggleSocioPago(${s.id})">${s.pago?'Reabrir':'Marcar pago'}</button>
+          <button class="btn btn-danger" onclick="remSocioFc(${s.id})">×</button>
+        </td>
+      </tr>`;
+    }).join('')}
+    </tbody></table></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)">
+      <span style="font-size:13px;color:var(--text-muted)">Total distribuído: <strong>${totalPct.toFixed(1)}%</strong> de 100%</span>
+      <button class="btn btn-primary btn-sm" onclick="salvarDistribuicaoFc()">💾 Salvar distribuição</button>
+    </div>
+  `;
+}
+
+
 function initFechContrato(){
   const box=document.getElementById('fc-ct-checks');if(!box)return;
   const statusFiltro=(document.getElementById('fc-filtro-status')||{value:''}).value;
@@ -2877,7 +2963,15 @@ function gerarFechContrato(){
     <div class="stat-card ${sc_falt>0?'amber':'green'}"><div class="s-label">Sc faltantes</div><div class="s-value">${fmtN(sc_falt,0)}</div><div class="s-sub">de ${fmtN(totalQtd,0)} sc</div></div>
   `;
 
-  // Comissões por comissionário — usa comissionários ATUAIS de cada contrato
+  // Carregar distribuição de lucro salva (usa primeiro contrato selecionado)
+  _fcLucroAtual=lucro;
+  const ctPrimeiro=cts.find(c=>String(c.numero)===String(sels[0]));
+  if(ctPrimeiro&&ctPrimeiro.distribuicao_socios&&ctPrimeiro.distribuicao_socios.length){
+    _fcSocios=ctPrimeiro.distribuicao_socios;
+  } else {
+    _fcSocios=[];
+  }
+  renderSociosFc();
   const porCom={};
   its.forEach(d=>{
     const ctO=cts.find(c=>c.numero==d.contrato);
