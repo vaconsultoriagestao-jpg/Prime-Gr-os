@@ -2288,7 +2288,7 @@ function renderEmbarques(){
   if(ctS){const cs=[...new Set(embs.map(d=>d.contrato))].sort();const cur=ctS.value;ctS.innerHTML='<option value="">Todos contratos</option>'+cs.map(c=>`<option ${c===cur?'selected':''}>${c}</option>`).join('');}
   const f=embs.filter(d=>(!q||String(d.contrato||'').includes(q)||String(d.nf||'').toLowerCase().includes(q)||String(d.motorista||'').toLowerCase().includes(q)||String(d.cpf||'').includes(q))&&(!st||d.status===st)&&(!ct||d.contrato==ct)&&(canc===''||(canc==='0'&&!d.cancelada)||(canc==='1'&&d.cancelada))&&(!emp||d.empresa===emp));
   document.getElementById('tbody-emb').innerHTML=f.length
-    ?f.map(d=>{const sp=sprazo(d);return`<tr class="${d.cancelada?'cancelada':''}">
+    ?f.map(d=>{const sp=sprazo(d);return`<tr class="${d.cancelada?'cancelada':''}" ondblclick="abrirModalEdit(${d.id})" style="cursor:pointer" title="Duplo clique para editar">
       <td><strong>${d.contrato}</strong></td>
       <td><span class="badge ${d.empresa==='ZF Grãos'?'badge-blue':'badge-green'}">${d.empresa||'Prime Grãos'}</span></td>
       <td>${d.nf||'—'}</td>
