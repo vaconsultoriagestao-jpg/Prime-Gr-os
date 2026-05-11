@@ -3101,7 +3101,6 @@ function exportFechContrato(tipo='csv'){
 
   if(tipo==='pdf'){
     if(!window.jspdf||!window.jspdf.jsPDF){toast('Biblioteca PDF não carregada.',true);return;}
-    if(!window.jspdf||!window.jspdf.jsPDF){toast('Biblioteca PDF não carregada.',true);return;}
     const {jsPDF}=window.jspdf;
     const doc=new jsPDF();
     const pw=doc.internal.pageSize.width;
@@ -3111,7 +3110,7 @@ function exportFechContrato(tipo='csv'){
     doc.setTextColor(255,255,255);doc.setFontSize(14);doc.setFont('helvetica','bold');
     doc.text('Prime Grãos',36,11);
     doc.setFontSize(10);doc.setFont('helvetica','normal');
-    doc.text(`Fechamento — Contrato ${ct}`,36,18);
+    doc.text(`Fechamento — ${sels.length===1?'Contrato '+sels[0]:sels.length+' contratos'}`,36,18);
     doc.setFontSize(8);doc.text('Gerado em: '+hoje,pw-14,18,{align:'right'});
     doc.setTextColor(0,0,0);
     let y=32;
@@ -3138,11 +3137,11 @@ function exportFechContrato(tipo='csv'){
     const porN={};its.filter(d=>d.fornecedor_nota&&d.cn_val>0).forEach(d=>{if(!porN[d.fornecedor_nota])porN[d.fornecedor_nota]={nome:d.fornecedor_nota,total:0,aberto:0};porN[d.fornecedor_nota].total+=d.cn_val||0;if(!d.nota_pago)porN[d.fornecedor_nota].aberto+=d.cn_val||0;});
     if(Object.keys(porN).length){doc.setFontSize(11);doc.setFont('helvetica','bold');doc.text('Notas Fiscais por Fornecedor',14,y);y+=4;
       doc.autoTable({head:[['Fornecedor','Total NF','Em aberto']],body:Object.values(porN).map(f=>[f.nome,fmt(f.total),fmt(f.aberto)]),startY:y,styles:{fontSize:9},headStyles:{fillColor:[45,106,79],textColor:255},margin:{left:14,right:14}});}
-    doc.save(`prime-graos-fech-contrato-${ct}.pdf`);toast('PDF exportado!');
+    doc.save(`prime-graos-fech-contrato-${sels.join('-')}.pdf`);toast('PDF exportado!');
   }else{
     const cab=['Item','Valor'];
-    const rows=[['Contrato',ct],['Comprador',(ctObj&&ctObj.comprador)||'—'],['Total Venda',fmt(total_venda)],['Total Compra',fmt(total_compra)],['Frete Total',fmt(frete_total)],['Comissões',fmt(com_total)],['CTE Total',fmt(cte_total)],['Notas Fiscais',fmt(nf_total)],['Fundo',fmt(fundo_total)],['Lucro R$',fmt(lucro)],['Lucro %',fmtP(lucro_pct)]];
-    gerarCSV(cab,rows,`prime-graos-fech-contrato-${ct}`);
+    const rows=[['Contratos',sels.join(', ')],['Total Venda',fmt(total_venda)],['Total Compra',fmt(total_compra)],['Frete Total',fmt(frete_total)],['Comissões',fmt(com_total)],['CTE Total',fmt(cte_total)],['Notas Fiscais',fmt(nf_total)],['Fundo',fmt(fundo_total)],['Lucro R$',fmt(lucro)],['Lucro %',fmtP(lucro_pct)]];
+    gerarCSV(cab,rows,`prime-graos-fech-contrato-${sels.join('-')}`);
   }
 }
 
