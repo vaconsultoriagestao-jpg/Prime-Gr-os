@@ -67,7 +67,23 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg-page);color:var(--text
 .table-header{padding:1rem 1.25rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
 .table-header h3{font-size:14px;font-weight:600}
 .table-filters{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-.filter-input,.filter-select{font-size:12px;padding:6px 10px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);font-family:inherit;outline:none}
+.filter-input,
+/* Multi-select filter dropdown */
+.ms-filter{position:relative;display:inline-block}
+.ms-filter-btn{padding:6px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg);font-size:12px;cursor:pointer;display:flex;align-items:center;gap:6px;min-width:130px;justify-content:space-between;font-family:inherit;color:var(--text)}
+.ms-filter-btn.active{border-color:var(--green);color:var(--green);background:var(--green-faint)}
+.ms-filter-btn:after{content:'▾';font-size:10px;opacity:.6}
+.ms-filter-dropdown{position:absolute;top:calc(100% + 4px);left:0;min-width:180px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);box-shadow:0 4px 12px rgba(0,0,0,.1);z-index:999;padding:6px 0;display:none;max-height:240px;overflow-y:auto}
+.ms-filter-dropdown.open{display:block}
+.ms-filter-item{display:flex;align-items:center;gap:8px;padding:6px 12px;font-size:12px;cursor:pointer;color:var(--text)}
+.ms-filter-item:hover{background:var(--gray-50)}
+.ms-filter-item input{accent-color:var(--green);width:14px;height:14px;cursor:pointer}
+.ms-filter-divider{border:none;border-top:1px solid var(--border);margin:4px 0}
+.ms-filter-actions{display:flex;gap:6px;padding:6px 12px}
+.ms-filter-actions button{flex:1;font-size:11px;padding:3px 6px;border:1px solid var(--border);border-radius:4px;background:transparent;cursor:pointer;font-family:inherit;color:var(--text-muted)}
+.ms-filter-actions button:hover{background:var(--gray-50)}
+
+.filter-select{font-size:12px;padding:6px 10px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);font-family:inherit;outline:none}
 .filter-input:focus,.filter-select:focus{border-color:var(--green-light)}
 .tbl-wrap{overflow-x:auto}
 table{width:100%;border-collapse:collapse;font-size:12px}
@@ -573,12 +589,8 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
         <div style="display:flex;gap:6px;align-items:center">
           <div class="table-filters">
             <input class="filter-input" id="f-ct-q" placeholder="Buscar..." oninput="renderContratos()" style="width:160px">
-            <select class="filter-select" id="f-ct-emp" onchange="renderContratos()">
-              <option value="">Todas empresas</option><option>Prime Grãos</option><option>ZF Grãos</option>
-            </select>
-            <select class="filter-select" id="f-ct-prod" onchange="renderContratos()">
-              <option value="">Todos produtos</option><option>SOJA</option><option>MILHO</option><option>TRIGO</option>
-            </select>
+            <div id="ms-ct-emp" style="display:inline-block"></div>
+            <div id="ms-ct-prod" style="display:inline-block"></div>
           </div>
           <button class="btn btn-secondary btn-sm" onclick="exportContratos('csv')">⬇ Excel</button>
           <button class="btn btn-secondary btn-sm" onclick="exportContratos('pdf')">⬇ PDF</button>
@@ -603,13 +615,11 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
         <h3>Lista de embarques</h3>
         <div class="table-filters">
           <input class="filter-input" id="f-emb-q" placeholder="Contrato, NF, motorista..." oninput="renderEmbarques()" style="width:190px">
-          <select class="filter-select" id="f-emb-emp" onchange="renderEmbarques()">
-            <option value="">Todas empresas</option><option>Prime Grãos</option><option>ZF Grãos</option>
-          </select>
-          <select class="filter-select" id="f-emb-st" onchange="renderEmbarques()">
-            <option value="">Todos status</option><option>Em aberto</option><option>Pago</option><option>Cancelada</option>
-          </select>
-          <select class="filter-select" id="f-emb-ct" onchange="renderEmbarques()"><option value="">Todos contratos</option></select>
+          <input class="filter-input" id="f-emb-q" placeholder="Buscar..." oninput="renderEmbarques()" style="width:150px">
+          <div id="ms-emb-emp" style="display:inline-block"></div>
+          <div id="ms-emb-prod" style="display:inline-block"></div>
+          <div id="ms-emb-ct" style="display:inline-block"></div>
+          <div id="ms-emb-st" style="display:inline-block"></div>
           <select class="filter-select" id="f-emb-canc" onchange="renderEmbarques()">
             <option value="">Todas</option><option value="0">Ativas</option><option value="1">Canceladas</option>
           </select>
@@ -1578,9 +1588,18 @@ async function delCt(id){
 }
 function renderContratos(){
   const q=(document.getElementById('f-ct-q')||{value:''}).value.toLowerCase();
-  const pr=(document.getElementById('f-ct-prod')||{value:''}).value;
-  const emp=(document.getElementById('f-ct-emp')||{value:''}).value||_empresaFiltro;
-  const f=cts.filter(c=>(!q||(c.numero&&c.numero.toLowerCase().includes(q))||(c.comprador&&c.comprador.toLowerCase().includes(q)))&&(!pr||c.produto===pr)&&(!emp||c.empresa===emp));
+  // Init msFilters
+  const prods=[...new Set(cts.map(c=>c.produto).filter(Boolean))].sort();
+  const emps=[...new Set(cts.map(c=>c.empresa).filter(Boolean))].sort();
+  const compradores=[...new Set(cts.map(c=>c.comprador).filter(Boolean))].sort();
+  msFilter('ms-ct-emp', emps, 'renderContratos', 'Empresa');
+  msFilter('ms-ct-prod', prods, 'renderContratos', 'Produto');
+  const f=cts.filter(c=>{
+    if(q&&!(c.numero&&c.numero.toLowerCase().includes(q))&&!(c.comprador&&c.comprador.toLowerCase().includes(q)))return false;
+    if(!msMatch('ms-ct-emp', c.empresa||'Prime Grãos'))return false;
+    if(!msMatch('ms-ct-prod', c.produto))return false;
+    return true;
+  });
   document.getElementById('tbody-cts').innerHTML=f.length
     ?f.map(c=>`<tr ondblclick="abrirModalCt(${c.id})" style="cursor:pointer;${c.encerrado?'opacity:.6':''}" title="Duplo clique para editar"><td><input type="checkbox" value="${c.id}" onchange="updateSelCount('tbody-cts')" style="accent-color:var(--green)" onclick="event.stopPropagation()"></td><td><strong>${c.numero}</strong></td>
       <td><span class="badge ${c.empresa==='ZF Grãos'?'badge-blue':'badge-green'}">${c.empresa||'Prime Grãos'}</span></td>
@@ -2284,13 +2303,27 @@ function renderPainel(){
 // ===== EMBARQUES =====
 function renderEmbarques(){
   const q=(document.getElementById('f-emb-q')||{value:''}).value.toLowerCase();
-  const st=(document.getElementById('f-emb-st')||{value:''}).value;
-  const ct=(document.getElementById('f-emb-ct')||{value:''}).value;
   const canc=(document.getElementById('f-emb-canc')||{value:''}).value;
-  const emp=(document.getElementById('f-emb-emp')||{value:''}).value||_empresaFiltro;
-  const ctS=document.getElementById('f-emb-ct');
-  if(ctS){const cs=[...new Set(embs.map(d=>d.contrato))].sort();const cur=ctS.value;ctS.innerHTML='<option value="">Todos contratos</option>'+cs.map(c=>`<option ${c===cur?'selected':''}>${c}</option>`).join('');}
-  const f=embs.filter(d=>(!q||String(d.contrato||'').includes(q)||String(d.nf||'').toLowerCase().includes(q)||String(d.motorista||'').toLowerCase().includes(q)||String(d.cpf||'').includes(q))&&(!st||d.status===st)&&(!ct||d.contrato==ct)&&(canc===''||(canc==='0'&&!d.cancelada)||(canc==='1'&&d.cancelada))&&(!emp||d.empresa===emp));
+  // Init msFilters
+  const emps=[...new Set(embs.map(d=>d.empresa).filter(Boolean))].sort();
+  const prods=[...new Set(embs.map(d=>d.produto).filter(Boolean))].sort();
+  const ctNums=[...new Set(embs.map(d=>String(d.contrato)).filter(Boolean))].sort();
+  const status=['Em aberto','Pago','Cancelada'];
+  msFilter('ms-emb-emp', emps, 'renderEmbarques', 'Empresa');
+  msFilter('ms-emb-prod', prods, 'renderEmbarques', 'Produto');
+  msFilter('ms-emb-ct', ctNums, 'renderEmbarques', 'Contrato');
+  msFilter('ms-emb-st', status, 'renderEmbarques', 'Status');
+  const f=embs.filter(d=>{
+    if(q&&!String(d.contrato||'').includes(q)&&!String(d.nf||'').toLowerCase().includes(q)&&!String(d.motorista||'').toLowerCase().includes(q))return false;
+    if(!msMatch('ms-emb-emp', d.empresa||'Prime Grãos'))return false;
+    if(!msMatch('ms-emb-prod', d.produto))return false;
+    if(!msMatch('ms-emb-ct', String(d.contrato)))return false;
+    if(!msMatch('ms-emb-st', d.status))return false;
+    if(canc===''&&false)return false; // skip
+    if(canc==='0'&&d.cancelada)return false;
+    if(canc==='1'&&!d.cancelada)return false;
+    return true;
+  });
   document.getElementById('tbody-emb').innerHTML=f.length
     ?f.map(d=>{const sp=sprazo(d);return`<tr class="${d.cancelada?'cancelada':''}" ondblclick="abrirEdit(${d.id})" style="cursor:pointer" title="Duplo clique para editar"><td><input type="checkbox" value="${d.id}" onchange="updateSelCount('tbody-emb')" style="accent-color:var(--green)" onclick="event.stopPropagation()"></td>
       <td><strong>${d.contrato}</strong></td>
@@ -2409,7 +2442,16 @@ function renderFluxo(){
   const totalEnt=f.filter(l=>l.tipo==='entrada').reduce((s,l)=>s+(l.valor||0),0);
   const totalSai=f.filter(l=>l.tipo==='saida').reduce((s,l)=>s+(l.valor||0),0);
   const saldo=totalEnt-totalSai;
-  const aReceberEmbs=embs.filter(d=>!d.cancelada&&(!d.recebido||d.recebido===0));
+  const aReceberEmbs=embs.filter(d=>{
+    if(d.cancelada||d.recebido>0)return false;
+    // Excluir embarques de contratos com distribuição 100% paga
+    const ctO=cts.find(c=>c.numero==d.contrato);
+    if(ctO&&ctO.distribuicao_socios&&ctO.distribuicao_socios.length>0){
+      const todoPago=ctO.distribuicao_socios.every(s=>s.pago);
+      if(todoPago)return false;
+    }
+    return true;
+  });
   // A receber LÍQUIDO — desconta fundo por contrato
   const aReceberTotal=aReceberEmbs.reduce((s,d)=>{
     const ctO=cts.find(c=>c.numero==d.contrato);
@@ -2666,7 +2708,92 @@ function exportFluxo(tipo='csv'){
 }
 
 
-// ===== CHECKBOX SELEÇÃO EM LOTE =====
+// ===== MULTI-SELECT FILTER =====
+const _msState = {}; // {filterId: Set of selected values}
+
+function msFilter(id, options, onchange, placeholder='Todos'){
+  const state = _msState[id] || (_msState[id] = new Set());
+  const container = document.getElementById(id);
+  if(!container) return;
+  const selected = [...state];
+  const label = selected.length ? selected.length + ' selecionado(s)' : placeholder;
+  const isActive = selected.length > 0;
+  container.innerHTML = `
+    <div class="ms-filter">
+      <button class="ms-filter-btn ${isActive?'active':''}" onclick="msToggle('${id}')" type="button">${label}</button>
+      <div class="ms-filter-dropdown" id="ms-dd-${id}">
+        <div class="ms-filter-actions">
+          <button onclick="msSelAll('${id}',true)">Todos</button>
+          <button onclick="msSelAll('${id}',false)">Limpar</button>
+        </div>
+        <hr class="ms-filter-divider">
+        ${options.map(o=>`
+          <label class="ms-filter-item">
+            <input type="checkbox" value="${o}" ${state.has(String(o))?'checked':''} 
+              onchange="msCheck('${id}','${o}',this.checked,${JSON.stringify(onchange)})">
+            ${o}
+          </label>`).join('')}
+      </div>
+    </div>`;
+}
+
+function msToggle(id){
+  // Close all other dropdowns first
+  document.querySelectorAll('.ms-filter-dropdown.open').forEach(d=>{
+    if(d.id!=='ms-dd-'+id) d.classList.remove('open');
+  });
+  document.getElementById('ms-dd-'+id).classList.toggle('open');
+}
+
+function msCheck(id, val, checked, cb){
+  if(!_msState[id]) _msState[id] = new Set();
+  if(checked) _msState[id].add(String(val));
+  else _msState[id].delete(String(val));
+  // Update button label
+  const btn = document.querySelector(`#${id} .ms-filter-btn`);
+  if(btn){
+    const cnt = _msState[id].size;
+    btn.textContent = cnt ? cnt+' selecionado(s)' : btn.dataset.placeholder||'Todos';
+    btn.className = 'ms-filter-btn' + (cnt?' active':'');
+  }
+  if(cb) window[cb]();
+}
+
+function msSelAll(id, sel){
+  const dd = document.getElementById('ms-dd-'+id);
+  if(!dd) return;
+  if(!_msState[id]) _msState[id] = new Set();
+  if(sel){
+    dd.querySelectorAll('input[type=checkbox]').forEach(cb=>{_msState[id].add(String(cb.value));cb.checked=true;});
+  } else {
+    _msState[id].clear();
+    dd.querySelectorAll('input[type=checkbox]').forEach(cb=>cb.checked=false);
+  }
+  const btn = document.querySelector(`#${id} .ms-filter-btn`);
+  if(btn){
+    const cnt = _msState[id].size;
+    btn.textContent = cnt ? cnt+' selecionado(s)' : 'Todos';
+    btn.className = 'ms-filter-btn' + (cnt?' active':'');
+  }
+}
+
+function msGet(id){
+  return _msState[id] ? [..._msState[id]] : [];
+}
+
+function msMatch(id, val){
+  const s = _msState[id];
+  return !s || s.size===0 || s.has(String(val));
+}
+
+// Close dropdowns when clicking outside
+document.addEventListener('click', e=>{
+  if(!e.target.closest('.ms-filter')){
+    document.querySelectorAll('.ms-filter-dropdown.open').forEach(d=>d.classList.remove('open'));
+  }
+});
+
+
 function toggleAll(tbodyId, checked){
   document.querySelectorAll('#'+tbodyId+' input[type=checkbox]').forEach(cb=>cb.checked=checked);
   updateSelCount(tbodyId);
@@ -2787,18 +2914,16 @@ function exportCapCom(tipo){
 
 function exportEmb(tipo='csv'){
   // Respeita filtros ativos e checkboxes selecionados
-  const q=(document.getElementById('f-emb-q')||{value:''}).value.toLowerCase();
-  const emp=(document.getElementById('f-emb-emp')||{value:''}).value||_empresaFiltro;
-  const st=(document.getElementById('f-emb-st')||{value:''}).value;
-  const ct=(document.getElementById('f-emb-ct')||{value:''}).value;
-  const canc=(document.getElementById('f-emb-canc')||{value:''}).value;
   const selecionados=getSelected('tbody-emb');
   let data=embs.filter(d=>{
     if(selecionados.length&&!selecionados.includes(String(d.id)))return false;
-    if(q&&!(d.contrato&&String(d.contrato).includes(q))&&!(d.nf&&d.nf.toLowerCase().includes(q))&&!(d.motorista&&d.motorista.toLowerCase().includes(q)))return false;
-    if(emp&&d.empresa!==emp)return false;
-    if(st&&d.status!==st)return false;
-    if(ct&&d.contrato!=ct)return false;
+    const q=(document.getElementById('f-emb-q')||{value:''}).value.toLowerCase();
+    const canc=(document.getElementById('f-emb-canc')||{value:''}).value;
+    if(q&&!String(d.contrato||'').includes(q)&&!String(d.nf||'').toLowerCase().includes(q)&&!String(d.motorista||'').toLowerCase().includes(q))return false;
+    if(!msMatch('ms-emb-emp', d.empresa||'Prime Grãos'))return false;
+    if(!msMatch('ms-emb-prod', d.produto))return false;
+    if(!msMatch('ms-emb-ct', String(d.contrato)))return false;
+    if(!msMatch('ms-emb-st', d.status))return false;
     if(canc==='0'&&d.cancelada)return false;
     if(canc==='1'&&!d.cancelada)return false;
     return true;
