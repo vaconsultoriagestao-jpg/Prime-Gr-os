@@ -1599,7 +1599,7 @@ function renderContratos(){
     if(!msMatch('ms-ct-emp', c.empresa||'Prime Grãos'))return false;
     if(!msMatch('ms-ct-prod', c.produto))return false;
     return true;
-  });
+  }).sort((a,b)=>String(b.numero).localeCompare(String(a.numero),undefined,{numeric:true}));
   document.getElementById('tbody-cts').innerHTML=f.length
     ?f.map(c=>`<tr ondblclick="abrirModalCt(${c.id})" style="cursor:pointer;${c.encerrado?'opacity:.6':''}" title="Duplo clique para editar"><td><input type="checkbox" value="${c.id}" onchange="updateSelCount('tbody-cts')" style="accent-color:var(--green)" onclick="event.stopPropagation()"></td><td><strong>${c.numero}</strong></td>
       <td><span class="badge ${c.empresa==='ZF Grãos'?'badge-blue':'badge-green'}">${c.empresa||'Prime Grãos'}</span></td>
@@ -2712,9 +2712,25 @@ function exportFluxo(tipo='csv'){
 const _msState = {}; // {filterId: Set of selected values}
 
 function msFilter(id, options, onchange, placeholder='Todos'){
-  const state = _msState[id] || (_msState[id] = new Set());
+  if(!_msState[id]) _msState[id] = new Set();
+  const state = _msState[id];
   const container = document.getElementById(id);
   if(!container) return;
+
+  // Only recreate if options changed
+  const optKey = options.join('|');
+  if(container.dataset.optKey === optKey) {
+    // Just update button label
+    const btn = container.querySelector('.ms-filter-btn');
+    if(btn){
+      const cnt = state.size;
+      btn.textContent = cnt ? cnt+' selecionado(s)' : placeholder;
+      btn.className = 'ms-filter-btn' + (cnt?' active':'');
+    }
+    return;
+  }
+  container.dataset.optKey = optKey;
+
   const selected = [...state];
   const label = selected.length ? selected.length + ' selecionado(s)' : placeholder;
   const isActive = selected.length > 0;
@@ -2723,14 +2739,14 @@ function msFilter(id, options, onchange, placeholder='Todos'){
       <button class="ms-filter-btn ${isActive?'active':''}" onclick="msToggle('${id}')" type="button">${label}</button>
       <div class="ms-filter-dropdown" id="ms-dd-${id}">
         <div class="ms-filter-actions">
-          <button onclick="msSelAll('${id}',true)">Todos</button>
-          <button onclick="msSelAll('${id}',false)">Limpar</button>
+          <button onclick="msSelAll('${id}','${onchange}',true)">Todos</button>
+          <button onclick="msSelAll('${id}','${onchange}',false)">Limpar</button>
         </div>
         <hr class="ms-filter-divider">
         ${options.map(o=>`
           <label class="ms-filter-item">
-            <input type="checkbox" value="${o}" ${state.has(String(o))?'checked':''} 
-              onchange="msCheck('${id}','${o}',this.checked,${JSON.stringify(onchange)})">
+            <input type="checkbox" value="${o}" ${state.has(String(o))?'checked':''}
+              onchange="msCheck('${id}','${o}',this.checked,'${onchange}')">
             ${o}
           </label>`).join('')}
       </div>
@@ -2749,25 +2765,29 @@ function msCheck(id, val, checked, cb){
   if(!_msState[id]) _msState[id] = new Set();
   if(checked) _msState[id].add(String(val));
   else _msState[id].delete(String(val));
-  // Update button label
+  // Update button label without recreating
   const btn = document.querySelector(`#${id} .ms-filter-btn`);
   if(btn){
     const cnt = _msState[id].size;
-    btn.textContent = cnt ? cnt+' selecionado(s)' : btn.dataset.placeholder||'Todos';
+    btn.textContent = cnt ? cnt+' selecionado(s)' : 'Todos';
     btn.className = 'ms-filter-btn' + (cnt?' active':'');
   }
+  // Keep dropdown open — run render without closing
   if(cb) window[cb]();
+  // Reopen dropdown (render may have closed it)
+  const dd = document.getElementById('ms-dd-'+id);
+  if(dd) dd.classList.add('open');
 }
 
-function msSelAll(id, sel){
+function msSelAll(id, cb, sel){
   const dd = document.getElementById('ms-dd-'+id);
   if(!dd) return;
   if(!_msState[id]) _msState[id] = new Set();
   if(sel){
-    dd.querySelectorAll('input[type=checkbox]').forEach(cb=>{_msState[id].add(String(cb.value));cb.checked=true;});
+    dd.querySelectorAll('input[type=checkbox]').forEach(c=>{_msState[id].add(String(c.value));c.checked=true;});
   } else {
     _msState[id].clear();
-    dd.querySelectorAll('input[type=checkbox]').forEach(cb=>cb.checked=false);
+    dd.querySelectorAll('input[type=checkbox]').forEach(c=>c.checked=false);
   }
   const btn = document.querySelector(`#${id} .ms-filter-btn`);
   if(btn){
@@ -2775,6 +2795,7 @@ function msSelAll(id, sel){
     btn.textContent = cnt ? cnt+' selecionado(s)' : 'Todos';
     btn.className = 'ms-filter-btn' + (cnt?' active':'');
   }
+  if(cb) window[cb]();
 }
 
 function msGet(id){
