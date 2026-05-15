@@ -311,11 +311,7 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
     <div style="display:flex;align-items:center;gap:12px">
       <div style="display:flex;align-items:center;gap:6px">
         <span style="font-size:11px;color:var(--text-faint);font-weight:500">Empresa:</span>
-        <select id="filtro-empresa-global" onchange="aplicarFiltroEmpresa()" style="font-size:12px;padding:5px 10px;border:1.5px solid var(--green-pale);border-radius:8px;background:var(--green-faint);color:var(--green);font-weight:500;font-family:inherit;outline:none;cursor:pointer">
-          <option value="">Todas</option>
-          <option value="Prime Grãos">Prime Grãos</option>
-          <option value="ZF Grãos">ZF Grãos</option>
-        </select>
+        <span id="filtro-empresa-global" style="font-size:12px;padding:5px 10px;border:1.5px solid var(--green-pale);border-radius:8px;background:var(--green-faint);color:var(--green);font-weight:600;display:inline-block">Prime Grãos</span>
       </div>
       <span id="topbar-date" style="font-size:12px;color:var(--text-faint)"></span>
       <button class="btn btn-secondary btn-sm" onclick="recarregarDados()" title="Atualizar dados">↻ Atualizar</button>
@@ -873,6 +869,7 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
       <div class="form-body">
         <div class="form-grid">
           <div class="fg"><label>Data <span class="star">*</span></label><input id="arec-data" type="date"></div>
+          <div class="fg"><label>Empresa</label><select id="arec-emp"><option>Prime Grãos</option><option>ZF Grãos</option></select></div>
           <div class="fg"><label>Tipo <span class="star">*</span></label>
             <select id="arec-tipo"><option value="entrada">Entrada (parceiro me pagou)</option><option value="saida">Saída (devolvi ao parceiro)</option></select>
           </div>
@@ -912,6 +909,7 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
       <div class="form-body">
         <div class="form-grid">
           <div class="fg"><label>Data <span class="star">*</span></label><input id="desp-data" type="date"></div>
+          <div class="fg"><label>Empresa</label><select id="desp-emp"><option>Prime Grãos</option><option>ZF Grãos</option></select></div>
           <div class="fg"><label>Categoria</label>
             <select id="desp-cat">
               <option>Aluguel</option><option>Energia</option><option>Internet</option>
@@ -957,6 +955,7 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
       <div class="form-body">
         <div class="form-grid">
           <div class="fg"><label>Data <span class="star">*</span></label><input id="capparc-data" type="date"></div>
+          <div class="fg"><label>Empresa</label><select id="capparc-emp"><option>Prime Grãos</option><option>ZF Grãos</option></select></div>
           <div class="fg"><label>Parceiro <span class="star">*</span></label><input id="capparc-parceiro" type="text" placeholder="Nome do parceiro"></div>
           <div class="fg"><label>Valor R$ <span class="star">*</span></label><input id="capparc-valor" type="number" step="0.01" placeholder="0,00"></div>
           <div class="fg fg-full"><label>Descrição</label><input id="capparc-desc" type="text" placeholder="Ex: Devolução parcial..."></div>
@@ -1287,13 +1286,11 @@ let usuarioLogado=null;
 let _empresaFiltro=''; // Filtro global de empresa
 
 function aplicarFiltroEmpresa(){
-  _empresaFiltro=(document.getElementById('filtro-empresa-global')||{value:''}).value||'';
-  // Atualizar nome no sidebar
+  // Empresa é definida no login — não muda dentro do sistema
   const nomeEl=document.getElementById('sidebar-empresa-nome');
-  if(nomeEl)nomeEl.textContent=_empresaFiltro||'Prime Grãos';
-  // Salvar preferência
-  const saved=localStorage.getItem(AK);
-  if(saved){try{const a=JSON.parse(saved);a.empresa=_empresaFiltro;localStorage.setItem(AK,JSON.stringify(a));}catch(e){}}
+  if(nomeEl)nomeEl.textContent=_empresaFiltro||'Todas';
+  const spanEmp=document.getElementById('filtro-empresa-global');
+  if(spanEmp)spanEmp.textContent=_empresaFiltro||'Todas';
   // Reaplicar em todas as telas abertas
   const active=((document.querySelector('.page.active')||{}).id||'').replace('page-','');
   if(active==='fluxo')renderFluxo();
@@ -1467,10 +1464,10 @@ async function fazerLogin(){
   if(u){
     usuarioLogado=u;
     _empresaFiltro=empresa;
+    // Atualizar display da empresa
+    const spanEmp=document.getElementById('filtro-empresa-global');
+    if(spanEmp)spanEmp.textContent=empresa;
     localStorage.setItem(AK,JSON.stringify({id:u.id,user:u.user,empresa}));
-    // Atualizar selector de empresa no topo
-    const sel=document.getElementById('filtro-empresa-global');
-    if(sel)sel.value=empresa;
     document.getElementById('login-screen').style.display='none';
     document.getElementById('app').style.display='block';
     iniciar();
@@ -1793,7 +1790,7 @@ async function salvarCt(){
   toast(editCt?'Contrato atualizado!':'Contrato salvo!');
 }
 async function delCt(id){
-  if((!usuarioLogado||usuarioLogado.perfil!=='admin')){toast('Apenas o administrador pode remover contratos!',true);return;}
+  if(!usuarioLogado||usuarioLogado.perfil!=='admin'){toast('Apenas o administrador pode remover contratos!',true);return;}
   if(!confirm('Remover este contrato?'))return;
   cts=cts.filter(c=>c.id!==id);await saveCts();renderContratos();updSelCts();toast('Contrato removido.');
 }
@@ -2110,7 +2107,7 @@ async function salvarEdit(){
   embs[idx]=e;await saveEmb(e);fecharModalEdit();renderEmbarques();renderPainel();toast('Embarque atualizado!');
 }
 async function delEmb(id){
-  if((!usuarioLogado||usuarioLogado.perfil!=='admin')){toast('Apenas o administrador pode excluir embarques!',true);return;}
+  if(!usuarioLogado||usuarioLogado.perfil!=='admin'){toast('Apenas o administrador pode excluir embarques!',true);return;}
   if(!confirm('Remover este embarque? Esta ação não pode ser desfeita.'))return;
   await deleteEmb(id);
   embs=embs.filter(d=>d.id!==id);
@@ -2704,12 +2701,12 @@ function renderFluxo(){
   const campoB=document.getElementById('flx-saldo-banco');
   if(campoB&&!campoB.matches(':focus'))campoB.value=saldoBanco||'';
 
-  // Despesas escritório — usa array global despesas
-  const totalDespesas=despesas.reduce((s,d)=>s+(d.valor||0),0);
+  // Despesas escritório — filtra por empresa
+  const totalDespesas=despesas.filter(d=>!emp||!d.empresa||d.empresa===emp).reduce((s,d)=>s+(d.valor||0),0);
 
 
-  // Parceiros (exceto Banco e Escritório)
-  const fluxoParceiros=fluxo.filter(l=>!(l.parceiro&&l.parceiro.toUpperCase()==='BANCO')&&l.categoria!=='despesa'&&l.parceiro!=='Escritório');
+  // Parceiros (exceto Banco) — filtra por empresa
+  const fluxoParceiros=fluxo.filter(l=>!(l.parceiro&&l.parceiro.toUpperCase()==="BANCO")&&l.categoria!=="despesa"&&l.parceiro!=="Escritório"&&(!emp||!l.empresa||l.empresa===emp));
   const totalAportes=fluxoParceiros.filter(l=>l.tipo==='entrada').reduce((s,l)=>s+(l.valor||0),0);
   const totalDevolucoes=fluxoParceiros.filter(l=>l.tipo==='saida').reduce((s,l)=>s+(l.valor||0),0);
   const saldoParceiros=totalAportes-totalDevolucoes;
@@ -2929,7 +2926,7 @@ async function delFluxo(id){
   if(!confirm('Remover este lançamento?'))return;
   fluxo=fluxo.filter(l=>l.id!==id);
   showLoading('Removendo...');await saveFluxo();hideLoading();
-  renderFluxo();toast('Removido.');
+  renderFluxo();renderARecParceiros();renderCapParc();toast('Removido.');
 }
 function exportFluxo(tipo='csv'){
   if(!fluxo.length){toast('Nenhum lançamento.',true);return;}
@@ -3183,8 +3180,12 @@ function exportARecInd(tipo){
 // ===== A RECEBER / CAP PARCEIROS (usa fluxo array) =====
 function renderARecParceiros(){
   const filtro=(document.getElementById('arec-parc-filtro')||{value:''}).value;
-  // A receber de parceiros = saídas (você emprestou/devolveu a mais)
-  const lancamentos=fluxo.filter(l=>l.tipo==='saida'&&(l.categoria==='parceiro'||(!l.categoria&&l.parceiro&&l.parceiro.toUpperCase()!=='BANCO'&&l.parceiro!=='Escritório')));
+  const emp=_empresaFiltro;
+  // Set default empresa in form
+  const empSel=document.getElementById('arec-emp');
+  if(empSel&&emp)empSel.value=emp;
+  // Lançamentos de saída de parceiros filtrados por empresa
+  const lancamentos=fluxo.filter(l=>l.tipo==='saida'&&(l.categoria==='parceiro'||(!l.categoria&&l.parceiro&&l.parceiro.toUpperCase()!=='BANCO'&&l.parceiro!=='Escritório'))&&(!emp||!l.empresa||l.empresa===emp));
   
   // Update parceiro filter
   const sel=document.getElementById('arec-parc-filtro');
@@ -3219,11 +3220,12 @@ function renderARecParceiros(){
 async function salvarARecParceiro(){
   const data=document.getElementById('arec-data').value;
   const tipo=document.getElementById('arec-tipo').value;
+  const emp=(document.getElementById('arec-emp')||{value:'Prime Grãos'}).value||_empresaFiltro||'Prime Grãos';
   const parceiro=document.getElementById('arec-parceiro').value.trim();
   const valor=parseFloat(document.getElementById('arec-valor').value)||0;
   const desc=document.getElementById('arec-desc').value.trim();
   if(!data||!parceiro||!valor){toast('Preencha data, parceiro e valor!',true);return;}
-  const obj={id:Date.now(),data,tipo,categoria:'parceiro',valor,descricao:desc||tipo==='entrada'?'Aporte':'Devolução',parceiro,obs:'',lancado_por:(usuarioLogado&&usuarioLogado.nome)||'—'};
+  const obj={id:Date.now(),data,tipo,categoria:'parceiro',empresa:emp,valor,descricao:desc||(tipo==='entrada'?'Aporte':'Devolução'),parceiro,obs:'',lancado_por:(usuarioLogado&&usuarioLogado.nome)||'—'};
   fluxo.push(obj);
   showLoading('Salvando...');await saveFluxo();hideLoading();
   limparARecParceiro();renderARecParceiros();toast('Lançamento salvo!');
@@ -3249,10 +3251,14 @@ async function saveDesp(){
 }
 function renderDesp(){
   const fCat=(document.getElementById('desp-filtro-cat')||{value:''}).value;
+  const emp=_empresaFiltro;
+  // Set default empresa in form
+  const empSel=document.getElementById('desp-emp');
+  if(empSel&&emp&&!empSel.dataset.touched)empSel.value=emp;
   const cats=[...new Set(despesas.map(d=>d.categoria).filter(Boolean))].sort();
   const sel=document.getElementById('desp-filtro-cat');
   if(sel){const cur=fCat;sel.innerHTML='<option value="">Todas categorias</option>'+cats.map(c=>`<option ${c===cur?'selected':''}>${c}</option>`).join('');}
-  const f=fCat?despesas.filter(d=>d.categoria===fCat):despesas;
+  const f=despesas.filter(d=>(!fCat||d.categoria===fCat)&&(!emp||!d.empresa||d.empresa===emp));
   const total=f.reduce((s,d)=>s+(d.valor||0),0);
   document.getElementById('desp-cards').innerHTML=`
     <div class="stat-card red"><div class="s-label">Total despesas</div><div class="s-value">${fmt(total)}</div></div>
@@ -3271,11 +3277,12 @@ function renderDesp(){
 async function salvarDesp(){
   const data=document.getElementById('desp-data').value;
   const cat=document.getElementById('desp-cat').value;
+  const emp=(document.getElementById('desp-emp')||{value:'Prime Grãos'}).value||_empresaFiltro||'Prime Grãos';
   const valor=parseFloat(document.getElementById('desp-valor').value)||0;
   const desc=document.getElementById('desp-desc').value.trim();
   const obs=document.getElementById('desp-obs').value.trim();
   if(!data||!desc||!valor){toast('Preencha data, descrição e valor!',true);return;}
-  const obj={id:editDespId||Date.now(),data,categoria:cat,valor,descricao:desc,obs,lancado_por:(usuarioLogado&&usuarioLogado.nome)||'—'};
+  const obj={id:editDespId||Date.now(),data,categoria:cat,empresa:emp,valor,descricao:desc,obs,lancado_por:(usuarioLogado&&usuarioLogado.nome)||'—'};
   if(editDespId)despesas=despesas.map(d=>d.id===editDespId?obj:d);
   else despesas.push(obj);
   showLoading('Salvando...');await saveDesp();hideLoading();
@@ -3310,7 +3317,9 @@ function exportDesp(tipo){
 
 // ===== CAP PARCEIROS (DEVOLUÇÃO) =====
 function renderCapParc(){
-  const lancamentos=fluxo.filter(l=>l.tipo==='entrada'&&(l.categoria==='parceiro'||(!l.categoria&&l.parceiro&&l.parceiro.toUpperCase()!=='BANCO'&&l.parceiro!=='Escritório')));
+  const emp=_empresaFiltro;
+  const empSel=document.getElementById("capparc-emp");if(empSel&&emp)empSel.value=emp;
+  const lancamentos=fluxo.filter(l=>l.tipo==="entrada"&&(l.categoria==="parceiro"||(!l.categoria&&l.parceiro&&l.parceiro.toUpperCase()!=="BANCO"&&l.parceiro!=="Escritório"))&&(!emp||!l.empresa||l.empresa===emp));
   const total=lancamentos.reduce((s,l)=>s+(l.valor||0),0);
   document.getElementById('cap-parc-cards').innerHTML=`
     <div class="stat-card red"><div class="s-label">Total devolvido</div><div class="s-value">${fmt(total)}</div></div>
@@ -3327,11 +3336,12 @@ function renderCapParc(){
 }
 async function salvarCapParc(){
   const data=document.getElementById('capparc-data').value;
+  const emp=(document.getElementById('capparc-emp')||{value:'Prime Grãos'}).value||_empresaFiltro||'Prime Grãos';
   const parceiro=document.getElementById('capparc-parceiro').value.trim();
   const valor=parseFloat(document.getElementById('capparc-valor').value)||0;
   const desc=document.getElementById('capparc-desc').value.trim();
   if(!data||!parceiro||!valor){toast('Preencha data, parceiro e valor!',true);return;}
-  const obj={id:Date.now(),data,tipo:'entrada',categoria:'parceiro',valor,descricao:desc||'Aporte parceiro',parceiro,obs:'',lancado_por:(usuarioLogado&&usuarioLogado.nome)||'—'};
+  const obj={id:Date.now(),data,tipo:'entrada',categoria:'parceiro',empresa:emp,valor,descricao:desc||'Aporte parceiro',parceiro,obs:'',lancado_por:(usuarioLogado&&usuarioLogado.nome)||'—'};
   fluxo.push(obj);
   showLoading('Salvando...');await saveFluxo();hideLoading();
   limparCapParc();renderCapParc();toast('Devolução salva!');
@@ -4006,8 +4016,8 @@ async function ensureTables(){
         usuarioLogado=_u;
         const _emp=_auth.empresa||'Prime Grãos';
         _empresaFiltro=_emp;
-        const sel=document.getElementById('filtro-empresa-global');
-        if(sel)sel.value=_emp;
+        const spanEmp=document.getElementById('filtro-empresa-global');
+        if(spanEmp)spanEmp.textContent=_emp;
         document.getElementById('login-screen').style.display='none';
         document.getElementById('app').style.display='block';
         iniciar();
