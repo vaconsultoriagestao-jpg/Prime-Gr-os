@@ -1137,8 +1137,7 @@ function aplicarFiltroEmpresa(){
   // Reaplicar em todas as telas abertas
   const active=((document.querySelector('.page.active')||{}).id||'').replace('page-','');
   if(active==='fluxo')renderFluxo();
-  if(active==='painel')renderPainel();
-  if(active==='fechamento')initFech();
+  if(active==='painel')renderPainel();  if(active==='fechamento')initFech();
   if(active==='fech-contrato')initFechContrato();
   if(active==='embarques')renderEmbarques();
   if(active==='contratos')renderContratos();
@@ -2439,6 +2438,7 @@ function renderFluxo(){
   const tipo=(document.getElementById('flx-tipo')||{value:''}).value;
   const parceiroSel=(document.getElementById('flx-parceiro-sel')||{value:''}).value;
   const q=(document.getElementById('flx-q')||{value:''}).value.toLowerCase();
+  const emp=_empresaFiltro; // respeita filtro global de empresa
 
   // Atualizar select de parceiros
   const pSel=document.getElementById('flx-parceiro-sel');
@@ -2464,6 +2464,7 @@ function renderFluxo(){
   const saldo=totalEnt-totalSai;
   const aReceberEmbs=embs.filter(d=>{
     if(d.cancelada||d.recebido>0)return false;
+    if(emp&&d.empresa!==emp)return false;
     // Excluir embarques de contratos com distribuição 100% paga
     const ctO=cts.find(c=>c.numero==d.contrato);
     if(ctO&&ctO.distribuicao_socios&&ctO.distribuicao_socios.length>0){
@@ -2478,14 +2479,15 @@ function renderFluxo(){
     const fp=(ctO&&ctO.tem_fundo)?(ctO.fundo_pct||5)/100:0;
     return s+(d.total_venda||0)*(1-fp);
   },0);
-  const aPagarCTE=embs.filter(d=>!d.cancelada&&!d.cte_pago&&(d.cte||0)>0).reduce((s,d)=>s+(d.cte||0),0);
-  const aPagarNota=embs.filter(d=>!d.cancelada&&!d.nota_pago&&(d.cn_val||0)>0).reduce((s,d)=>s+(d.cn_val||0),0);
-  const aPagarFrete=embs.filter(d=>!d.cancelada&&(d.frete_total||0)>0).reduce((s,d)=>{
+  const embsFiltEmp=embs.filter(d=>!d.cancelada&&(!emp||d.empresa===emp));
+  const aPagarCTE=embsFiltEmp.filter(d=>!d.cte_pago&&(d.cte||0)>0).reduce((s,d)=>s+(d.cte||0),0);
+  const aPagarNota=embsFiltEmp.filter(d=>!d.nota_pago&&(d.cn_val||0)>0).reduce((s,d)=>s+(d.cn_val||0),0);
+  const aPagarFrete=embsFiltEmp.filter(d=>(d.frete_total||0)>0).reduce((s,d)=>{
     const f80=d.frete80_pago?0:(d.frete80||0);
     const f20=d.frete20_pago?0:Math.max(0,(d.frete20||0)-(d.desc_quebra||0));
     return s+f80+f20;
   },0);
-  const aPagarCom=embs.filter(d=>!d.cancelada).reduce((s,d)=>s+(d.comissoes||[]).reduce((cs,c)=>{
+  const aPagarCom=embsFiltEmp.reduce((s,d)=>s+(d.comissoes||[]).reduce((cs,c)=>{
     if(d.comissoes_pago&&d.comissoes_pago[c.id])return cs;
     return cs+(c.valor||0)*(d.sc_emb||0);
   },0),0);
