@@ -264,7 +264,7 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
       <svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>Despesas
     </div>
     <div class="nav-item" id="nav-cap-parceiros" onclick="irPara('cap-parceiros',this)">
-      <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>Parceiros (devolução)
+      <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>Parceiros
     </div>
     <div class="nav-label">Cadastros</div>
     <div class="nav-item" id="nav-fornecedores" onclick="irPara('fornecedores',this)">
@@ -843,7 +843,7 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
   <!-- A RECEBER PARCEIROS -->
   <div class="page" id="page-arec-parceiros">
     <h1 class="section-heading">A Receber — Parceiros</h1>
-    <p class="section-sub">Aportes e retiradas por parceiro. Lançamentos de entradas dos parceiros.</p>
+    <p class="section-sub">Valores que parceiros te devem — empréstimos feitos ou devoluções a maior.</p>
     <div class="stats-grid" id="arec-parc-cards" style="margin-bottom:1rem"></div>
     <div class="table-card" style="margin-bottom:1rem">
       <div class="form-card-header">Novo lançamento de parceiro</div>
@@ -851,7 +851,7 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
         <div class="form-grid">
           <div class="fg"><label>Data <span class="star">*</span></label><input id="arec-data" type="date"></div>
           <div class="fg"><label>Tipo <span class="star">*</span></label>
-            <select id="arec-tipo"><option value="entrada">Entrada (aporte)</option><option value="saida">Saída (devolução)</option></select>
+            <select id="arec-tipo"><option value="entrada">Entrada (parceiro me pagou)</option><option value="saida">Saída (devolvi ao parceiro)</option></select>
           </div>
           <div class="fg"><label>Parceiro <span class="star">*</span></label><input id="arec-parceiro" type="text" placeholder="Nome do parceiro"></div>
           <div class="fg"><label>Valor R$ <span class="star">*</span></label><input id="arec-valor" type="number" step="0.01" placeholder="0,00"></div>
@@ -926,11 +926,11 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
 
   <!-- CAP PARCEIROS (DEVOLUÇÃO) -->
   <div class="page" id="page-cap-parceiros">
-    <h1 class="section-heading">Parceiros — Devolução</h1>
-    <p class="section-sub">Registre saídas/devoluções para parceiros.</p>
+    <h1 class="section-heading">Contas a Pagar — Parceiros</h1>
+    <p class="section-sub">Aportes dos parceiros — valores que você deve devolver a eles.</p>
     <div class="stats-grid" id="cap-parc-cards" style="margin-bottom:1rem"></div>
     <div class="table-card" style="margin-bottom:1rem">
-      <div class="form-card-header">Nova devolução</div>
+      <div class="form-card-header">Registrar aporte de parceiro</div>
       <div class="form-body">
         <div class="form-grid">
           <div class="fg"><label>Data <span class="star">*</span></label><input id="capparc-data" type="date"></div>
@@ -3113,8 +3113,8 @@ function exportARecInd(tipo){
 // ===== A RECEBER / CAP PARCEIROS (usa fluxo array) =====
 function renderARecParceiros(){
   const filtro=(document.getElementById('arec-parc-filtro')||{value:''}).value;
-  // Lançamentos de entrada de parceiros (não banco, não despesa)
-  const lancamentos=fluxo.filter(l=>l.categoria==='parceiro'||(!l.categoria&&l.parceiro&&l.parceiro.toUpperCase()!=='BANCO'&&l.parceiro!=='Escritório'));
+  // A receber de parceiros = saídas (você emprestou/devolveu a mais)
+  const lancamentos=fluxo.filter(l=>l.tipo==='saida'&&(l.categoria==='parceiro'||(!l.categoria&&l.parceiro&&l.parceiro.toUpperCase()!=='BANCO'&&l.parceiro!=='Escritório')));
   
   // Update parceiro filter
   const sel=document.getElementById('arec-parc-filtro');
@@ -3125,14 +3125,14 @@ function renderARecParceiros(){
   }
 
   const f=filtro?lancamentos.filter(l=>l.parceiro===filtro):lancamentos;
-  const totalEnt=f.filter(l=>l.tipo==='entrada').reduce((s,l)=>s+(l.valor||0),0);
-  const totalSai=f.filter(l=>l.tipo==='saida').reduce((s,l)=>s+(l.valor||0),0);
+  const totalEnt=f.filter(l=>l.tipo==='saida').reduce((s,l)=>s+(l.valor||0),0);
+  const totalSai=f.filter(l=>l.tipo==='entrada').reduce((s,l)=>s+(l.valor||0),0);
   const saldo=totalEnt-totalSai;
 
   document.getElementById('arec-parc-cards').innerHTML=`
-    <div class="stat-card green"><div class="s-label">Total aportes</div><div class="s-value">${fmt(totalEnt)}</div></div>
-    <div class="stat-card"><div class="s-label">Total devolvido</div><div class="s-value">${fmt(totalSai)}</div></div>
-    <div class="stat-card ${saldo>0?'amber':'green'}"><div class="s-label">${saldo>0?'Devo aos parceiros':'Parceiros me devem'}</div><div class="s-value">${fmt(Math.abs(saldo))}</div></div>
+    <div class="stat-card amber"><div class="s-label">Total emprestado/devolvido a mais</div><div class="s-value">${fmt(totalEnt)}</div></div>
+    <div class="stat-card"><div class="s-label">Total já recebido de volta</div><div class="s-value">${fmt(totalSai)}</div></div>
+    <div class="stat-card ${saldo>0?'green':'amber'}"><div class="s-label">${saldo>0?'Parceiros me devem':'Quitado'}</div><div class="s-value">${fmt(Math.abs(saldo))}</div></div>
   `;
 
   document.getElementById('tbody-arec-parc').innerHTML=f.length
@@ -3240,7 +3240,7 @@ function exportDesp(tipo){
 
 // ===== CAP PARCEIROS (DEVOLUÇÃO) =====
 function renderCapParc(){
-  const lancamentos=fluxo.filter(l=>l.tipo==='saida'&&(l.categoria==='parceiro'||(!l.categoria&&l.parceiro&&l.parceiro.toUpperCase()!=='BANCO'&&l.parceiro!=='Escritório')));
+  const lancamentos=fluxo.filter(l=>l.tipo==='entrada'&&(l.categoria==='parceiro'||(!l.categoria&&l.parceiro&&l.parceiro.toUpperCase()!=='BANCO'&&l.parceiro!=='Escritório')));
   const total=lancamentos.reduce((s,l)=>s+(l.valor||0),0);
   document.getElementById('cap-parc-cards').innerHTML=`
     <div class="stat-card red"><div class="s-label">Total devolvido</div><div class="s-value">${fmt(total)}</div></div>
@@ -3261,7 +3261,7 @@ async function salvarCapParc(){
   const valor=parseFloat(document.getElementById('capparc-valor').value)||0;
   const desc=document.getElementById('capparc-desc').value.trim();
   if(!data||!parceiro||!valor){toast('Preencha data, parceiro e valor!',true);return;}
-  const obj={id:Date.now(),data,tipo:'saida',categoria:'parceiro',valor,descricao:desc||'Devolução',parceiro,obs:'',lancado_por:(usuarioLogado&&usuarioLogado.nome)||'—'};
+  const obj={id:Date.now(),data,tipo:'entrada',categoria:'parceiro',valor,descricao:desc||'Aporte parceiro',parceiro,obs:'',lancado_por:(usuarioLogado&&usuarioLogado.nome)||'—'};
   fluxo.push(obj);
   showLoading('Salvando...');await saveFluxo();hideLoading();
   limparCapParc();renderCapParc();toast('Devolução salva!');
