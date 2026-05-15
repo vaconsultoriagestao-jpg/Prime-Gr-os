@@ -240,6 +240,13 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
     <div class="nav-item" id="nav-saidas" onclick="irPara('saidas',this)">
       <svg viewBox="0 0 24 24"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>Saídas de produto
     </div>
+    <div class="nav-label">A Receber</div>
+    <div class="nav-item" id="nav-arec-industria" onclick="irPara('arec-industria',this)">
+      <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Indústrias
+    </div>
+    <div class="nav-item" id="nav-arec-parceiros" onclick="irPara('arec-parceiros',this)">
+      <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Parceiros
+    </div>
     <div class="nav-label">Contas a Pagar</div>
     <div class="nav-item" id="nav-frete" onclick="irPara('frete',this)">
       <svg viewBox="0 0 24 24"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>Frete motoristas
@@ -252,6 +259,12 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
     </div>
     <div class="nav-item" id="nav-cap-nota" onclick="irPara('cap-nota',this)">
       <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>Notas fiscais
+    </div>
+    <div class="nav-item" id="nav-cap-desp" onclick="irPara('cap-desp',this)">
+      <svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>Despesas
+    </div>
+    <div class="nav-item" id="nav-cap-parceiros" onclick="irPara('cap-parceiros',this)">
+      <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>Parceiros (devolução)
     </div>
     <div class="nav-label">Cadastros</div>
     <div class="nav-item" id="nav-fornecedores" onclick="irPara('fornecedores',this)">
@@ -366,35 +379,9 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
     <!-- Cards resumo -->
     <div class="stats-grid" id="flx-cards" style="margin-bottom:1.25rem"></div>
 
-    <!-- Novo lançamento -->
-    <div class="table-card" style="margin-bottom:1rem">
-      <div class="form-card-header">Novo lançamento</div>
-      <div class="form-body">
-        <div class="form-grid">
-          <div class="fg"><label>Data <span class="star">*</span></label><input id="flx-data" type="date"></div>
-          <div class="fg"><label>Categoria <span class="star">*</span></label>
-            <select id="flx-categoria" onchange="toggleFlxParceiro()">
-              <option value="parceiro">Parceiro</option>
-              <option value="despesa">Despesa escritório</option>
-              <option value="banco">Banco</option>
-            </select>
-          </div>
-          <div class="fg"><label>Tipo <span class="star">*</span></label>
-            <select id="flx-tipo-lanc">
-              <option value="entrada">Entrada</option>
-              <option value="saida">Saída</option>
-            </select>
-          </div>
-          <div class="fg"><label>Valor R$ <span class="star">*</span></label><input id="flx-valor" type="number" step="0.01" placeholder="0,00"></div>
-          <div class="fg" id="fg-flx-parceiro"><label>Parceiro</label><input id="flx-parceiro" type="text" placeholder="Nome do parceiro"></div>
-          <div class="fg fg-full"><label>Descrição <span class="star">*</span></label><input id="flx-desc" type="text" placeholder="Ex: Aluguel, Aporte investidor..."></div>
-          <div class="fg"><label>Observação</label><input id="flx-obs" type="text"></div>
-        </div>
-        <div style="display:flex;gap:8px;margin-top:12px">
-          <button class="btn btn-primary btn-sm" onclick="salvarFluxo()">Salvar lançamento</button>
-          <button class="btn btn-secondary btn-sm" onclick="limparFluxo()">Limpar</button>
-        </div>
-      </div>
+    <!-- Fluxo de Caixa é somente leitura - lançamentos nas telas dedicadas -->
+    <div style="background:var(--green-faint);border:1px solid var(--green);border-radius:var(--radius);padding:.75rem 1rem;margin-bottom:1rem;font-size:13px;color:var(--green-dark)">
+      💡 Para lançar aportes/devoluções de parceiros acesse <strong>A Receber → Parceiros</strong>. Para despesas acesse <strong>Contas a Pagar → Despesas</strong>.
     </div>
 
     <!-- Tabela lançamentos -->
@@ -825,6 +812,147 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
   </div>
 
   <!-- TRANSPORTADORAS -->
+  <!-- A RECEBER INDUSTRIAS -->
+  <div class="page" id="page-arec-industria">
+    <h1 class="section-heading">A Receber — Indústrias</h1>
+    <p class="section-sub">Notas fiscais com recebimento pendente por indústria.</p>
+    <div class="stats-grid" id="arec-ind-cards" style="margin-bottom:1rem"></div>
+    <div class="table-filters" style="margin-bottom:1rem;gap:8px;display:flex;flex-wrap:wrap">
+      <div id="ms-arec-ct" style="display:inline-block"></div>
+      <div id="ms-arec-emp" style="display:inline-block"></div>
+    </div>
+    <div class="table-card">
+      <div class="table-header"><h3>Notas pendentes</h3>
+        <div style="display:flex;gap:6px">
+          <button class="btn btn-secondary btn-sm" onclick="exportARecInd('csv')">⬇ Excel</button>
+          <button class="btn btn-secondary btn-sm" onclick="exportARecInd('pdf')">⬇ PDF</button>
+        </div>
+      </div>
+      <div class="tbl-wrap"><table><thead><tr>
+        <th onclick="sortTable('tbody-arec-ind',0)" style="cursor:pointer">Contrato ↕</th>
+        <th>Empresa</th><th>Comprador</th><th>NF</th><th>Motorista</th>
+        <th onclick="sortTable('tbody-arec-ind',5)" style="cursor:pointer">Descarga ↕</th>
+        <th>Prazo receb.</th><th>Situação</th>
+        <th onclick="sortTable('tbody-arec-ind',8,true)" style="cursor:pointer">Total venda ↕</th>
+        <th onclick="sortTable('tbody-arec-ind',9,true)" style="cursor:pointer">Recebido ↕</th>
+        <th onclick="sortTable('tbody-arec-ind',10,true)" style="cursor:pointer">Pendente ↕</th>
+      </tr></thead><tbody id="tbody-arec-ind"></tbody></table></div>
+    </div>
+  </div>
+
+  <!-- A RECEBER PARCEIROS -->
+  <div class="page" id="page-arec-parceiros">
+    <h1 class="section-heading">A Receber — Parceiros</h1>
+    <p class="section-sub">Aportes e retiradas por parceiro. Lançamentos de entradas dos parceiros.</p>
+    <div class="stats-grid" id="arec-parc-cards" style="margin-bottom:1rem"></div>
+    <div class="table-card" style="margin-bottom:1rem">
+      <div class="form-card-header">Novo lançamento de parceiro</div>
+      <div class="form-body">
+        <div class="form-grid">
+          <div class="fg"><label>Data <span class="star">*</span></label><input id="arec-data" type="date"></div>
+          <div class="fg"><label>Tipo <span class="star">*</span></label>
+            <select id="arec-tipo"><option value="entrada">Entrada (aporte)</option><option value="saida">Saída (devolução)</option></select>
+          </div>
+          <div class="fg"><label>Parceiro <span class="star">*</span></label><input id="arec-parceiro" type="text" placeholder="Nome do parceiro"></div>
+          <div class="fg"><label>Valor R$ <span class="star">*</span></label><input id="arec-valor" type="number" step="0.01" placeholder="0,00"></div>
+          <div class="fg fg-full"><label>Descrição</label><input id="arec-desc" type="text" placeholder="Ex: Aporte operação soja, Devolução..."></div>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:12px">
+          <button class="btn btn-primary btn-sm" onclick="salvarARecParceiro()">Salvar</button>
+          <button class="btn btn-secondary btn-sm" onclick="limparARecParceiro()">Limpar</button>
+        </div>
+      </div>
+    </div>
+    <div class="table-card">
+      <div class="table-header"><h3>Movimentação por parceiro</h3>
+        <div style="display:flex;gap:6px">
+          <select class="filter-select" id="arec-parc-filtro" onchange="renderARecParceiros()"><option value="">Todos parceiros</option></select>
+          <button class="btn btn-secondary btn-sm" onclick="exportARecParc('csv')">⬇ Excel</button>
+        </div>
+      </div>
+      <div class="tbl-wrap"><table><thead><tr>
+        <th onclick="sortTable('tbody-arec-parc',0)" style="cursor:pointer">Data ↕</th>
+        <th>Tipo</th><th>Parceiro</th><th>Descrição</th>
+        <th onclick="sortTable('tbody-arec-parc',4,true)" style="cursor:pointer">Valor ↕</th>
+        <th></th>
+      </tr></thead><tbody id="tbody-arec-parc"></tbody></table></div>
+    </div>
+  </div>
+
+  <!-- DESPESAS -->
+  <div class="page" id="page-cap-desp">
+    <h1 class="section-heading">Despesas</h1>
+    <p class="section-sub">Controle de despesas do escritório e operacionais.</p>
+    <div class="stats-grid" id="desp-cards" style="margin-bottom:1rem"></div>
+    <div class="table-card" style="margin-bottom:1rem">
+      <div class="form-card-header">Nova despesa</div>
+      <div class="form-body">
+        <div class="form-grid">
+          <div class="fg"><label>Data <span class="star">*</span></label><input id="desp-data" type="date"></div>
+          <div class="fg"><label>Categoria</label>
+            <select id="desp-cat">
+              <option>Aluguel</option><option>Energia</option><option>Internet</option>
+              <option>Salário</option><option>Contador</option><option>Combustível</option>
+              <option>Manutenção</option><option>Outros</option>
+            </select>
+          </div>
+          <div class="fg"><label>Valor R$ <span class="star">*</span></label><input id="desp-valor" type="number" step="0.01" placeholder="0,00"></div>
+          <div class="fg fg-full"><label>Descrição <span class="star">*</span></label><input id="desp-desc" type="text" placeholder="Descreva a despesa..."></div>
+          <div class="fg"><label>Observação</label><input id="desp-obs" type="text"></div>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:12px">
+          <button class="btn btn-primary btn-sm" onclick="salvarDesp()">Salvar</button>
+          <button class="btn btn-secondary btn-sm" onclick="limparDesp()">Limpar</button>
+        </div>
+      </div>
+    </div>
+    <div class="table-card">
+      <div class="table-header"><h3>Lançamentos</h3>
+        <div style="display:flex;gap:6px">
+          <select class="filter-select" id="desp-filtro-cat" onchange="renderDesp()"><option value="">Todas categorias</option></select>
+          <button class="btn btn-secondary btn-sm" onclick="exportDesp('csv')">⬇ Excel</button>
+          <button class="btn btn-secondary btn-sm" onclick="exportDesp('pdf')">⬇ PDF</button>
+        </div>
+      </div>
+      <div class="tbl-wrap"><table><thead><tr>
+        <th onclick="sortTable('tbody-desp',0)" style="cursor:pointer">Data ↕</th>
+        <th onclick="sortTable('tbody-desp',1)" style="cursor:pointer">Categoria ↕</th>
+        <th>Descrição</th>
+        <th onclick="sortTable('tbody-desp',3,true)" style="cursor:pointer">Valor ↕</th>
+        <th>Obs.</th><th>Lançado por</th><th></th>
+      </tr></thead><tbody id="tbody-desp"></tbody></table></div>
+    </div>
+  </div>
+
+  <!-- CAP PARCEIROS (DEVOLUÇÃO) -->
+  <div class="page" id="page-cap-parceiros">
+    <h1 class="section-heading">Parceiros — Devolução</h1>
+    <p class="section-sub">Registre saídas/devoluções para parceiros.</p>
+    <div class="stats-grid" id="cap-parc-cards" style="margin-bottom:1rem"></div>
+    <div class="table-card" style="margin-bottom:1rem">
+      <div class="form-card-header">Nova devolução</div>
+      <div class="form-body">
+        <div class="form-grid">
+          <div class="fg"><label>Data <span class="star">*</span></label><input id="capparc-data" type="date"></div>
+          <div class="fg"><label>Parceiro <span class="star">*</span></label><input id="capparc-parceiro" type="text" placeholder="Nome do parceiro"></div>
+          <div class="fg"><label>Valor R$ <span class="star">*</span></label><input id="capparc-valor" type="number" step="0.01" placeholder="0,00"></div>
+          <div class="fg fg-full"><label>Descrição</label><input id="capparc-desc" type="text" placeholder="Ex: Devolução parcial..."></div>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:12px">
+          <button class="btn btn-primary btn-sm" onclick="salvarCapParc()">Salvar</button>
+          <button class="btn btn-secondary btn-sm" onclick="limparCapParc()">Limpar</button>
+        </div>
+      </div>
+    </div>
+    <div class="table-card">
+      <div class="table-header"><h3>Devoluções registradas</h3></div>
+      <div class="tbl-wrap"><table><thead><tr>
+        <th>Data</th><th>Parceiro</th><th>Descrição</th><th>Valor</th><th></th>
+      </tr></thead><tbody id="tbody-cap-parc"></tbody></table></div>
+    </div>
+  </div>
+
+  <!-- TRANSPORTADORAS -->
   <div class="page" id="page-transportadoras">
     <h1 class="section-heading">Transportadoras</h1>
     <p class="section-sub">Cadastre as transportadoras parceiras.</p>
@@ -1124,7 +1252,9 @@ const _h={'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'appli
 let embs=[],cts=[],transp=[],coms=[],forn=[],cfg={taxa:5,prazo:72,tolerancia:3};
 let usuarios=[];
 let fluxo=[];
+let despesas=[];
 let editFluxoId=null;
+let editDespId=null;
 let _usuariosDefault=[
   {id:1,nome:'Administrador',user:'admin',senha:'admin123',perfil:'admin'},
   {id:2,nome:'Colaborador',user:'colaborador',senha:'colab123',perfil:'operador'}
@@ -1264,6 +1394,11 @@ async function load(){
       const rfl=await fetch(`${SB_URL}/rest/v1/fluxo?select=data&order=id`,{headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}}).then(r=>r.json()).then(d=>d.map?d.map(x=>x.data):[]);
       if(rfl&&rfl.length)fluxo=rfl;
     }catch(e){}
+    // Carregar despesas
+    try{
+      const rdesp=await fetch(`${SB_URL}/rest/v1/despesas?select=data&order=id`,{headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}}).then(r=>r.json()).then(d=>d.map?d.map(x=>x.data):[]);
+      if(rdesp&&rdesp.length)despesas=rdesp;
+    }catch(e){}
     // Usar usuários do banco; só usar padrão se banco vazio
     if(ru&&ru.length){
       usuarios=ru;
@@ -1298,6 +1433,10 @@ function logout(){localStorage.removeItem(AK);usuarioLogado=null;location.reload
 
 // ===== PERMISSÕES =====
 const _MENUS=[
+  {id:'arec-industria',label:'A Receber — Indústrias'},
+  {id:'arec-parceiros',label:'A Receber — Parceiros'},
+  {id:'cap-desp',label:'Despesas'},
+  {id:'cap-parceiros',label:'Parceiros (Devolução)'},
   {id:'fluxo',label:'Fluxo de Caixa'},
   {id:'fechamento',label:'Fechamento Indústria'},
   {id:'fech-contrato',label:'Fechamento por Contrato'},
@@ -1422,7 +1561,7 @@ async function trocarMinhaSenha(){
 }
 
 
-const ptitles={fluxo:'Fluxo de Caixa',fechamento:'Fechamento Indústria',painel:'Painel','fech-contrato':'Fechamento por Contrato',saidas:'Saídas de produto',contratos:'Contratos',embarques:'Embarques',novo:'Novo embarque',frete:'Frete — Motoristas','cap-transp':'CTE — Transportadoras','cap-com':'Comissões a Pagar','cap-nota':'Notas Fiscais a Pagar',transportadoras:'Transportadoras',comissionarios:'Cadastro Comissionários',fornecedores:'Fornecedores de Nota',config:'Configurações'};
+const ptitles={'arec-industria':'A Receber — Indústrias','arec-parceiros':'A Receber — Parceiros','cap-desp':'Despesas','cap-parceiros':'Parceiros (Devolução)',fluxo:'Fluxo de Caixa',fechamento:'Fechamento Indústria',painel:'Painel','fech-contrato':'Fechamento por Contrato',saidas:'Saídas de produto',contratos:'Contratos',embarques:'Embarques',novo:'Novo embarque',frete:'Frete — Motoristas','cap-transp':'CTE — Transportadoras','cap-com':'Comissões a Pagar','cap-nota':'Notas Fiscais a Pagar',transportadoras:'Transportadoras',comissionarios:'Cadastro Comissionários',fornecedores:'Fornecedores de Nota',config:'Configurações'};
 function irPara(id,el){
   if(id==='config'&&(!usuarioLogado||usuarioLogado.perfil!=='admin')){toast('Acesso restrito ao administrador.',true);return;}
   if(!temPermissao(id)){toast('Você não tem permissão para acessar esta área.',true);return;}
@@ -1432,6 +1571,10 @@ function irPara(id,el){
   if(el)el.classList.add('active');
   else{const n=document.getElementById('nav-'+id);if(n)n.classList.add('active');}
   document.getElementById('page-title').textContent=ptitles[id]||'';
+  if(id==='arec-industria')renderARecInd();
+  if(id==='arec-parceiros')renderARecParceiros();
+  if(id==='cap-desp')renderDesp();
+  if(id==='cap-parceiros')renderCapParc();
   if(id==='fluxo')renderFluxo();
   if(id==='fechamento')initFech();
   if(id==='fech-contrato')initFechContrato();
@@ -2497,9 +2640,9 @@ function renderFluxo(){
   const saldoBanco=fluxo.filter(l=>l.parceiro&&l.parceiro.toUpperCase()==='BANCO')
     .reduce((s,l)=>s+(l.tipo==='entrada'?1:-1)*(l.valor||0),0);
 
-  // Despesas escritório
-  const despesas=fluxo.filter(l=>l.categoria==='despesa'||l.parceiro==='Escritório');
-  const totalDespesas=despesas.reduce((s,l)=>s+(l.valor||0),0);
+  // Despesas escritório — usa array global despesas
+  const totalDespesas=despesas.reduce((s,d)=>s+(d.valor||0),0);
+
 
   // Parceiros (exceto Banco e Escritório)
   const fluxoParceiros=fluxo.filter(l=>!(l.parceiro&&l.parceiro.toUpperCase()==='BANCO')&&l.categoria!=='despesa'&&l.parceiro!=='Escritório');
@@ -2908,7 +3051,226 @@ function getSelected(tbodyId){
   return [...document.querySelectorAll('#'+tbodyId+' input[type=checkbox]:checked')].map(cb=>cb.value);
 }
 
-// ===== EXPORT HELPERS =====
+// ===== A RECEBER INDUSTRIAS =====
+function renderARecInd(){
+  const emp=_empresaFiltro;
+  const ctNums=[...new Set(embs.filter(d=>!d.cancelada&&(!emp||d.empresa===emp)).map(d=>String(d.contrato)))].sort();
+  const compradores=[...new Set(embs.filter(d=>!d.cancelada&&(!emp||d.empresa===emp)).map(d=>d.empresa).filter(Boolean))].sort();
+  msFilter('ms-arec-ct', ctNums, 'renderARecInd', 'Contrato');
+  msFilter('ms-arec-emp', compradores, 'renderARecInd', 'Empresa');
+
+  const pendentes=embs.filter(d=>{
+    if(d.cancelada)return false;
+    if(!msMatch('ms-arec-emp', d.empresa||'Prime Grãos'))return false;
+    if(!msMatch('ms-arec-ct', String(d.contrato)))return false;
+    return !(d.recebido>0);
+  });
+
+  const total=pendentes.reduce((s,d)=>s+(d.total_venda||0),0);
+  const vencido=pendentes.filter(d=>{
+    if(!d.descarga)return false;
+    const ctO=cts.find(c=>c.numero==d.contrato);
+    const ph=(ctO&&ctO.prazo)||cfg.prazo||72;
+    return new Date()>prazoData(d.descarga,ph);
+  }).reduce((s,d)=>s+(d.total_venda||0),0);
+
+  document.getElementById('arec-ind-cards').innerHTML=`
+    <div class="stat-card amber"><div class="s-label">Total a receber</div><div class="s-value">${fmt(total)}</div></div>
+    <div class="stat-card ${vencido>0?'red':'green'}"><div class="s-label">Vencido</div><div class="s-value">${fmt(vencido)}</div></div>
+    <div class="stat-card"><div class="s-label">Notas pendentes</div><div class="s-value">${pendentes.length}</div></div>
+  `;
+
+  document.getElementById('tbody-arec-ind').innerHTML=pendentes.length
+    ?pendentes.map(d=>{
+      const ctO=cts.find(c=>c.numero==d.contrato);
+      const ph=(ctO&&ctO.prazo)||cfg.prazo||72;
+      const sp=sprazo(d);
+      const pendente=d.total_venda-(d.recebido||0);
+      return`<tr ondblclick="abrirEdit(${d.id})" style="cursor:pointer">
+        <td><strong>${d.contrato}</strong></td>
+        <td><span class="badge ${d.empresa==='ZF Grãos'?'badge-blue':'badge-green'}">${d.empresa||'Prime Grãos'}</span></td>
+        <td>${(ctO&&ctO.comprador)||'—'}</td>
+        <td>${d.nf||'—'}</td><td>${d.motorista||'—'}</td>
+        <td>${d.descarga||'—'}</td>
+        <td>${d.descarga?new Date(prazoData(d.descarga,ph)).toLocaleDateString('pt-BR'):'—'}</td>
+        <td>${sp?`<span class="badge ${sp.cls}">${sp.txt}</span>`:'—'}</td>
+        <td class="mono amber-txt">${fmt(d.total_venda||0)}</td>
+        <td class="mono pos">${fmt(d.recebido||0)}</td>
+        <td class="mono neg">${fmt(pendente)}</td>
+      </tr>`;
+    }).join('')
+    :'<tr><td colspan="11" class="empty-state">Nenhuma nota pendente.</td></tr>';
+}
+function exportARecInd(tipo){
+  const cab=['Contrato','Empresa','Comprador','NF','Motorista','Descarga','Total Venda','Recebido','Pendente'];
+  const rows=embs.filter(d=>!d.cancelada&&!(d.recebido>0)).map(d=>{
+    const ctO=cts.find(c=>c.numero==d.contrato);
+    return[d.contrato,d.empresa,ctO&&ctO.comprador||'—',d.nf,d.motorista,d.descarga,fmt(d.total_venda||0),fmt(d.recebido||0),fmt((d.total_venda||0)-(d.recebido||0))];
+  });
+  tipo==='pdf'?gerarPDF('A Receber — Indústrias',cab,rows,'arec-industrias'):gerarCSV(cab,rows,'arec-industrias');
+}
+
+// ===== A RECEBER / CAP PARCEIROS (usa fluxo array) =====
+function renderARecParceiros(){
+  const filtro=(document.getElementById('arec-parc-filtro')||{value:''}).value;
+  // Lançamentos de entrada de parceiros (não banco, não despesa)
+  const lancamentos=fluxo.filter(l=>l.categoria==='parceiro'||(!l.categoria&&l.parceiro&&l.parceiro.toUpperCase()!=='BANCO'&&l.parceiro!=='Escritório'));
+  
+  // Update parceiro filter
+  const sel=document.getElementById('arec-parc-filtro');
+  if(sel){
+    const ps=[...new Set(lancamentos.map(l=>l.parceiro).filter(Boolean))].sort();
+    const cur=filtro;
+    sel.innerHTML='<option value="">Todos parceiros</option>'+ps.map(p=>`<option ${p===cur?'selected':''}>${p}</option>`).join('');
+  }
+
+  const f=filtro?lancamentos.filter(l=>l.parceiro===filtro):lancamentos;
+  const totalEnt=f.filter(l=>l.tipo==='entrada').reduce((s,l)=>s+(l.valor||0),0);
+  const totalSai=f.filter(l=>l.tipo==='saida').reduce((s,l)=>s+(l.valor||0),0);
+  const saldo=totalEnt-totalSai;
+
+  document.getElementById('arec-parc-cards').innerHTML=`
+    <div class="stat-card green"><div class="s-label">Total aportes</div><div class="s-value">${fmt(totalEnt)}</div></div>
+    <div class="stat-card"><div class="s-label">Total devolvido</div><div class="s-value">${fmt(totalSai)}</div></div>
+    <div class="stat-card ${saldo>0?'amber':'green'}"><div class="s-label">${saldo>0?'Devo aos parceiros':'Parceiros me devem'}</div><div class="s-value">${fmt(Math.abs(saldo))}</div></div>
+  `;
+
+  document.getElementById('tbody-arec-parc').innerHTML=f.length
+    ?[...f].sort((a,b)=>b.data>a.data?1:-1).map(l=>`<tr>
+      <td>${l.data||'—'}</td>
+      <td><span class="badge ${l.tipo==='entrada'?'badge-green':'badge-red'}">${l.tipo==='entrada'?'Aporte':'Devolução'}</span></td>
+      <td><strong>${l.parceiro||'—'}</strong></td>
+      <td>${l.descricao||'—'}</td>
+      <td class="mono ${l.tipo==='entrada'?'pos':'neg'}">${fmt(l.valor||0)}</td>
+      <td><button class="btn btn-danger" onclick="delFluxo(${l.id})">×</button></td>
+    </tr>`).join('')
+    :'<tr><td colspan="6" class="empty-state">Nenhum lançamento.</td></tr>';
+}
+async function salvarARecParceiro(){
+  const data=document.getElementById('arec-data').value;
+  const tipo=document.getElementById('arec-tipo').value;
+  const parceiro=document.getElementById('arec-parceiro').value.trim();
+  const valor=parseFloat(document.getElementById('arec-valor').value)||0;
+  const desc=document.getElementById('arec-desc').value.trim();
+  if(!data||!parceiro||!valor){toast('Preencha data, parceiro e valor!',true);return;}
+  const obj={id:Date.now(),data,tipo,categoria:'parceiro',valor,descricao:desc||tipo==='entrada'?'Aporte':'Devolução',parceiro,obs:'',lancado_por:(usuarioLogado&&usuarioLogado.nome)||'—'};
+  fluxo.push(obj);
+  showLoading('Salvando...');await saveFluxo();hideLoading();
+  limparARecParceiro();renderARecParceiros();toast('Lançamento salvo!');
+}
+function limparARecParceiro(){
+  ['arec-data','arec-parceiro','arec-valor','arec-desc'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+}
+function exportARecParc(tipo){
+  const cab=['Data','Tipo','Parceiro','Descrição','Valor R$'];
+  const rows=fluxo.filter(l=>l.categoria==='parceiro'||(!l.categoria&&l.parceiro&&l.parceiro.toUpperCase()!=='BANCO'&&l.parceiro!=='Escritório'))
+    .map(l=>[l.data,l.tipo==='entrada'?'Aporte':'Devolução',l.parceiro,l.descricao,l.valor]);
+  gerarCSV(cab,rows,'arec-parceiros');
+}
+
+// ===== DESPESAS =====
+async function saveDesp(){
+  try{
+    await fetch(`${SB_URL}/rest/v1/despesas?id=gte.0`,{method:'DELETE',headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}});
+    if(despesas.length){
+      await fetch(`${SB_URL}/rest/v1/despesas`,{method:'POST',headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify(despesas.map(d=>({id:d.id,data:d})))});
+    }
+  }catch(e){console.error(e);}
+}
+function renderDesp(){
+  const fCat=(document.getElementById('desp-filtro-cat')||{value:''}).value;
+  const cats=[...new Set(despesas.map(d=>d.categoria).filter(Boolean))].sort();
+  const sel=document.getElementById('desp-filtro-cat');
+  if(sel){const cur=fCat;sel.innerHTML='<option value="">Todas categorias</option>'+cats.map(c=>`<option ${c===cur?'selected':''}>${c}</option>`).join('');}
+  const f=fCat?despesas.filter(d=>d.categoria===fCat):despesas;
+  const total=f.reduce((s,d)=>s+(d.valor||0),0);
+  document.getElementById('desp-cards').innerHTML=`
+    <div class="stat-card red"><div class="s-label">Total despesas</div><div class="s-value">${fmt(total)}</div></div>
+    <div class="stat-card"><div class="s-label">Lançamentos</div><div class="s-value">${f.length}</div></div>
+  `;
+  document.getElementById('tbody-desp').innerHTML=f.length
+    ?[...f].sort((a,b)=>b.data>a.data?1:-1).map(d=>`<tr ondblclick="editarDesp(${d.id})" style="cursor:pointer">
+      <td>${d.data||'—'}</td><td>${d.categoria||'—'}</td><td>${d.descricao||'—'}</td>
+      <td class="mono neg">${fmt(d.valor||0)}</td>
+      <td style="color:var(--text-faint);font-size:12px">${d.obs||'—'}</td>
+      <td style="color:var(--text-faint);font-size:11px">${d.lancado_por||'—'}</td>
+      <td><button class="btn btn-danger" onclick="delDesp(${d.id})">×</button></td>
+    </tr>`).join('')
+    :'<tr><td colspan="7" class="empty-state">Nenhuma despesa.</td></tr>';
+}
+async function salvarDesp(){
+  const data=document.getElementById('desp-data').value;
+  const cat=document.getElementById('desp-cat').value;
+  const valor=parseFloat(document.getElementById('desp-valor').value)||0;
+  const desc=document.getElementById('desp-desc').value.trim();
+  const obs=document.getElementById('desp-obs').value.trim();
+  if(!data||!desc||!valor){toast('Preencha data, descrição e valor!',true);return;}
+  const obj={id:editDespId||Date.now(),data,categoria:cat,valor,descricao:desc,obs,lancado_por:(usuarioLogado&&usuarioLogado.nome)||'—'};
+  if(editDespId)despesas=despesas.map(d=>d.id===editDespId?obj:d);
+  else despesas.push(obj);
+  showLoading('Salvando...');await saveDesp();hideLoading();
+  limparDesp();renderDesp();toast('Despesa salva!');
+}
+function editarDesp(id){
+  const d=despesas.find(x=>x.id===id);if(!d)return;
+  editDespId=id;
+  document.getElementById('desp-data').value=d.data||'';
+  document.getElementById('desp-cat').value=d.categoria||'';
+  document.getElementById('desp-valor').value=d.valor||0;
+  document.getElementById('desp-desc').value=d.descricao||'';
+  document.getElementById('desp-obs').value=d.obs||'';
+  window.scrollTo(0,0);toast('Editando despesa...');
+}
+function limparDesp(){
+  editDespId=null;
+  ['desp-data','desp-valor','desp-desc','desp-obs'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+}
+async function delDesp(id){
+  if(!usuarioLogado||usuarioLogado.perfil!=='admin'){toast('Apenas admin pode excluir!',true);return;}
+  if(!confirm('Remover despesa?'))return;
+  despesas=despesas.filter(d=>d.id!==id);
+  showLoading('Removendo...');await saveDesp();hideLoading();
+  renderDesp();toast('Removido.');
+}
+function exportDesp(tipo){
+  const cab=['Data','Categoria','Descrição','Valor R$','Obs','Lançado por'];
+  const rows=despesas.map(d=>[d.data,d.categoria,d.descricao,(d.valor||0).toFixed(2),d.obs,d.lancado_por]);
+  tipo==='pdf'?gerarPDF('Despesas',cab,rows,'despesas'):gerarCSV(cab,rows,'despesas');
+}
+
+// ===== CAP PARCEIROS (DEVOLUÇÃO) =====
+function renderCapParc(){
+  const lancamentos=fluxo.filter(l=>l.tipo==='saida'&&(l.categoria==='parceiro'||(!l.categoria&&l.parceiro&&l.parceiro.toUpperCase()!=='BANCO'&&l.parceiro!=='Escritório')));
+  const total=lancamentos.reduce((s,l)=>s+(l.valor||0),0);
+  document.getElementById('cap-parc-cards').innerHTML=`
+    <div class="stat-card red"><div class="s-label">Total devolvido</div><div class="s-value">${fmt(total)}</div></div>
+    <div class="stat-card"><div class="s-label">Lançamentos</div><div class="s-value">${lancamentos.length}</div></div>
+  `;
+  document.getElementById('tbody-cap-parc').innerHTML=lancamentos.length
+    ?[...lancamentos].sort((a,b)=>b.data>a.data?1:-1).map(l=>`<tr>
+      <td>${l.data||'—'}</td><td><strong>${l.parceiro||'—'}</strong></td>
+      <td>${l.descricao||'—'}</td>
+      <td class="mono neg">${fmt(l.valor||0)}</td>
+      <td><button class="btn btn-danger" onclick="delFluxo(${l.id})">×</button></td>
+    </tr>`).join('')
+    :'<tr><td colspan="5" class="empty-state">Nenhuma devolução.</td></tr>';
+}
+async function salvarCapParc(){
+  const data=document.getElementById('capparc-data').value;
+  const parceiro=document.getElementById('capparc-parceiro').value.trim();
+  const valor=parseFloat(document.getElementById('capparc-valor').value)||0;
+  const desc=document.getElementById('capparc-desc').value.trim();
+  if(!data||!parceiro||!valor){toast('Preencha data, parceiro e valor!',true);return;}
+  const obj={id:Date.now(),data,tipo:'saida',categoria:'parceiro',valor,descricao:desc||'Devolução',parceiro,obs:'',lancado_por:(usuarioLogado&&usuarioLogado.nome)||'—'};
+  fluxo.push(obj);
+  showLoading('Salvando...');await saveFluxo();hideLoading();
+  limparCapParc();renderCapParc();toast('Devolução salva!');
+}
+function limparCapParc(){
+  ['capparc-data','capparc-parceiro','capparc-valor','capparc-desc'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+}
+
+
 function gerarCSV(cab,rows,nome){
   const csv=[cab,...rows].map(r=>r.map(c=>`"${String(c||'').replace(/"/g,'""')}"`).join(';')).join('\n');
   const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'}));a.download=nome+'.csv';a.click();toast('Excel exportado!');
