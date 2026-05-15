@@ -372,6 +372,13 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
       <div class="form-body">
         <div class="form-grid">
           <div class="fg"><label>Data <span class="star">*</span></label><input id="flx-data" type="date"></div>
+          <div class="fg"><label>Categoria <span class="star">*</span></label>
+            <select id="flx-categoria" onchange="toggleFlxParceiro()">
+              <option value="parceiro">Parceiro</option>
+              <option value="despesa">Despesa escritório</option>
+              <option value="banco">Banco</option>
+            </select>
+          </div>
           <div class="fg"><label>Tipo <span class="star">*</span></label>
             <select id="flx-tipo-lanc">
               <option value="entrada">Entrada</option>
@@ -379,8 +386,8 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
             </select>
           </div>
           <div class="fg"><label>Valor R$ <span class="star">*</span></label><input id="flx-valor" type="number" step="0.01" placeholder="0,00"></div>
-          <div class="fg"><label>Parceiro</label><input id="flx-parceiro" type="text" placeholder="Nome do parceiro"></div>
-          <div class="fg fg-full"><label>Descrição <span class="star">*</span></label><input id="flx-desc" type="text" placeholder="Ex: Aporte investidor, Pagamento CTE..."></div>
+          <div class="fg" id="fg-flx-parceiro"><label>Parceiro</label><input id="flx-parceiro" type="text" placeholder="Nome do parceiro"></div>
+          <div class="fg fg-full"><label>Descrição <span class="star">*</span></label><input id="flx-desc" type="text" placeholder="Ex: Aluguel, Aporte investidor..."></div>
           <div class="fg"><label>Observação</label><input id="flx-obs" type="text"></div>
         </div>
         <div style="display:flex;gap:8px;margin-top:12px">
@@ -424,6 +431,14 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
         <div class="tbl-wrap"><table><thead><tr>
           <th>Tipo</th><th>Parceiro</th><th>Valor</th>
         </tr></thead><tbody id="tbody-flx-pagar"></tbody></table></div>
+      </div>
+      <div class="table-card">
+        <div class="form-card-header" style="color:var(--red)">Despesas escritório</div>
+        <div class="tbl-wrap"><table><thead><tr>
+          <th onclick="sortTable('tbody-flx-desp',0)" style="cursor:pointer">Data ↕</th>
+          <th>Descrição</th>
+          <th onclick="sortTable('tbody-flx-desp',2,true)" style="cursor:pointer">Valor ↕</th>
+        </tr></thead><tbody id="tbody-flx-desp"></tbody></table></div>
       </div>
       <div class="table-card">
         <div class="form-card-header" style="color:var(--red)">Saldo devedor — Parceiros</div>
@@ -2475,15 +2490,19 @@ function renderFluxo(){
   const saldoBanco=fluxo.filter(l=>l.parceiro&&l.parceiro.toUpperCase()==='BANCO')
     .reduce((s,l)=>s+(l.tipo==='entrada'?1:-1)*(l.valor||0),0);
 
-  // Parceiros (exceto Banco): aportes e retiradas
-  const fluxoParceiros=fluxo.filter(l=>!(l.parceiro&&l.parceiro.toUpperCase()==='BANCO'));
+  // Despesas escritório
+  const despesas=fluxo.filter(l=>l.categoria==='despesa'||l.parceiro==='Escritório');
+  const totalDespesas=despesas.reduce((s,l)=>s+(l.valor||0),0);
+
+  // Parceiros (exceto Banco e Escritório)
+  const fluxoParceiros=fluxo.filter(l=>!(l.parceiro&&l.parceiro.toUpperCase()==='BANCO')&&l.categoria!=='despesa'&&l.parceiro!=='Escritório');
   const totalAportes=fluxoParceiros.filter(l=>l.tipo==='entrada').reduce((s,l)=>s+(l.valor||0),0);
   const totalDevolucoes=fluxoParceiros.filter(l=>l.tipo==='saida').reduce((s,l)=>s+(l.valor||0),0);
   const saldoParceiros=totalAportes-totalDevolucoes;
 
   // SALDO REAL = (A receber + Banco) - (A pagar operacional + Saldo devedor parceiros)
   const totalTenho=aReceberTotal+saldoBanco;
-  const totalDevo=aPagarTotal+(saldoParceiros>0?saldoParceiros:0);
+  const totalDevo=aPagarTotal+(saldoParceiros>0?saldoParceiros:0)+totalDespesas;
   const saldoReal=totalTenho-totalDevo;
 
   // Card parceiro filtrado (exceto banco)
@@ -2510,9 +2529,9 @@ function renderFluxo(){
       <div style="display:grid;grid-template-columns:auto 1fr;gap:1rem;align-items:start">
         <div style="display:flex;flex-direction:column;gap:.75rem">
           <div class="stat-card red"><div class="s-label">CTE + NF + Frete + Comissões</div><div class="s-value">${fmt(aPagarTotal)}</div></div>
+          <div class="stat-card red"><div class="s-label">Despesas escritório</div><div class="s-value">${fmt(totalDespesas)}</div></div>
           <div class="stat-card red"><div class="s-label">Saldo devedor parceiros</div><div class="s-value">${fmt(saldoParceiros>0?saldoParceiros:0)}</div></div>
-          <div class="stat-card red"><div class="s-label" style="font-weight:700">Total obrigações</div><div class="s-value">${fmt(aPagarTotal+(saldoParceiros>0?saldoParceiros:0))}</div></div>
-        </div>
+          <div class="stat-card red"><div class="s-label" style="font-weight:700">Total obrigações</div><div class="s-value">${fmt(totalDevo)}</div></div>
         <div class="table-card" style="margin:0">
           <div class="form-card-header" style="color:var(--red)">Saldo devedor — Parceiros</div>
           <div class="tbl-wrap"><table><thead><tr>
@@ -2594,6 +2613,18 @@ function renderFluxo(){
     <td>Total</td><td></td><td></td><td class="mono neg">${fmt(totalParcDev)}</td>
   </tr>`;
 
+  // Tabela despesas escritório
+  const despEl=document.getElementById('tbody-flx-desp');
+  if(despEl){
+    despEl.innerHTML=despesas.length
+      ?[...despesas].sort((a,b)=>b.data>a.data?1:-1).map(l=>`<tr>
+        <td>${l.data||'—'}</td>
+        <td>${l.descricao||'—'}</td>
+        <td class="mono neg">${fmt(l.valor||0)}</td>
+      </tr>`).join('')+`<tr style="font-weight:600;border-top:2px solid var(--border)"><td colspan="2">Total</td><td class="mono neg">${fmt(totalDespesas)}</td></tr>`
+      :'<tr><td colspan="3" class="empty-state">Nenhuma despesa lançada.</td></tr>';
+  }
+
   // A pagar (tabela principal embaixo)
   const pl=[];
   if(aPagarCTE>0)pl.push({tipo:'CTE',valor:aPagarCTE});
@@ -2604,15 +2635,25 @@ function renderFluxo(){
     ?pl.map(p=>`<tr><td>${p.tipo}</td><td>—</td><td class="mono neg">${fmt(p.valor)}</td></tr>`).join('')+`<tr style="font-weight:600;border-top:2px solid var(--border)"><td colspan="2">Total</td><td class="mono neg">${fmt(aPagarTotal)}</td></tr>`
     :'<tr><td colspan="3" class="empty-state">Nada a pagar.</td></tr>';
 }
+function toggleFlxParceiro(){
+  const cat=(document.getElementById('flx-categoria')||{value:'parceiro'}).value;
+  const fg=document.getElementById('fg-flx-parceiro');
+  if(fg)fg.style.display=cat==='parceiro'?'':'none';
+  const tipo=document.getElementById('flx-tipo-lanc');
+  if(cat==='despesa'&&tipo)tipo.value='saida';
+  if(cat==='banco'&&tipo)tipo.value='entrada';
+}
 async function salvarFluxo(){
   const data=document.getElementById('flx-data').value;
   const tipo=document.getElementById('flx-tipo-lanc').value;
+  const categoria=(document.getElementById('flx-categoria')||{value:'parceiro'}).value;
   const valor=parseFloat(document.getElementById('flx-valor').value)||0;
   const desc=document.getElementById('flx-desc').value.trim();
   const parceiro=document.getElementById('flx-parceiro').value.trim();
   const obs=document.getElementById('flx-obs').value.trim();
   if(!data||!desc||!valor){toast('Preencha data, descrição e valor!',true);return;}
-  const obj={id:editFluxoId||Date.now(),data,tipo,valor,descricao:desc,parceiro,obs,lancado_por:(usuarioLogado&&usuarioLogado.nome)||'—'};
+  const parceiroFinal=categoria==='banco'?'Banco':categoria==='despesa'?'Escritório':parceiro;
+  const obj={id:editFluxoId||Date.now(),data,tipo,categoria,valor,descricao:desc,parceiro:parceiroFinal,obs,lancado_por:(usuarioLogado&&usuarioLogado.nome)||'—'};
   if(editFluxoId)fluxo=fluxo.map(l=>l.id===editFluxoId?obj:l);
   else fluxo.push(obj);
   showLoading('Salvando...');await saveFluxo();hideLoading();
@@ -2633,6 +2674,8 @@ function limparFluxo(){
   editFluxoId=null;
   ['flx-data','flx-valor','flx-parceiro','flx-desc','flx-obs'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   const tl=document.getElementById('flx-tipo-lanc');if(tl)tl.value='entrada';
+  const cat=document.getElementById('flx-categoria');if(cat)cat.value='parceiro';
+  toggleFlxParceiro();
 }
 async function delFluxo(id){
   if(!usuarioLogado||usuarioLogado.perfil!=='admin'){toast('Apenas o administrador pode excluir!',true);return;}
