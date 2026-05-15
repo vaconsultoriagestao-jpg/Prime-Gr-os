@@ -2297,14 +2297,26 @@ function renderCapCom(){
 function exportFrete(tipo='csv'){
   const ativos=embs.filter(d=>!d.cancelada&&(d.frete_total||0)>0);
   if(!ativos.length){toast('Nenhum dado.',true);return;}
-  const cab=['Motorista','CPF','Contrato','NF','Embarque','Frete Total','80% À vista','Pago 80%','20% Descarga','Pago 20%','Desc. quebra','Desc. impureza','Saldo'];
+  const cab=['Motorista','CPF','Contrato','NF','Embarque','Frete Total','80% À vista','Pago 80%','20% Descarga','Pago 20%','Desc. quebra','Saldo'];
   const rows=ativos.map(d=>{
     const desc=(d.desc_quebra||0);
     const f20=Math.max(0,(d.frete20||0)-desc);
     const saldo=(!d.frete80_pago?(d.frete80||0):0)+(!d.frete20_pago?f20:0);
-    return[d.motorista,d.cpf,d.contrato,d.nf,d.embarque,(d.frete_total||0).toFixed(2),(d.frete80||0).toFixed(2),d.frete80_pago?'Pago':'Aberto',f20.toFixed(2),d.frete20_pago?'Pago':'Aberto',(d.desc_quebra||0).toFixed(2),(d.imp_desc||0).toFixed(2),saldo.toFixed(2)];
+    return[d.motorista,d.cpf,d.contrato,d.nf,d.embarque,(d.frete_total||0).toFixed(2),(d.frete80||0).toFixed(2),d.frete80_pago?'Pago':'Aberto',f20.toFixed(2),d.frete20_pago?'Pago':'Aberto',(d.desc_quebra||0).toFixed(2),saldo.toFixed(2)];
   });
-  tipo==='pdf'?gerarPDF('Frete — Pagamento de Motoristas',cab,rows,'prime-graos-frete'):gerarCSV(cab,rows,'prime-graos-frete');
+  if(tipo==='pdf'){
+    // Para frete, totalizador usa saldo por contrato
+    const dadosFrete=ativos.map(d=>{
+      const desc=(d.desc_quebra||0);
+      const f20=Math.max(0,(d.frete20||0)-desc);
+      const saldo=(!d.frete80_pago?(d.frete80||0):0)+(!d.frete20_pago?f20:0);
+      const pago=saldo===0;
+      return{contrato:d.contrato,cn_val:d.frete_total||0,nota_pago:pago};
+    });
+    gerarPDFComTotais('Frete — Pagamento de Motoristas',cab,rows,'prime-graos-frete',dadosFrete,'cn_val','nota_pago','contrato');
+  }else{
+    gerarCSV(cab,rows,'prime-graos-frete');
+  }
 }
 
 async function toggleFretePago(embId,parcela){
@@ -3360,12 +3372,82 @@ function exportCapNota(tipo){
   const selecionados=getSelected('tbody-capn');
   const fForn=(document.getElementById('f-capn-forn')||{value:''}).value;
   const fSt=(document.getElementById('f-capn-st')||{value:''}).value;
-  const f=embs.filter(d=>!d.cancelada&&(d.cn_val||0)>0&&d.fornecedor_nota).filter(d=>(!fForn||d.fornecedor_nota===fForn)&&(!fSt||(fSt==='aberto'&&!d.nota_pago)||(fSt==='pago'&&d.nota_pago)));
+  const f=embs.filter(d=>!d.cancelada&&(d.cn_val||0)>0&&d.fornecedor_nota).filter(d=>(!selecionados.length||selecionados.includes(String(d.id)))&&(!fForn||d.fornecedor_nota===fForn)&&(!fSt||(fSt==='aberto'&&!d.nota_pago)||(fSt==='pago'&&d.nota_pago)));
   if(!f.length){toast('Nenhum dado.',true);return;}
   const cab=['Fornecedor','Contrato','NF','Motorista','Embarque','Sc emb.','Custo R$/sc','Total R$','Status'];
   const rows=f.map(d=>[d.fornecedor_nota,d.contrato,d.nf,d.motorista,d.embarque,(d.sc_emb||0).toFixed(2),(d.cn_sc||0).toFixed(2),(d.cn_val||0).toFixed(2),d.nota_pago?'Pago':'Em aberto']);
-  tipo==='pdf'?gerarPDF('Notas Fiscais a Pagar',cab,rows,'prime-graos-notas'):gerarCSV(cab,rows,'prime-graos-notas');
+  if(tipo==='pdf'){
+    gerarPDFComTotais('Notas Fiscais a Pagar',cab,rows,'prime-graos-notas',f,'cn_val','nota_pago','contrato');
+  }else{
+    gerarCSV(cab,rows,'prime-graos-notas');
+  }
 }
+function gerarPDFComTotais(titulo, cab, rows, nome, dados, campovalor, campopago, campocontrato){
+  if(!window.jspdf||!window.jspdf.jsPDF){toast('Biblioteca PDF não carregada.',true);return;}
+  const {jsPDF}=window.jspdf;
+  const doc=new jsPDF({orientation:'landscape'});
+  const pw=doc.internal.pageSize.width;
+  const hoje=new Date().toLocaleDateString('pt-BR');
+  doc.setFillColor(45,106,79);doc.rect(0,0,pw,26,'F');
+  try{doc.addImage(_LOGO_PDF,'PNG',14,3,18,18);}catch(e){}
+  doc.setTextColor(255,255,255);doc.setFontSize(14);doc.setFont('helvetica','bold');
+  doc.text('Prime Grãos',36,11);
+  doc.setFontSize(10);doc.setFont('helvetica','normal');
+  doc.text(titulo,36,18);
+  doc.setFontSize(8);doc.text('Gerado em: '+hoje,pw-14,18,{align:'right'});
+  doc.setTextColor(0,0,0);
+
+  // Tabela principal
+  doc.autoTable({
+    head:[cab],body:rows,startY:30,
+    styles:{fontSize:7,cellPadding:2},
+    headStyles:{fillColor:[45,106,79],textColor:255,fontStyle:'bold'},
+    alternateRowStyles:{fillColor:[240,250,242]},
+    margin:{left:14,right:14}
+  });
+
+  // Totalizador por contrato
+  const porCt={};
+  dados.forEach(d=>{
+    const ct=String(d[campocontrato]||'—');
+    if(!porCt[ct])porCt[ct]={ct,total:0,pago:0,aberto:0};
+    const val=parseFloat(d[campovalor])||0;
+    const pg=d[campopago];
+    porCt[ct].total+=val;
+    if(pg)porCt[ct].pago+=val;
+    else porCt[ct].aberto+=val;
+  });
+  const totalGeral=Object.values(porCt).reduce((s,r)=>s+r.total,0);
+  const pagoGeral=Object.values(porCt).reduce((s,r)=>s+r.pago,0);
+  const abertoGeral=Object.values(porCt).reduce((s,r)=>s+r.aberto,0);
+
+  const y=doc.lastAutoTable.finalY+10;
+  doc.setFontSize(10);doc.setFont('helvetica','bold');
+  doc.text('Totalizador por contrato',14,y);
+  doc.autoTable({
+    head:[['Contrato','Total','Pago','Em aberto']],
+    body:[
+      ...Object.values(porCt).sort((a,b)=>String(a.ct).localeCompare(String(b.ct))).map(r=>[
+        r.ct, fmt(r.total), fmt(r.pago), fmt(r.aberto)
+      ]),
+      ['TOTAL', fmt(totalGeral), fmt(pagoGeral), fmt(abertoGeral)]
+    ],
+    startY:y+4,
+    styles:{fontSize:8,cellPadding:2},
+    headStyles:{fillColor:[45,106,79],textColor:255,fontStyle:'bold'},
+    bodyStyles:{},
+    didParseCell:function(data){
+      if(data.row.index===Object.keys(porCt).length){
+        data.cell.styles.fontStyle='bold';
+        data.cell.styles.fillColor=[220,252,231];
+      }
+    },
+    margin:{left:14,right:14}
+  });
+
+  doc.save(nome+'.pdf');toast('PDF exportado!');
+}
+
 function exportCapTransp(tipo){
   const selecionados=getSelected('tbody-capt');
   const fT=(document.getElementById('f-capt-transp')||{value:''}).value;
@@ -3374,8 +3456,13 @@ function exportCapTransp(tipo){
   if(!f.length){toast('Nenhum dado.',true);return;}
   const cab=['Transportadora','Contrato','NF','Motorista','Embarque','Sc emb.','CTE R$/sc','CTE Total','Status'];
   const rows=f.map(d=>[d.transportadora,d.contrato,d.nf,d.motorista,d.embarque,(d.sc_emb||0).toFixed(2),(d.cte_sc||0).toFixed(2),(d.cte||0).toFixed(2),d.cte_pago?'Pago':'Em aberto']);
-  tipo==='pdf'?gerarPDF('CTE — Transportadoras',cab,rows,'prime-graos-cte'):gerarCSV(cab,rows,'prime-graos-cte');
+  if(tipo==='pdf'){
+    gerarPDFComTotais('CTE — Transportadoras',cab,rows,'prime-graos-cte',f,'cte','cte_pago','contrato');
+  }else{
+    gerarCSV(cab,rows,'prime-graos-cte');
+  }
 }
+
 function exportCapCom(tipo){
   const fCom=(document.getElementById('f-capc-com')||{value:''}).value;
   const fSt=(document.getElementById('f-capc-st')||{value:''}).value;
@@ -3390,7 +3477,11 @@ function exportCapCom(tipo){
   if(!f.length){toast('Nenhum dado.',true);return;}
   const cab=['Comissionário','Comprador','Contrato','NF','Embarque','Sc emb.','R$/sc','Total R$','Status'];
   const rows=f.map(l=>[l.nome,l.comprador,l.contrato,l.nf,l.embarque,(l.sc_emb||0).toFixed(2),(l.valor_sc||0).toFixed(2),(l.total||0).toFixed(2),l.pago?'Pago':'Em aberto']);
-  tipo==='pdf'?gerarPDF('Comissões a Pagar',cab,rows,'prime-graos-comissoes'):gerarCSV(cab,rows,'prime-graos-comissoes');
+  if(tipo==='pdf'){
+    gerarPDFComTotais('Comissões a Pagar',cab,rows,'prime-graos-comissoes',f,'total','pago','contrato');
+  }else{
+    gerarCSV(cab,rows,'prime-graos-comissoes');
+  }
 }
 
 
