@@ -1803,6 +1803,7 @@ function renderContratos(){
   msFilter('ms-ct-emp', emps, 'renderContratos', 'Empresa');
   msFilter('ms-ct-prod', prods, 'renderContratos', 'Produto');
   const f=cts.filter(c=>{
+    if(_empresaFiltro&&c.empresa!==_empresaFiltro)return false;
     if(q&&!(c.numero&&c.numero.toLowerCase().includes(q))&&!(c.comprador&&c.comprador.toLowerCase().includes(q)))return false;
     if(!msMatch('ms-ct-emp', c.empresa||'Prime Grãos'))return false;
     if(!msMatch('ms-ct-prod', c.produto))return false;
@@ -2534,12 +2535,12 @@ function renderEmbarques(){
   msFilter('ms-emb-ct', ctNums, 'renderEmbarques', 'Contrato');
   msFilter('ms-emb-st', status, 'renderEmbarques', 'Status');
   const f=embs.filter(d=>{
+    if(_empresaFiltro&&d.empresa!==_empresaFiltro)return false;
     if(q&&!String(d.contrato||'').includes(q)&&!String(d.nf||'').toLowerCase().includes(q)&&!String(d.motorista||'').toLowerCase().includes(q))return false;
     if(!msMatch('ms-emb-emp', d.empresa||'Prime Grãos'))return false;
     if(!msMatch('ms-emb-prod', d.produto))return false;
     if(!msMatch('ms-emb-ct', String(d.contrato)))return false;
     if(!msMatch('ms-emb-st', d.status))return false;
-    if(canc===''&&false)return false; // skip
     if(canc==='0'&&d.cancelada)return false;
     if(canc==='1'&&!d.cancelada)return false;
     return true;
