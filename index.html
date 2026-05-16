@@ -2386,7 +2386,7 @@ function renderFrete(){
   const ano=(document.getElementById('f-frete-ano')||{value:''}).value;
   const st=(document.getElementById('f-frete-status')||{value:''}).value;
   const ctS=document.getElementById('f-frete-ct');
-  if(ctS){const cs=[...new Set(embs.map(d=>d.contrato))].sort();const cur=ctS.value;ctS.innerHTML='<option value="">Todos contratos</option>'+cs.map(c=>`<option ${c===cur?'selected':''}>${c}</option>`).join('');}
+  if(ctS){const cs=[...new Set(embs.filter(d=>!_empresaFiltro||d.empresa===_empresaFiltro).map(d=>d.contrato))].sort();const cur=ctS.value;ctS.innerHTML='<option value="">Todos contratos</option>'+cs.map(c=>`<option ${c===cur?'selected':''}>${c}</option>`).join('');}
   const ativos=embs.filter(d=>!d.cancelada&&(d.frete_total||0)>0&&(!_empresaFiltro||d.empresa===_empresaFiltro));
   const f=ativos.filter(d=>{
     if(q&&!(d.motorista&&d.motorista.toLowerCase().includes(q))&&!(d.cpf&&d.cpf.includes(q))&&!String(d.contrato||'').includes(q))return false;
