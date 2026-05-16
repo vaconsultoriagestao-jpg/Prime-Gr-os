@@ -2289,9 +2289,9 @@ async function toggleCapComPago(embId,comId){
 function renderCapCom(){
   const sel=document.getElementById('f-capc-com');
   const fSt=(document.getElementById('f-capc-st')||{value:''}).value;
-  // Montar linhas: uma por (embarque × comissionário)
+  // Montar linhas: uma por (embarque × comissionário) — filtra por empresa
   const linhas=[];
-  embs.filter(d=>!d.cancelada).forEach(d=>{
+  embs.filter(d=>!d.cancelada&&(!_empresaFiltro||d.empresa===_empresaFiltro)).forEach(d=>{
     (d.comissoes||[]).forEach(c=>{
       const pago=!!(d.comissoes_pago&&d.comissoes_pago[c.id]);
       const total=(c.valor||0)*(d.sc_emb||0);
@@ -2299,11 +2299,11 @@ function renderCapCom(){
     });
   });
   const fCt2=(document.getElementById('f-capc-ct')||{value:''}).value;
-  const fEmp2=(document.getElementById('f-capc-emp')||{value:''}).value||_empresaFiltro;
+  const fEmp2=_empresaFiltro||(document.getElementById('f-capc-emp')||{value:''}).value;
   const fCom2=(document.getElementById('f-capc-com')||{value:''}).value;
   if(sel){const ns=[...new Set(linhas.map(l=>l.nome))].sort();const cur=fCom2;sel.innerHTML='<option value="">Todos comissionários</option>'+ns.map(n=>`<option ${n===cur?'selected':''}>${n}</option>`).join('');}
   const ctSC=document.getElementById('f-capc-ct');
-  if(ctSC){const cs=[...new Set(embs.filter(d=>!d.cancelada).map(d=>String(d.contrato)))].sort();const cur=fCt2;ctSC.innerHTML='<option value="">Todos contratos</option>'+cs.map(c=>`<option ${c===cur?'selected':''}>${c}</option>`).join('');}
+  if(ctSC){const cs=[...new Set(embs.filter(d=>!d.cancelada&&(!_empresaFiltro||d.empresa===_empresaFiltro)).map(d=>String(d.contrato)))].sort();const cur=fCt2;ctSC.innerHTML='<option value="">Todos contratos</option>'+cs.map(c=>`<option ${c===cur?'selected':''}>${c}</option>`).join('');}
   const fCom=(document.getElementById('f-capc-com')||{value:''}).value;
   const f=linhas.filter(l=>(!fCom||l.nome===fCom)&&(!fCt2||String(l.contrato)===fCt2)&&(!fEmp2||l.empresa===fEmp2)&&(!fSt||(fSt==='aberto'&&!l.pago)||(fSt==='pago'&&l.pago)));
   const totTotal=f.reduce((s,l)=>s+l.total,0);
@@ -3515,7 +3515,7 @@ function exportCapCom(tipo){
   const fCom=(document.getElementById('f-capc-com')||{value:''}).value;
   const fSt=(document.getElementById('f-capc-st')||{value:''}).value;
   const linhas=[];
-  embs.filter(d=>!d.cancelada).forEach(d=>{
+  embs.filter(d=>!d.cancelada&&(!_empresaFiltro||d.empresa===_empresaFiltro)).forEach(d=>{
     (d.comissoes||[]).forEach(c=>{
       const pago=!!(d.comissoes_pago&&d.comissoes_pago[c.id]);
       linhas.push({nome:c.nome,comprador:(cts.find(x=>x.numero==d.contrato)||{comprador:'—'}).comprador||'—',contrato:d.contrato,nf:d.nf,embarque:d.embarque,sc_emb:d.sc_emb,valor_sc:c.valor,total:(c.valor||0)*(d.sc_emb||0),pago});
