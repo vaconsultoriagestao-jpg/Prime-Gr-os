@@ -858,7 +858,7 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
       <div class="form-body">
         <div class="form-grid">
           <div class="fg"><label>Data <span class="star">*</span></label><input id="arec-data" type="date"></div>
-          <div class="fg"><label>Empresa</label><select id="arec-emp"><option>Prime Grãos</option><option>ZF Grãos</option></select></div>
+
           <div class="fg"><label>Tipo <span class="star">*</span></label>
             <select id="arec-tipo"><option value="entrada">Entrada (parceiro me pagou)</option><option value="saida">Saída (devolvi ao parceiro)</option></select>
           </div>
@@ -944,7 +944,7 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
       <div class="form-body">
         <div class="form-grid">
           <div class="fg"><label>Data <span class="star">*</span></label><input id="capparc-data" type="date"></div>
-          <div class="fg"><label>Empresa</label><select id="capparc-emp"><option>Prime Grãos</option><option>ZF Grãos</option></select></div>
+
           <div class="fg"><label>Parceiro <span class="star">*</span></label><input id="capparc-parceiro" type="text" placeholder="Nome do parceiro"></div>
           <div class="fg"><label>Valor R$ <span class="star">*</span></label><input id="capparc-valor" type="number" step="0.01" placeholder="0,00"></div>
           <div class="fg fg-full"><label>Descrição</label><input id="capparc-desc" type="text" placeholder="Ex: Devolução parcial..."></div>
@@ -2923,7 +2923,7 @@ async function salvarFluxo(){
   const obs=document.getElementById('flx-obs').value.trim();
   if(!data||!desc||!valor){toast('Preencha data, descrição e valor!',true);return;}
   const parceiroFinal=categoria==='banco'?'Banco':categoria==='despesa'?'Escritório':parceiro;
-  const obj={id:editFluxoId||Date.now(),data,tipo,categoria,valor,descricao:desc,parceiro:parceiroFinal,obs,lancado_por:(usuarioLogado&&usuarioLogado.nome)||'—'};
+  const obj={id:editFluxoId||Date.now(),data,tipo,categoria,empresa:_empresaFiltro,valor,descricao:desc,parceiro:parceiroFinal,obs,lancado_por:(usuarioLogado&&usuarioLogado.nome)||'—'};
   if(editFluxoId)fluxo=fluxo.map(l=>l.id===editFluxoId?obj:l);
   else fluxo.push(obj);
   showLoading('Salvando...');await saveFluxo();hideLoading();
@@ -2950,7 +2950,7 @@ function limparFluxo(){
 async function delFluxo(id){
   if(!usuarioLogado||usuarioLogado.perfil!=='admin'){toast('Apenas o administrador pode excluir!',true);return;}
   if(!confirm('Remover este lançamento?'))return;
-  fluxo=fluxo.filter(l=>l.id!==id);
+  fluxo=fluxo.filter(l=>String(l.id)!==String(id));
   showLoading('Removendo...');await saveFluxo();hideLoading();
   renderFluxo();renderARecParceiros();renderCapParc();toast('Removido.');
 }
@@ -3216,8 +3216,6 @@ function renderARecParceiros(){
   const filtro=(document.getElementById('arec-parc-filtro')||{value:''}).value;
   const emp=_empresaFiltro;
   // Set default empresa in form
-  const empSel=document.getElementById('arec-emp');
-  if(empSel&&emp)empSel.value=emp;
   // Lançamentos de saída de parceiros filtrados por empresa
   const lancamentos=fluxo.filter(l=>l.tipo==='saida'&&(l.categoria==='parceiro'||(!l.categoria&&l.parceiro&&l.parceiro.toUpperCase()!=='BANCO'&&l.parceiro!=='Escritório'))&&(!emp||!l.empresa||l.empresa===emp));
   
@@ -3249,7 +3247,7 @@ function renderARecParceiros(){
 async function salvarARecParceiro(){
   const data=document.getElementById('arec-data').value;
   const tipo=document.getElementById('arec-tipo').value;
-  const emp=_empresaFiltro||(document.getElementById('arec-emp')||{value:'Prime Grãos'}).value||'Prime Grãos';
+  const emp=_empresaFiltro;
   const parceiro=document.getElementById('arec-parceiro').value.trim();
   const valor=parseFloat(document.getElementById('arec-valor').value)||0;
   const desc=document.getElementById('arec-desc').value.trim();
@@ -3345,7 +3343,6 @@ function exportDesp(tipo){
 // ===== CAP PARCEIROS (DEVOLUÇÃO) =====
 function renderCapParc(){
   const emp=_empresaFiltro;
-  const empSel=document.getElementById("capparc-emp");if(empSel&&emp)empSel.value=emp;
   const lancamentos=fluxo.filter(l=>l.tipo==="entrada"&&(l.categoria==="parceiro"||(!l.categoria&&l.parceiro&&l.parceiro.toUpperCase()!=="BANCO"&&l.parceiro!=="Escritório"))&&(!emp||l.empresa===emp));
   const total=lancamentos.reduce((s,l)=>s+(l.valor||0),0);
   document.getElementById('cap-parc-cards').innerHTML=`
@@ -3363,7 +3360,7 @@ function renderCapParc(){
 }
 async function salvarCapParc(){
   const data=document.getElementById('capparc-data').value;
-  const emp=_empresaFiltro||(document.getElementById('capparc-emp')||{value:'Prime Grãos'}).value||'Prime Grãos';
+  const emp=_empresaFiltro;
   const parceiro=document.getElementById('capparc-parceiro').value.trim();
   const valor=parseFloat(document.getElementById('capparc-valor').value)||0;
   const desc=document.getElementById('capparc-desc').value.trim();
