@@ -337,9 +337,6 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
         <option value="">Todos produtos</option><option>SOJA</option><option>MILHO</option><option>TRIGO</option>
       </select>
       <select class="filter-select" id="f-saidas-ct" onchange="renderSaidas()"><option value="">Todos contratos</option></select>
-      <select class="filter-select" id="f-saidas-emp" onchange="renderSaidas()">
-        <option value="">Todas empresas</option><option>Prime Grãos</option><option>ZF Grãos</option>
-      </select>
     </div>
     <div class="stats-grid" id="saidas-cards" style="margin-bottom:1rem"></div>
     <div class="table-card">
@@ -615,7 +612,6 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
         <div style="display:flex;gap:6px;align-items:center">
           <div class="table-filters">
             <input class="filter-input" id="f-ct-q" placeholder="Buscar..." oninput="renderContratos()" style="width:160px">
-            <div id="ms-ct-emp" style="display:inline-block"></div>
             <div id="ms-ct-prod" style="display:inline-block"></div>
           </div>
           <button class="btn btn-secondary btn-sm" onclick="exportContratos('csv')">⬇ Excel</button>
@@ -642,8 +638,7 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
         <div class="table-filters">
           <input class="filter-input" id="f-emb-q" placeholder="Contrato, NF, motorista..." oninput="renderEmbarques()" style="width:190px">
           <input class="filter-input" id="f-emb-q" placeholder="Buscar..." oninput="renderEmbarques()" style="width:150px">
-          <div id="ms-emb-emp" style="display:inline-block"></div>
-          <div id="ms-emb-prod" style="display:inline-block"></div>
+        <div id="ms-emb-prod" style="display:inline-block"></div>
           <div id="ms-emb-ct" style="display:inline-block"></div>
           <div id="ms-emb-st" style="display:inline-block"></div>
           <select class="filter-select" id="f-emb-canc" onchange="renderEmbarques()">
@@ -1030,11 +1025,8 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
     <h1 class="section-heading">Notas Fiscais a Pagar</h1>
     <p class="section-sub">Controle do custo de nota por fornecedor e embarque.</p>
     <div class="table-filters" style="margin-bottom:1rem;gap:8px;display:flex;flex-wrap:wrap">
-      <select class="filter-select" id="f-capn-forn" onchange="renderCapNota()"><option value="">Todos fornecedores</option></select>
-      <select class="filter-select" id="f-capn-ct" onchange="renderCapNota()"><option value="">Todos contratos</option></select>
-      <select class="filter-select" id="f-capn-emp" onchange="renderCapNota()">
-        <option value="">Todas empresas</option><option>Prime Grãos</option><option>ZF Grãos</option>
-      </select>
+      <div id="ms-capn-forn" style="display:inline-block"></div>
+      <div id="ms-capn-ct" style="display:inline-block"></div>
       <select class="filter-select" id="f-capn-st" onchange="renderCapNota()">
         <option value="">Todos</option><option value="aberto">Em aberto</option><option value="pago">Pagos</option>
       </select>
@@ -1043,8 +1035,8 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
     <div class="table-card">
       <div class="table-header"><h3>Notas por embarque</h3><div style="display:flex;gap:6px"><button class="btn btn-secondary btn-sm" onclick="exportCapNota('csv')">⬇ Excel</button><button class="btn btn-secondary btn-sm" onclick="exportCapNota('pdf')">⬇ PDF</button></div></div>
       <div class="tbl-wrap"><table><thead><tr>
-        <th onclick="sortTable('tbody-capn',0)" style="cursor:pointer">Fornecedor ↕</th><th>Empresa</th><th onclick="sortTable('tbody-capn',2)" style="cursor:pointer">Contrato ↕</th><th>NF</th><th>Motorista</th>
-        <th onclick="sortTable('tbody-capn',5)" style="cursor:pointer">Embarque ↕</th><th>Sc emb.</th><th>Custo R$/sc</th><th onclick="sortTable('tbody-capn',8,true)" style="cursor:pointer">Custo total ↕</th><th>Status</th><th></th>
+        <th onclick="sortTable('tbody-capn',0)" style="cursor:pointer">Fornecedor ↕</th><th onclick="sortTable('tbody-capn',1)" style="cursor:pointer">Contrato ↕</th><th>NF</th><th>Motorista</th>
+        <th onclick="sortTable('tbody-capn',4)" style="cursor:pointer">Embarque ↕</th><th>Sc emb.</th><th>Custo R$/sc</th><th onclick="sortTable('tbody-capn',7,true)" style="cursor:pointer">Custo total ↕</th><th>Status</th><th></th>
       </tr></thead><tbody id="tbody-capn"></tbody></table></div>
     </div>
   </div>
@@ -1052,11 +1044,8 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
     <h1 class="section-heading">CTE — Transportadoras</h1>
     <p class="section-sub">Controle do CTE por transportadora por embarque.</p>
     <div class="table-filters" style="margin-bottom:1rem;gap:8px;display:flex;flex-wrap:wrap">
-      <select class="filter-select" id="f-capt-transp" onchange="renderCapTransp()"><option value="">Todas transportadoras</option></select>
-      <select class="filter-select" id="f-capt-ct" onchange="renderCapTransp()"><option value="">Todos contratos</option></select>
-      <select class="filter-select" id="f-capt-emp" onchange="renderCapTransp()">
-        <option value="">Todas empresas</option><option>Prime Grãos</option><option>ZF Grãos</option>
-      </select>
+      <div id="ms-capt-transp" style="display:inline-block"></div>
+      <div id="ms-capt-ct" style="display:inline-block"></div>
       <select class="filter-select" id="f-capt-st" onchange="renderCapTransp()">
         <option value="">Todos</option><option value="aberto">Em aberto</option><option value="pago">Pagos</option>
       </select>
@@ -1065,8 +1054,8 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
     <div class="table-card">
       <div class="table-header"><h3>CTE por embarque</h3><div style="display:flex;gap:6px"><button class="btn btn-secondary btn-sm" onclick="exportCapTransp('csv')">⬇ Excel</button><button class="btn btn-secondary btn-sm" onclick="exportCapTransp('pdf')">⬇ PDF</button></div></div>
       <div class="tbl-wrap"><table><thead><tr>
-        <th onclick="sortTable('tbody-capt',0)" style="cursor:pointer">Transportadora ↕</th><th>Empresa</th><th onclick="sortTable('tbody-capt',2)" style="cursor:pointer">Contrato ↕</th><th>NF</th><th>Motorista</th>
-        <th onclick="sortTable('tbody-capt',5)" style="cursor:pointer">Embarque ↕</th><th>Sc emb.</th><th>CTE R$/sc</th><th onclick="sortTable('tbody-capt',8,true)" style="cursor:pointer">CTE Total ↕</th><th>Status</th><th></th>
+        <th onclick="sortTable('tbody-capt',0)" style="cursor:pointer">Transportadora ↕</th><th onclick="sortTable('tbody-capt',1)" style="cursor:pointer">Contrato ↕</th><th>NF</th><th>Motorista</th>
+        <th onclick="sortTable('tbody-capt',4)" style="cursor:pointer">Embarque ↕</th><th>Sc emb.</th><th>CTE R$/sc</th><th onclick="sortTable('tbody-capt',7,true)" style="cursor:pointer">CTE Total ↕</th><th>Status</th><th></th>
       </tr></thead><tbody id="tbody-capt"></tbody></table></div>
     </div>
   </div>
@@ -1076,11 +1065,8 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
     <h1 class="section-heading">Comissões a Pagar</h1>
     <p class="section-sub">Controle de comissões por comissionário e embarque.</p>
     <div class="table-filters" style="margin-bottom:1rem;gap:8px;display:flex;flex-wrap:wrap">
-      <select class="filter-select" id="f-capc-com" onchange="renderCapCom()"><option value="">Todos comissionários</option></select>
-      <select class="filter-select" id="f-capc-ct" onchange="renderCapCom()"><option value="">Todos contratos</option></select>
-      <select class="filter-select" id="f-capc-emp" onchange="renderCapCom()">
-        <option value="">Todas empresas</option><option>Prime Grãos</option><option>ZF Grãos</option>
-      </select>
+      <div id="ms-capc-com" style="display:inline-block"></div>
+      <div id="ms-capc-ct" style="display:inline-block"></div>
       <select class="filter-select" id="f-capc-st" onchange="renderCapCom()">
         <option value="">Todos</option><option value="aberto">Em aberto</option><option value="pago">Pagos</option>
       </select>
@@ -1800,7 +1786,6 @@ function renderContratos(){
   const prods=[...new Set(cts.map(c=>c.produto).filter(Boolean))].sort();
   const emps=[...new Set(cts.map(c=>c.empresa).filter(Boolean))].sort();
   const compradores=[...new Set(cts.map(c=>c.comprador).filter(Boolean))].sort();
-  msFilter('ms-ct-emp', emps, 'renderContratos', 'Empresa');
   msFilter('ms-ct-prod', prods, 'renderContratos', 'Produto');
   const f=cts.filter(c=>{
     if(_empresaFiltro&&c.empresa!==_empresaFiltro)return false;
@@ -2154,17 +2139,19 @@ async function toggleCapNotaPago(embId){
   await saveEmb(embs[idx]);renderCapNota();toast('Status atualizado!');
 }
 function renderCapNota(){
-  const fForn=(document.getElementById('f-capn-forn')||{value:''}).value;
-  const fCt=(document.getElementById('f-capn-ct')||{value:''}).value;
-  const fEmp=(document.getElementById('f-capn-emp')||{value:''}).value||_empresaFiltro;
   const fSt=(document.getElementById('f-capn-st')||{value:''}).value;
-  const sel=document.getElementById('f-capn-forn');
-  if(sel){const fs=[...new Set(embs.filter(d=>!d.cancelada&&d.fornecedor_nota).map(d=>d.fornecedor_nota))].sort();const cur=fForn;sel.innerHTML='<option value="">Todos fornecedores</option>'+fs.map(f=>`<option ${f===cur?'selected':''}>${f}</option>`).join('');}
-  const ctS=document.getElementById('f-capn-ct');
-  if(ctS){const cs=[...new Set(embs.filter(d=>!d.cancelada).map(d=>String(d.contrato)))].sort();const cur=fCt;ctS.innerHTML='<option value="">Todos contratos</option>'+cs.map(c=>`<option ${c===cur?'selected':''}>${c}</option>`).join('');}
-  const ativos=embs.filter(d=>!d.cancelada&&(d.cn_val||0)>0&&d.fornecedor_nota);
-  const f=ativos.filter(d=>(!fForn||d.fornecedor_nota===fForn)&&(!fCt||String(d.contrato)===fCt)&&(!fEmp||d.empresa===fEmp)&&(!fSt||(fSt==='aberto'&&!d.nota_pago)||(fSt==='pago'&&d.nota_pago)));
-  const totTotal=f.reduce((s,d)=>s+(d.cn_val||0),0);
+  const ativos=embs.filter(d=>!d.cancelada&&(d.cn_val||0)>0&&d.fornecedor_nota&&(!_empresaFiltro||d.empresa===_empresaFiltro));
+  const fns=[...new Set(ativos.map(d=>d.fornecedor_nota))].sort();
+  const cts_n=[...new Set(ativos.map(d=>String(d.contrato)))].sort();
+  msFilter('ms-capn-forn', fns, 'renderCapNota', 'Fornecedor');
+  msFilter('ms-capn-ct', cts_n, 'renderCapNota', 'Contrato');
+  const f=ativos.filter(d=>{
+    if(!msMatch('ms-capn-forn', d.fornecedor_nota))return false;
+    if(!msMatch('ms-capn-ct', String(d.contrato)))return false;
+    if(fSt==='aberto'&&d.nota_pago)return false;
+    if(fSt==='pago'&&!d.nota_pago)return false;
+    return true;
+  });
   const totAberto=f.filter(d=>!d.nota_pago).reduce((s,d)=>s+(d.cn_val||0),0);
   const totPago=f.filter(d=>d.nota_pago).reduce((s,d)=>s+(d.cn_val||0),0);
   const cards=document.getElementById('capn-cards');
@@ -2244,17 +2231,19 @@ async function toggleCapTranspPago(embId){
   await saveEmb(embs[idx]);renderCapTransp();toast('Status atualizado!');
 }
 function renderCapTransp(){
-  // Atualizar filtro
-  const sel=document.getElementById('f-capt-transp');
-  if(sel){const ts=[...new Set(embs.filter(d=>!d.cancelada&&d.transportadora).map(d=>d.transportadora))].sort();const cur=sel.value;sel.innerHTML='<option value="">Todas transportadoras</option>'+ts.map(t=>`<option ${t===cur?'selected':''}>${t}</option>`).join('');}
-  const fTransp=(document.getElementById('f-capt-transp')||{value:''}).value;
-  const fCt=(document.getElementById('f-capt-ct')||{value:''}).value;
-  const fEmp=(document.getElementById('f-capt-emp')||{value:''}).value||_empresaFiltro;
   const fSt=(document.getElementById('f-capt-st')||{value:''}).value;
-  const ctS=document.getElementById('f-capt-ct');
-  if(ctS){const cs=[...new Set(embs.filter(d=>!d.cancelada).map(d=>String(d.contrato)))].sort();const cur=fCt;ctS.innerHTML='<option value="">Todos contratos</option>'+cs.map(c=>`<option ${c===cur?'selected':''}>${c}</option>`).join('');}
-  const ativos=embs.filter(d=>!d.cancelada&&(d.cte||0)>0&&d.transportadora);
-  const f=ativos.filter(d=>(!fTransp||d.transportadora===fTransp)&&(!fCt||String(d.contrato)===fCt)&&(!fEmp||d.empresa===fEmp)&&(!fSt||(fSt==='aberto'&&!d.cte_pago)||(fSt==='pago'&&d.cte_pago)));
+  const ativos=embs.filter(d=>!d.cancelada&&(d.cte||0)>0&&d.transportadora&&(!_empresaFiltro||d.empresa===_empresaFiltro));
+  const transp_n=[...new Set(ativos.map(d=>d.transportadora))].sort();
+  const cts_t=[...new Set(ativos.map(d=>String(d.contrato)))].sort();
+  msFilter('ms-capt-transp', transp_n, 'renderCapTransp', 'Transportadora');
+  msFilter('ms-capt-ct', cts_t, 'renderCapTransp', 'Contrato');
+  const f=ativos.filter(d=>{
+    if(!msMatch('ms-capt-transp', d.transportadora))return false;
+    if(!msMatch('ms-capt-ct', String(d.contrato)))return false;
+    if(fSt==='aberto'&&d.cte_pago)return false;
+    if(fSt==='pago'&&!d.cte_pago)return false;
+    return true;
+  });
   // Cards
   const totTotal=f.reduce((s,d)=>s+(d.cte||0),0);
   const totAberto=f.filter(d=>!d.cte_pago).reduce((s,d)=>s+(d.cte||0),0);
@@ -2287,9 +2276,7 @@ async function toggleCapComPago(embId,comId){
   await saveEmb(embs[idx]);renderCapCom();toast('Status atualizado!');
 }
 function renderCapCom(){
-  const sel=document.getElementById('f-capc-com');
   const fSt=(document.getElementById('f-capc-st')||{value:''}).value;
-  // Montar linhas: uma por (embarque × comissionário) — filtra por empresa
   const linhas=[];
   embs.filter(d=>!d.cancelada&&(!_empresaFiltro||d.empresa===_empresaFiltro)).forEach(d=>{
     (d.comissoes||[]).forEach(c=>{
@@ -2298,14 +2285,17 @@ function renderCapCom(){
       linhas.push({embId:d.id,comId:c.id,nome:c.nome,empresa:d.empresa||'Prime Grãos',comprador:(cts.find(x=>x.numero==d.contrato)||{comprador:'—'}).comprador||'—',contrato:d.contrato,nf:d.nf,embarque:d.embarque,sc_emb:d.sc_emb,valor_sc:c.valor,total,pago});
     });
   });
-  const fCt2=(document.getElementById('f-capc-ct')||{value:''}).value;
-  const fEmp2=_empresaFiltro||(document.getElementById('f-capc-emp')||{value:''}).value;
-  const fCom2=(document.getElementById('f-capc-com')||{value:''}).value;
-  if(sel){const ns=[...new Set(linhas.map(l=>l.nome))].sort();const cur=fCom2;sel.innerHTML='<option value="">Todos comissionários</option>'+ns.map(n=>`<option ${n===cur?'selected':''}>${n}</option>`).join('');}
-  const ctSC=document.getElementById('f-capc-ct');
-  if(ctSC){const cs=[...new Set(embs.filter(d=>!d.cancelada&&(!_empresaFiltro||d.empresa===_empresaFiltro)).map(d=>String(d.contrato)))].sort();const cur=fCt2;ctSC.innerHTML='<option value="">Todos contratos</option>'+cs.map(c=>`<option ${c===cur?'selected':''}>${c}</option>`).join('');}
-  const fCom=(document.getElementById('f-capc-com')||{value:''}).value;
-  const f=linhas.filter(l=>(!fCom||l.nome===fCom)&&(!fCt2||String(l.contrato)===fCt2)&&(!fEmp2||l.empresa===fEmp2)&&(!fSt||(fSt==='aberto'&&!l.pago)||(fSt==='pago'&&l.pago)));
+  const coms_n=[...new Set(linhas.map(l=>l.nome))].sort();
+  const cts_c=[...new Set(linhas.map(l=>String(l.contrato)))].sort();
+  msFilter('ms-capc-com', coms_n, 'renderCapCom', 'Comissionário');
+  msFilter('ms-capc-ct', cts_c, 'renderCapCom', 'Contrato');
+  const f=linhas.filter(l=>{
+    if(!msMatch('ms-capc-com', l.nome))return false;
+    if(!msMatch('ms-capc-ct', String(l.contrato)))return false;
+    if(fSt==='aberto'&&l.pago)return false;
+    if(fSt==='pago'&&!l.pago)return false;
+    return true;
+  });
   const totTotal=f.reduce((s,l)=>s+l.total,0);
   const totAberto=f.filter(l=>!l.pago).reduce((s,l)=>s+l.total,0);
   const totPago=f.filter(l=>l.pago).reduce((s,l)=>s+l.total,0);
@@ -2530,7 +2520,6 @@ function renderEmbarques(){
   const prods=[...new Set(embs.map(d=>d.produto).filter(Boolean))].sort();
   const ctNums=[...new Set(embs.map(d=>String(d.contrato)).filter(Boolean))].sort();
   const status=['Em aberto','Pago','Cancelada'];
-  msFilter('ms-emb-emp', emps, 'renderEmbarques', 'Empresa');
   msFilter('ms-emb-prod', prods, 'renderEmbarques', 'Produto');
   msFilter('ms-emb-ct', ctNums, 'renderEmbarques', 'Contrato');
   msFilter('ms-emb-st', status, 'renderEmbarques', 'Status');
