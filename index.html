@@ -2115,8 +2115,12 @@ async function salvarEdit(){
   e.frete_sc=rt>0?(rt/1000*60)/60:0;e.frete_total=(pl/1000)*rt;
   e.total_compra=e.sc_emb*co;e.total_venda=e.sc_ent*ve;
   e.comp_desc=re-e.total_venda;e.rkg=ve/60;e.imp_desc=(imp)*e.rkg;
-  e.fundo=e.tem_fundo?e.total_venda*0.05:0;
   const ctEd=cts.find(c=>c.numero==e.contrato);
+  // Fundo: herda do contrato se não marcado no embarque
+  const temFundoCt=!!(ctEd&&ctEd.tem_fundo);
+  const fundoPctCt=(ctEd&&ctEd.fundo_pct)||5;
+  const temFundo=e.tem_fundo||temFundoCt;
+  e.fundo=temFundo?e.total_venda*(fundoPctCt/100):0;
   const comsVE=(ctEd&&ctEd.comissionarios_ct)||[];
   e.com_total=comsVE.reduce((s,c)=>s+((c.valor||0)*e.sc_emb),0);
   e.lucro=e.total_venda-e.total_compra-e.frete_total-cn-ct-e.com_total-e.fundo-im-df-e.imp_desc-e.desc_quebra-ou+e.comp_desc;
