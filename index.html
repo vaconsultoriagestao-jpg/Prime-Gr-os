@@ -2733,7 +2733,7 @@ function renderFluxo(){
   if(campoB&&!campoB.matches(':focus'))campoB.value=saldoBanco||'';
 
   // Despesas escritório — filtra por empresa
-  const totalDespesas=despesas.filter(d=>!emp||(d.empresa?d.empresa===emp:emp==="Prime Grãos")).reduce((s,d)=>s+(d.valor||0),0);
+  const totalDespesas=despesas.filter(d=>!emp||d.empresa===emp).reduce((s,d)=>s+(d.valor||0),0);
 
 
   // Parceiros (exceto Banco) — filtra por empresa
@@ -3289,7 +3289,7 @@ function renderDesp(){
   if(empSel&&emp&&!empSel.dataset.touched)empSel.value=emp;
   const cats=[...new Set(despesas.map(d=>d.categoria).filter(Boolean))].sort();
   msFilter('ms-desp-cat', cats, 'renderDesp', 'Categoria');
-  const f=despesas.filter(d=>msMatch('ms-desp-cat',d.categoria||'')&&(!emp||(d.empresa?d.empresa===emp:emp==="Prime Grãos")));
+  const f=despesas.filter(d=>msMatch('ms-desp-cat',d.categoria||'')&&(!emp||d.empresa===emp));
   const total=f.reduce((s,d)=>s+(d.valor||0),0);
   document.getElementById('desp-cards').innerHTML=`
     <div class="stat-card red"><div class="s-label">Total despesas</div><div class="s-value">${fmt(total)}</div></div>
