@@ -628,8 +628,7 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
       <div class="table-header">
         <h3>Lista de embarques</h3>
         <div class="table-filters">
-          <input class="filter-input" id="f-emb-q" placeholder="Contrato, NF, motorista..." oninput="renderEmbarques()" style="width:190px">
-          <input class="filter-input" id="f-emb-q" placeholder="Buscar..." oninput="renderEmbarques()" style="width:150px">
+          <input class="filter-input" id="f-emb-q" placeholder="Contrato, NF, motorista..." oninput="renderEmbarques()" style="width:220px">
         <div id="ms-emb-prod" style="display:inline-block"></div>
           <div id="ms-emb-ct" style="display:inline-block"></div>
           <div id="ms-emb-transp" style="display:inline-block"></div>
@@ -2566,7 +2565,7 @@ function renderEmbarques(){
   msFilter('ms-emb-ct', ctNums, 'renderEmbarques', 'Contrato');
   msFilter('ms-emb-st', status, 'renderEmbarques', 'Status');
   const f=_embsFilt.filter(d=>{
-    if(q&&!String(d.contrato||'').includes(q)&&!String(d.nf||'').toLowerCase().includes(q)&&!String(d.motorista||'').toLowerCase().includes(q))return false;
+    if(q&&!String(d.contrato||'').toLowerCase().includes(q)&&!String(d.nf||'').toLowerCase().includes(q)&&!String(d.motorista||'').toLowerCase().includes(q))return false;
     if(!_empresaFiltro||d.empresa===_empresaFiltro){}else return false;
     if(!msMatch('ms-emb-prod', d.produto))return false;
     if(!msMatch('ms-emb-ct', String(d.contrato)))return false;
@@ -3588,7 +3587,7 @@ function exportEmb(tipo='csv'){
     if(selecionados.length&&!selecionados.includes(String(d.id)))return false;
     const q=(document.getElementById('f-emb-q')||{value:''}).value.toLowerCase();
     const canc=(document.getElementById('f-emb-canc')||{value:''}).value;
-    if(q&&!String(d.contrato||'').includes(q)&&!String(d.nf||'').toLowerCase().includes(q)&&!String(d.motorista||'').toLowerCase().includes(q))return false;
+    if(q&&!String(d.contrato||'').toLowerCase().includes(q)&&!String(d.nf||'').toLowerCase().includes(q)&&!String(d.motorista||'').toLowerCase().includes(q))return false;
     if(!_empresaFiltro||d.empresa===_empresaFiltro){}else return false;
     if(!msMatch('ms-emb-prod', d.produto))return false;
     if(!msMatch('ms-emb-ct', String(d.contrato)))return false;
