@@ -2659,9 +2659,8 @@ function sortTable(tbodyId, colIndex, isNumeric=false){
 // ===== FLUXO DE CAIXA =====
 async function saveFluxo(){
   try{
-    await fetch(`${SB_URL}/rest/v1/fluxo?id=gte.0`,{method:'DELETE',headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}});
     if(fluxo.length){
-      const r=await fetch(`${SB_URL}/rest/v1/fluxo`,{method:'POST',headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify(fluxo.map(f=>({id:f.id,data:f})))});
+      const r=await fetch(`${SB_URL}/rest/v1/fluxo`,{method:'POST',headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=minimal'},body:JSON.stringify(fluxo.map(f=>({id:f.id,data:f})))});
       if(!r.ok){const t=await r.text();console.error('saveFluxo:',t);}
     }
   }catch(e){console.error(e);}
@@ -3276,9 +3275,9 @@ function exportARecParc(tipo){
 // ===== DESPESAS =====
 async function saveDesp(){
   try{
-    await fetch(`${SB_URL}/rest/v1/despesas?id=gte.0`,{method:'DELETE',headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}});
+    // Upsert individual - nao apaga despesas de outras empresas
     if(despesas.length){
-      await fetch(`${SB_URL}/rest/v1/despesas`,{method:'POST',headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify(despesas.map(d=>({id:d.id,data:d})))});
+      await fetch(`${SB_URL}/rest/v1/despesas`,{method:'POST',headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=minimal'},body:JSON.stringify(despesas.map(d=>({id:d.id,data:d})))});
     }
   }catch(e){console.error(e);}
 }
