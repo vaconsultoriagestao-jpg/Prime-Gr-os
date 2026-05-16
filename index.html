@@ -1310,8 +1310,7 @@ async function save(){
   // Usado apenas para operações em lote (editar/reordenar)
   showLoading('Salvando...');
   try{
-    await fetch(`${SB_URL}/rest/v1/embarques?id=gte.0`,{method:'DELETE',headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}});
-    if(embs.length){await sbPost('embarques',embs.map(e=>({id:e.id,data:e})));}
+    if(embs.length){await fetch(`${SB_URL}/rest/v1/embarques`,{method:'POST',headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=minimal'},body:JSON.stringify(embs.map(e=>({id:e.id,data:e})))});}
   }catch(e){console.error(e);}
   hideLoading();
 }
@@ -1334,23 +1333,20 @@ async function deleteEmb(id){
 }
 async function saveCts(){
   try{
-    await fetch(`${SB_URL}/rest/v1/contratos?id=gte.0`,{method:'DELETE',headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}});
     if(cts.length){
-      const r=await fetch(`${SB_URL}/rest/v1/contratos`,{method:'POST',headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify(cts.map(c=>({id:c.id,data:c})))});
+      const r=await fetch(`${SB_URL}/rest/v1/contratos`,{method:'POST',headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=minimal'},body:JSON.stringify(cts.map(c=>({id:c.id,data:c})))});
       if(!r.ok){const t=await r.text();console.error('saveCts error:',t);}
     }
   }catch(e){console.error('saveCts exception:',e);}
 }
 async function saveTransp(){
   try{
-    await fetch(`${SB_URL}/rest/v1/transportadoras?id=gte.0`,{method:'DELETE',headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}});
-    if(transp.length)await sbPost('transportadoras',transp.map(t=>({id:t.id,data:t})));
+    if(transp.length)await fetch(`${SB_URL}/rest/v1/transportadoras`,{method:'POST',headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=minimal'},body:JSON.stringify(transp.map(t=>({id:t.id,data:t})))});
   }catch(e){console.error(e);}
 }
 async function saveComs(){
   try{
-    await fetch(`${SB_URL}/rest/v1/comissionarios?id=gte.0`,{method:'DELETE',headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}});
-    if(coms.length)await sbPost('comissionarios',coms.map(c=>({id:c.id,data:c})));
+    if(coms.length)await fetch(`${SB_URL}/rest/v1/comissionarios`,{method:'POST',headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=minimal'},body:JSON.stringify(coms.map(c=>({id:c.id,data:c})))});
   }catch(e){console.error(e);}
 }
 async function saveCfg(){
@@ -1383,8 +1379,7 @@ async function saveUsers(){
 }
 async function saveForn(){
   try{
-    await fetch(`${SB_URL}/rest/v1/fornecedores?id=gte.0`,{method:'DELETE',headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}});
-    if(forn.length)await sbPost('fornecedores',forn.map(f=>({id:f.id,data:f})));
+    if(forn.length)await fetch(`${SB_URL}/rest/v1/fornecedores`,{method:'POST',headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=minimal'},body:JSON.stringify(forn.map(f=>({id:f.id,data:f})))});
   }catch(e){console.error(e);}
 }
 async function load(){
@@ -2961,11 +2956,13 @@ async function delFluxo(id){
 }
 function exportFluxo(tipo='csv'){
   if(!fluxo.length){toast('Nenhum lançamento.',true);return;}
+  const _emp=_empresaFiltro;
   const parceiroSel=(document.getElementById('flx-parceiro-sel')||{value:''}).value;
   const mes=(document.getElementById('flx-mes')||{value:''}).value;
   const ano=(document.getElementById('flx-ano')||{value:'2026'}).value;
   const tipoFiltro=(document.getElementById('flx-tipo')||{value:''}).value;
   const f=fluxo.filter(l=>{
+    if(_emp&&l.empresa!==_emp)return false;
     if(tipoFiltro&&l.tipo!==tipoFiltro)return false;
     if(parceiroSel&&l.parceiro!==parceiroSel)return false;
     if(!l.data)return false;
@@ -3341,7 +3338,7 @@ async function delDesp(id){
 }
 function exportDesp(tipo){
   const cab=['Data','Categoria','Descrição','Valor R$','Obs','Lançado por'];
-  const rows=despesas.map(d=>[d.data,d.categoria,d.descricao,(d.valor||0).toFixed(2),d.obs,d.lancado_por]);
+  const rows=despesas.filter(d=>!_empresaFiltro||d.empresa===_empresaFiltro).map(d=>[d.data,d.categoria,d.descricao,(d.valor||0).toFixed(2),d.obs,d.lancado_por]);
   tipo==='pdf'?gerarPDF('Despesas',cab,rows,'despesas'):gerarCSV(cab,rows,'despesas');
 }
 
