@@ -3407,10 +3407,16 @@ function exportPainel(tipo){
 }
 function exportCapNota(tipo){
   const selecionados=getSelected('tbody-capn');
-  const fForn=(document.getElementById('f-capn-forn')||{value:''}).value;
   const fSt=(document.getElementById('f-capn-st')||{value:''}).value;
-  const f=embs.filter(d=>!d.cancelada&&(d.cn_val||0)>0&&d.fornecedor_nota).filter(d=>(!selecionados.length||selecionados.includes(String(d.id)))&&(!fForn||d.fornecedor_nota===fForn)&&(!fSt||(fSt==='aberto'&&!d.nota_pago)||(fSt==='pago'&&d.nota_pago)));
-  if(!f.length){toast('Nenhum dado.',true);return;}
+  const ativos=embs.filter(d=>!d.cancelada&&(d.cn_val||0)>0&&d.fornecedor_nota&&(!_empresaFiltro||d.empresa===_empresaFiltro));
+  const f=ativos.filter(d=>{
+    if(selecionados.length&&!selecionados.includes(String(d.id)))return false;
+    if(!msMatch('ms-capn-forn', d.fornecedor_nota))return false;
+    if(!msMatch('ms-capn-ct', String(d.contrato)))return false;
+    if(fSt==='aberto'&&d.nota_pago)return false;
+    if(fSt==='pago'&&!d.nota_pago)return false;
+    return true;
+  });
   const cab=['Fornecedor','Contrato','NF','Motorista','Embarque','Sc emb.','Custo R$/sc','Total R$','Status'];
   const rows=f.map(d=>[d.fornecedor_nota,d.contrato,d.nf,d.motorista,d.embarque,(d.sc_emb||0).toFixed(2),(d.cn_sc||0).toFixed(2),(d.cn_val||0).toFixed(2),d.nota_pago?'Pago':'Em aberto']);
   if(tipo==='pdf'){
@@ -3487,9 +3493,16 @@ function gerarPDFComTotais(titulo, cab, rows, nome, dados, campovalor, campopago
 
 function exportCapTransp(tipo){
   const selecionados=getSelected('tbody-capt');
-  const fT=(document.getElementById('f-capt-transp')||{value:''}).value;
   const fSt=(document.getElementById('f-capt-st')||{value:''}).value;
-  const f=embs.filter(d=>!d.cancelada&&(d.cte||0)>0&&d.transportadora).filter(d=>(!selecionados.length||selecionados.includes(String(d.id)))&&(!fT||d.transportadora===fT)&&(!fSt||(fSt==='aberto'&&!d.cte_pago)||(fSt==='pago'&&d.cte_pago)));
+  const ativos=embs.filter(d=>!d.cancelada&&(d.cte||0)>0&&d.transportadora&&(!_empresaFiltro||d.empresa===_empresaFiltro));
+  const f=ativos.filter(d=>{
+    if(selecionados.length&&!selecionados.includes(String(d.id)))return false;
+    if(!msMatch('ms-capt-transp', d.transportadora))return false;
+    if(!msMatch('ms-capt-ct', String(d.contrato)))return false;
+    if(fSt==='aberto'&&d.cte_pago)return false;
+    if(fSt==='pago'&&!d.cte_pago)return false;
+    return true;
+  });
   if(!f.length){toast('Nenhum dado.',true);return;}
   const cab=['Transportadora','Contrato','NF','Motorista','Embarque','Sc emb.','CTE R$/sc','CTE Total','Status'];
   const rows=f.map(d=>[d.transportadora,d.contrato,d.nf,d.motorista,d.embarque,(d.sc_emb||0).toFixed(2),(d.cte_sc||0).toFixed(2),(d.cte||0).toFixed(2),d.cte_pago?'Pago':'Em aberto']);
@@ -3501,7 +3514,6 @@ function exportCapTransp(tipo){
 }
 
 function exportCapCom(tipo){
-  const fCom=(document.getElementById('f-capc-com')||{value:''}).value;
   const fSt=(document.getElementById('f-capc-st')||{value:''}).value;
   const linhas=[];
   embs.filter(d=>!d.cancelada&&(!_empresaFiltro||d.empresa===_empresaFiltro)).forEach(d=>{
@@ -3510,7 +3522,13 @@ function exportCapCom(tipo){
       linhas.push({nome:c.nome,comprador:(cts.find(x=>x.numero==d.contrato)||{comprador:'—'}).comprador||'—',contrato:d.contrato,nf:d.nf,embarque:d.embarque,sc_emb:d.sc_emb,valor_sc:c.valor,total:(c.valor||0)*(d.sc_emb||0),pago});
     });
   });
-  const f=linhas.filter(l=>(!fCom||l.nome===fCom)&&(!fSt||(fSt==='aberto'&&!l.pago)||(fSt==='pago'&&l.pago)));
+  const f=linhas.filter(l=>{
+    if(!msMatch('ms-capc-com', l.nome))return false;
+    if(!msMatch('ms-capc-ct', String(l.contrato)))return false;
+    if(fSt==='aberto'&&l.pago)return false;
+    if(fSt==='pago'&&!l.pago)return false;
+    return true;
+  });
   if(!f.length){toast('Nenhum dado.',true);return;}
   const cab=['Comissionário','Comprador','Contrato','NF','Embarque','Sc emb.','R$/sc','Total R$','Status'];
   const rows=f.map(l=>[l.nome,l.comprador,l.contrato,l.nf,l.embarque,(l.sc_emb||0).toFixed(2),(l.valor_sc||0).toFixed(2),(l.total||0).toFixed(2),l.pago?'Pago':'Em aberto']);
