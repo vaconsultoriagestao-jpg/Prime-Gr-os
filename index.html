@@ -2089,7 +2089,8 @@ const editCampos=[
   {id:'_fundo',l:'Possui fundo?',t:'chkfundo'},
 ];
 function abrirEdit(id){
-  const e=embs.find(d=>d.id===id);if(!e)return;editEmb=id;
+  const sid=String(id);
+  const e=embs.find(d=>String(d.id)===sid);if(!e)return;editEmb=e.id;
   document.getElementById('edit-grid').innerHTML=editCampos.map(c=>{
     if(c.t==='chk')return`<div class="fg" style="grid-column:1/-1"><label style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" id="ed__canc" ${e.cancelada?'checked':''} style="accent-color:var(--red);width:16px;height:16px"> Cancelada / Recusada</label></div>`;
     if(c.t==='chkfundo')return`<div class="fg" style="grid-column:1/-1"><label style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" id="ed__fundo" ${e.tem_fundo?'checked':''} style="accent-color:var(--green);width:15px;height:15px"> Possui desconto de fundo (5%)</label></div>`;
@@ -2101,7 +2102,7 @@ function abrirEdit(id){
 }
 function fecharModalEdit(){document.getElementById('modal-edit').style.display='none';editEmb=null;}
 async function salvarEdit(){
-  const idx=embs.findIndex(d=>d.id===editEmb);if(idx===-1)return;
+  const idx=embs.findIndex(d=>String(d.id)===String(editEmb));if(idx===-1)return;
   const e={...embs[idx]};
   editCampos.forEach(c=>{
     if(c.t==='chk'){const el=document.getElementById('ed__canc');if(el)e.cancelada=el.checked;return;}
@@ -2138,7 +2139,7 @@ async function delEmb(id){
   if(!usuarioLogado||usuarioLogado.perfil!=='admin'){toast('Apenas o administrador pode excluir embarques!',true);return;}
   if(!confirm('Remover este embarque? Esta ação não pode ser desfeita.'))return;
   await deleteEmb(id);
-  embs=embs.filter(d=>d.id!==id);
+  embs=embs.filter(d=>String(d.id)!==String(id));
   renderEmbarques();renderPainel();toast('Embarque removido.');
 }
 // ===== FORNECEDORES =====
@@ -2578,7 +2579,7 @@ function renderEmbarques(){
     return true;
   });
   document.getElementById('tbody-emb').innerHTML=f.length
-    ?f.map(d=>{const sp=sprazo(d);return`<tr class="${d.cancelada?'cancelada':''}" ondblclick="abrirEdit(${d.id})" style="cursor:pointer" title="Duplo clique para editar"><td><input type="checkbox" value="${d.id}" onchange="updateSelCount('tbody-emb')" style="accent-color:var(--green)" onclick="event.stopPropagation()"></td>
+    ?f.map(d=>{const sp=sprazo(d);return`<tr class="${d.cancelada?'cancelada':''}" ondblclick="abrirEdit('${d.id}')" style="cursor:pointer" title="Duplo clique para editar"><td><input type="checkbox" value="${d.id}" onchange="updateSelCount('tbody-emb')" style="accent-color:var(--green)" onclick="event.stopPropagation()"></td>
       <td><strong>${d.contrato}</strong></td>
       <td><span class="badge ${d.empresa==='ZF Grãos'?'badge-blue':'badge-green'}">${d.empresa||'Prime Grãos'}</span></td>
       <td>${d.nf||'—'}</td>
@@ -2618,8 +2619,8 @@ function renderEmbarques(){
       <td style="color:var(--text-faint);font-size:11px">${d.lancado_por||'—'}</td>
       <td>${d.obs||'—'}</td>
       <td style="display:flex;gap:4px;padding:6px 8px">
-        <button class="btn-edit" onclick="abrirEdit(${d.id})">Editar</button>
-        <button class="btn btn-danger" onclick="delEmb(${d.id})">×</button>
+        <button class="btn-edit" onclick="abrirEdit('${d.id}')">Editar</button>
+        <button class="btn btn-danger" onclick="delEmb('${d.id}')">×</button>
       </td></tr>`;}).join('')
     :'<tr><td colspan="45" class="empty-state">Nenhum embarque encontrado.</td></tr>';
 }
@@ -3994,7 +3995,7 @@ function gerarFechamento(){
   const embAtivos=embs.filter(d=>!d.cancelada&&selStr.includes(String(d.contrato).trim())&&(!_empresaFiltro||d.empresa===_empresaFiltro));
   const pendentes=embAtivos.filter(d=>!(d.recebido>0));
   document.getElementById('tbody-pend').innerHTML=pendentes.length
-    ?pendentes.map(d=>{const sp=sprazo(d);const pv=d.total_venda-(d.recebido||0);return`<tr ondblclick="abrirEdit(${d.id})" style="cursor:pointer" title="Duplo clique para editar"><td><input type="checkbox" value="${d.id}" onchange="updateSelCount('tbody-frete')" style="accent-color:var(--green)" onclick="event.stopPropagation()"></td>
+    ?pendentes.map(d=>{const sp=sprazo(d);const pv=d.total_venda-(d.recebido||0);return`<tr ondblclick="abrirEdit('${d.id}')" style="cursor:pointer" title="Duplo clique para editar"><td><input type="checkbox" value="${d.id}" onchange="updateSelCount('tbody-frete')" style="accent-color:var(--green)" onclick="event.stopPropagation()"></td>
       <td><strong>${d.contrato}</strong></td><td>${d.nf||'—'}</td><td>${d.motorista||'—'}</td>
       <td>${d.descarga||'—'}</td><td>${d.prazo_rec||'—'}</td>
       <td><span class="badge ${sp.badge}">${sp.txt}</span></td>
