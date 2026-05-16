@@ -1872,7 +1872,7 @@ function preencherDoCt(){
   document.getElementById('f_tem_fundo').checked=tf;
   document.getElementById('f_fundo_campos').style.display=tf?'block':'none';
   // Mostrar progresso de sacas
-  const scEmbarcadas=embs.filter(d=>!d.cancelada&&d.contrato==c.numero).reduce((s,d)=>s+(d.sc_emb||0),0);
+  const scEmbarcadas=embs.filter(d=>!d.cancelada&&d.contrato==c.numero&&(!_empresaFiltro||d.empresa===_empresaFiltro)).reduce((s,d)=>s+(d.sc_emb||0),0);
   const scFaltantes=Math.max(0,(c.qtd||0)-scEmbarcadas);
   const pct=c.qtd>0?Math.round(scEmbarcadas/c.qtd*100):0;
   const progressEl=document.getElementById('f_sc_progress');
@@ -2214,7 +2214,7 @@ function renderSaidas(){
   const ct=(document.getElementById('f-saidas-ct')||{value:''}).value;
   const emp=(document.getElementById('f-saidas-emp')||{value:''}).value||_empresaFiltro;
   const ctS=document.getElementById('f-saidas-ct');
-  if(ctS){const cs=[...new Set(embs.filter(d=>!d.cancelada).map(d=>d.contrato))].sort();const cur=ctS.value;ctS.innerHTML='<option value="">Todos contratos</option>'+cs.map(c=>`<option ${c===cur?'selected':''}>${c}</option>`).join('');}
+  if(ctS){const cs=[...new Set(embs.filter(d=>!d.cancelada&&(!_empresaFiltro||d.empresa===_empresaFiltro)).map(d=>d.contrato))].sort();const cur=ctS.value;ctS.innerHTML='<option value="">Todos contratos</option>'+cs.map(c=>`<option ${c===cur?'selected':''}>${c}</option>`).join('');}
   const f=embs.filter(d=>!d.cancelada&&d.embarque).filter(d=>{
     if(prod&&d.produto!==prod)return false;
     if(ct&&d.contrato!=ct)return false;
@@ -2250,7 +2250,7 @@ function renderSaidas(){
 function exportSaidas(tipo='csv'){
   const mes=(document.getElementById('f-saidas-mes')||{value:''}).value;
   const ano=(document.getElementById('f-saidas-ano')||{value:'2026'}).value;
-  const f=embs.filter(d=>!d.cancelada&&d.embarque).filter(d=>{const [y,m]=(d.embarque||'').split('-');if(ano&&y!==ano)return false;if(mes&&m!==mes)return false;return true;});
+  const f=embs.filter(d=>!d.cancelada&&d.embarque&&(!_empresaFiltro||d.empresa===_empresaFiltro)).filter(d=>{const [y,m]=(d.embarque||'').split('-');if(ano&&y!==ano)return false;if(mes&&m!==mes)return false;return true;});
   if(!f.length){toast('Nenhum dado.',true);return;}
   const cab=['Data Embarque','Contrato','Empresa','Comprador','Produto','NF','Motorista','Peso Liq (kg)','Sc Embarcadas','Sc Entregues'];
   const rows=f.map(d=>[d.embarque,d.contrato,d.empresa,(cts.find(c=>c.numero==d.contrato)||{comprador:'—'}).comprador||'—',d.produto,d.nf,d.motorista,(d.pliq||0).toFixed(0),(d.sc_emb||0).toFixed(2),(d.sc_ent||0).toFixed(2)]);
@@ -2352,7 +2352,7 @@ function renderCapCom(){
 }
 
 function exportFrete(tipo='csv'){
-  const ativos=embs.filter(d=>!d.cancelada&&(d.frete_total||0)>0);
+  const ativos=embs.filter(d=>!d.cancelada&&(d.frete_total||0)>0&&(!_empresaFiltro||d.empresa===_empresaFiltro));
   if(!ativos.length){toast('Nenhum dado.',true);return;}
   const cab=['Motorista','CPF','Contrato','NF','Embarque','Frete Total','80% À vista','Pago 80%','20% Descarga','Pago 20%','Desc. quebra','Saldo'];
   const rows=ativos.map(d=>{
@@ -2389,7 +2389,7 @@ function renderFrete(){
   const ano=(document.getElementById('f-frete-ano')||{value:''}).value;
   const st=(document.getElementById('f-frete-status')||{value:''}).value;
   const ctS=document.getElementById('f-frete-ct');
-  if(ctS){const cs=[...new Set(embs.filter(d=>!_empresaFiltro||d.empresa===_empresaFiltro).map(d=>d.contrato))].sort();const cur=ctS.value;ctS.innerHTML='<option value="">Todos contratos</option>'+cs.map(c=>`<option ${c===cur?'selected':''}>${c}</option>`).join('');}
+  if(ctS){const cs=[...new Set(embs.filter(d=>!d.cancelada&&(!_empresaFiltro||d.empresa===_empresaFiltro)).map(d=>d.contrato))].sort();const cur=ctS.value;ctS.innerHTML='<option value="">Todos contratos</option>'+cs.map(c=>`<option ${c===cur?'selected':''}>${c}</option>`).join('');}
   const ativos=embs.filter(d=>!d.cancelada&&(d.frete_total||0)>0&&(!_empresaFiltro||d.empresa===_empresaFiltro));
   const f=ativos.filter(d=>{
     if(q&&!(d.motorista&&d.motorista.toLowerCase().includes(q))&&!(d.cpf&&d.cpf.includes(q))&&!String(d.contrato||'').includes(q))return false;
@@ -2447,11 +2447,12 @@ function renderPainel(){
   const fEmp=(document.getElementById('f-painel-emp')||{value:''}).value||_empresaFiltro;
   // Update contrato filter
   const ctS=document.getElementById('f-painel-ct');
-  if(ctS){const cs=[...new Set(embs.filter(d=>!d.cancelada).map(d=>d.contrato))].sort();const cur=ctS.value;ctS.innerHTML='<option value="">Todos contratos</option>'+cs.map(c=>`<option ${c===cur?'selected':''}>${c}</option>`).join('');}
+  if(ctS){const cs=[...new Set(embs.filter(d=>!d.cancelada&&(!_empresaFiltro||d.empresa===_empresaFiltro)).map(d=>d.contrato))].sort();const cur=ctS.value;ctS.innerHTML='<option value="">Todos contratos</option>'+cs.map(c=>`<option ${c===cur?'selected':''}>${c}</option>`).join('');}
 
   // Alerta notas pendentes de recebimento
   const notasPend=embs.filter(d=>{
     if(d.cancelada||d.data_rec)return false;
+    if(_empresaFiltro&&d.empresa!==_empresaFiltro)return false;
     if(!d.descarga)return false;
     const ctO=cts.find(c=>c.numero==d.contrato);
     const ph=(ctO&&ctO.prazo)||cfg.prazo||72;
@@ -2504,7 +2505,7 @@ function renderPainel(){
     }
   }
 
-  let ativos=embs.filter(d=>!d.cancelada);
+  let ativos=embs.filter(d=>!d.cancelada&&(!_empresaFiltro||d.empresa===_empresaFiltro));
   if(fEmp)ativos=ativos.filter(d=>d.empresa===fEmp);
 
   const lucroTot=ativos.reduce((s,d)=>s+(d.lucro||0),0);
@@ -2549,15 +2550,14 @@ function renderEmbarques(){
   const q=(document.getElementById('f-emb-q')||{value:''}).value.toLowerCase();
   const canc=(document.getElementById('f-emb-canc')||{value:''}).value;
   // Init msFilters
-  const emps=[...new Set(embs.map(d=>d.empresa).filter(Boolean))].sort();
-  const prods=[...new Set(embs.map(d=>d.produto).filter(Boolean))].sort();
-  const ctNums=[...new Set(embs.map(d=>String(d.contrato)).filter(Boolean))].sort();
+  const _embsFilt=embs.filter(d=>!_empresaFiltro||d.empresa===_empresaFiltro);
+  const prods=[...new Set(_embsFilt.map(d=>d.produto).filter(Boolean))].sort();
+  const ctNums=[...new Set(_embsFilt.map(d=>String(d.contrato)).filter(Boolean))].sort();
   const status=['Em aberto','Pago','Cancelada'];
   msFilter('ms-emb-prod', prods, 'renderEmbarques', 'Produto');
   msFilter('ms-emb-ct', ctNums, 'renderEmbarques', 'Contrato');
   msFilter('ms-emb-st', status, 'renderEmbarques', 'Status');
-  const f=embs.filter(d=>{
-    if(_empresaFiltro&&d.empresa!==_empresaFiltro)return false;
+  const f=_embsFilt.filter(d=>{
     if(q&&!String(d.contrato||'').includes(q)&&!String(d.nf||'').toLowerCase().includes(q)&&!String(d.motorista||'').toLowerCase().includes(q))return false;
     if(!msMatch('ms-emb-emp', d.empresa||'Prime Grãos'))return false;
     if(!msMatch('ms-emb-prod', d.produto))return false;
@@ -3682,7 +3682,7 @@ function initFechContrato(){
   // Filtrar contratos por status de recebimento
   const ctsFiltrados=ctNums.filter(ct=>{
     if(!statusFiltro)return true;
-    const its=embs.filter(d=>!d.cancelada&&String(d.contrato)===String(ct));
+    const its=embs.filter(d=>!d.cancelada&&String(d.contrato)===String(ct)&&(!_empresaFiltro||d.empresa===_empresaFiltro));
     const totalVenda=its.reduce((s,d)=>s+(d.total_venda||0),0);
     const totalRecebido=its.reduce((s,d)=>s+(d.recebido||0),0);
     const recebido100=totalVenda>0&&totalRecebido>=totalVenda*0.99;
@@ -3695,7 +3695,7 @@ function initFechContrato(){
 
   box.innerHTML=ctsFiltrados.length?ctsFiltrados.map(ct=>{
     const co=cts.find(c=>c.numero==ct);
-    const its=embs.filter(d=>!d.cancelada&&String(d.contrato)===String(ct));
+    const its=embs.filter(d=>!d.cancelada&&String(d.contrato)===String(ct)&&(!_empresaFiltro||d.empresa===_empresaFiltro));
     const totalVenda=its.reduce((s,d)=>s+(d.total_venda||0),0);
     const totalRecebido=its.reduce((s,d)=>s+(d.recebido||0),0);
     const recebido100=totalVenda>0&&totalRecebido>=totalVenda*0.99;
@@ -3725,7 +3725,7 @@ function gerarFechContrato(){
   if(!sels.length){document.getElementById('fc-result').style.display='none';document.getElementById('fc-vazio').style.display='block';return;}
   document.getElementById('fc-result').style.display='block';
   document.getElementById('fc-vazio').style.display='none';
-  const its=embs.filter(d=>!d.cancelada&&sels.map(String).includes(String(d.contrato)));
+  const its=embs.filter(d=>!d.cancelada&&sels.map(String).includes(String(d.contrato))&&(!_empresaFiltro||d.empresa===_empresaFiltro));
   // Para múltiplos contratos, pega o primeiro ctObj para referência
   const ctObj=sels.length===1?cts.find(c=>c.numero==sels[0]):null;
   // Totais
@@ -3877,7 +3877,7 @@ function gerarFechContrato(){
 function exportFechContrato(tipo='csv'){
   const sels=[...document.querySelectorAll('#fc-ct-checks input[type=checkbox]:checked')].map(cb=>cb.value);
   if(!sels.length){toast('Selecione ao menos um contrato!',true);return;}
-  const its=embs.filter(d=>!d.cancelada&&sels.map(String).includes(String(d.contrato)));
+  const its=embs.filter(d=>!d.cancelada&&sels.map(String).includes(String(d.contrato))&&(!_empresaFiltro||d.empresa===_empresaFiltro));
   const total_venda=its.reduce((s,d)=>s+(d.total_venda||0),0);
   const total_compra=its.reduce((s,d)=>s+(d.total_compra||0),0);
   const frete_total=its.reduce((s,d)=>s+(d.frete_total||0),0);
@@ -3984,7 +3984,7 @@ function gerarFechamento(){
   `;
   // Notas com recebimento pendente — TODAS sem recebimento dos contratos selecionados
   const selStr=sel.map(s=>String(s).trim());
-  const embAtivos=embs.filter(d=>!d.cancelada&&selStr.includes(String(d.contrato).trim()));
+  const embAtivos=embs.filter(d=>!d.cancelada&&selStr.includes(String(d.contrato).trim())&&(!_empresaFiltro||d.empresa===_empresaFiltro));
   const pendentes=embAtivos.filter(d=>!(d.recebido>0));
   document.getElementById('tbody-pend').innerHTML=pendentes.length
     ?pendentes.map(d=>{const sp=sprazo(d);const pv=d.total_venda-(d.recebido||0);return`<tr ondblclick="abrirEdit(${d.id})" style="cursor:pointer" title="Duplo clique para editar"><td><input type="checkbox" value="${d.id}" onchange="updateSelCount('tbody-frete')" style="accent-color:var(--green)" onclick="event.stopPropagation()"></td>
