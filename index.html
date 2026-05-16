@@ -1611,12 +1611,23 @@ async function delUsuario(id){
   usuarios=usuarios.filter(x=>x.id!==id);await saveUsers();renderUsuarios();toast('Removido.');
 }
 async function trocarMinhaSenha(){
-  const sa=document.getElementById('cfg_sa').value,sn=document.getElementById('cfg_sn').value;
+  const sa=document.getElementById('cfg_sa').value.trim();
+  const sn=document.getElementById('cfg_sn').value.trim();
   if(!sa||!sn){toast('Preencha as senhas!',true);return;}
-  if(sa!==(usuarioLogado&&usuarioLogado.senha)){toast('Senha atual incorreta!',true);return;}
+  // Busca senha atual direto do banco para garantir que está atualizada
+  try{
+    const r=await fetch(`${SB_URL}/rest/v1/usuarios?id=eq.${usuarioLogado.id}`,{headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}});
+    const d=await r.json();
+    if(!d||!d[0]){toast('Erro ao verificar usuário!',true);return;}
+    const senhaAtual=d[0].data&&d[0].data.senha;
+    if(sa!==senhaAtual){toast('Senha atual incorreta!',true);return;}
+  }catch(e){toast('Erro ao verificar senha!',true);return;}
   usuarios=usuarios.map(x=>x.id===usuarioLogado.id?{...x,senha:sn}:x);
   usuarioLogado={...usuarioLogado,senha:sn};
-  await saveUsers();document.getElementById('cfg_sa').value='';document.getElementById('cfg_sn').value='';toast('Senha alterada!');
+  await saveUsers();
+  document.getElementById('cfg_sa').value='';
+  document.getElementById('cfg_sn').value='';
+  toast('Senha alterada com sucesso!');
 }
 
 
