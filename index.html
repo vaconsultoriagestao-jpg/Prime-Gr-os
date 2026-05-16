@@ -2881,11 +2881,12 @@ function renderFluxo(){
     <td></td>
   </tr>`;
 
-  // Tabela despesas escritório
+  // Tabela despesas escritório — filtrada por empresa
   const despEl=document.getElementById('tbody-flx-desp');
+  const despFiltradas=despesas.filter(d=>!emp||d.empresa===emp);
   if(despEl){
-    despEl.innerHTML=despesas.length
-      ?[...despesas].sort((a,b)=>b.data>a.data?1:-1).map(l=>`<tr>
+    despEl.innerHTML=despFiltradas.length
+      ?[...despFiltradas].sort((a,b)=>b.data>a.data?1:-1).map(l=>`<tr>
         <td>${l.data||'—'}</td>
         <td>${l.descricao||'—'}</td>
         <td class="mono neg">${fmt(l.valor||0)}</td>
