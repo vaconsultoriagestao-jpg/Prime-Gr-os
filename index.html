@@ -1278,6 +1278,9 @@ function aplicarFiltroEmpresa(){
   if(nomeEl)nomeEl.textContent=_empresaFiltro||'Todas';
   const spanEmp=document.getElementById('filtro-empresa-global');
   if(spanEmp)spanEmp.textContent=_empresaFiltro||'Todas';
+  // Recarregar saldo banco para a empresa
+  const sb=localStorage.getItem('_saldoBanco_'+(_empresaFiltro||'Prime Grãos'));
+  _saldoBanco=parseFloat(sb)||0;
   // Reaplicar em todas as telas abertas
   const active=((document.querySelector('.page.active')||{}).id||'').replace('page-','');
   if(active==='fluxo')renderFluxo();
@@ -2716,7 +2719,9 @@ function renderFluxo(){
   const aPagarTotal=aPagarCTE+aPagarNota+aPagarFrete+aPagarCom;
 
   // Banco: lançamentos com parceiro "BANCO" — todos, sem filtro período
-  // Saldo banco — valor digitado diretamente pelo usuário
+  // Saldo banco — valor digitado diretamente pelo usuário (por empresa)
+  const sbKey='_saldoBanco_'+(emp||'Prime Grãos');
+  if(_saldoBanco===0){const sb=localStorage.getItem(sbKey);if(sb)_saldoBanco=parseFloat(sb)||0;}
   const saldoBanco=_saldoBanco;
   // Restaurar campo se estiver na tela
   const campoB=document.getElementById('flx-saldo-banco');
@@ -2733,7 +2738,7 @@ function renderFluxo(){
   const saldoParceiros=totalAportes-totalDevolucoes;
 
   // SALDO REAL = (A receber + Banco) - (A pagar operacional + Saldo devedor parceiros)
-  const totalTenho=aReceberTotal+saldoBanco+(saldoParceiros<0?Math.abs(saldoParceiros):0);
+  const totalTenho=aReceberTotal+(saldoParceiros<0?Math.abs(saldoParceiros):0);
   const totalDevo=aPagarTotal+(saldoParceiros>0?saldoParceiros:0)+totalDespesas;
   const saldoReal=totalTenho-totalDevo;
 
@@ -2897,7 +2902,8 @@ function renderFluxo(){
 function salvarSaldoBanco(){
   const val=parseFloat(document.getElementById('flx-saldo-banco').value)||0;
   _saldoBanco=val;
-  localStorage.setItem('_saldoBanco', val);
+  const key='_saldoBanco_'+(_empresaFiltro||'Prime Grãos');
+  localStorage.setItem(key, val);
   renderFluxo();
 }
 function toggleFlxParceiro(){
@@ -4046,7 +4052,7 @@ async function ensureTables(){
     try{
       showLoading('Carregando sistema...');
       await load();
-      const _sb=localStorage.getItem('_saldoBanco');
+      const _sb=localStorage.getItem('_saldoBanco_'+(_emp||'Prime Grãos'))||localStorage.getItem('_saldoBanco');
       if(_sb)_saldoBanco=parseFloat(_sb)||0;
       hideLoading();
       const _auth=JSON.parse(_saved);
