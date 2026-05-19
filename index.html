@@ -2390,12 +2390,16 @@ function renderFrete(){
   const mes=(document.getElementById('f-frete-mes')||{value:''}).value;
   const ano=(document.getElementById('f-frete-ano')||{value:''}).value;
   const st=(document.getElementById('f-frete-status')||{value:''}).value;
-  const ctS=document.getElementById('f-frete-ct');
-  if(ctS){const cs=[...new Set(embs.filter(d=>!d.cancelada&&(!_empresaFiltro||d.empresa===_empresaFiltro)).map(d=>d.contrato))].sort();const cur=ctS.value;ctS.innerHTML='<option value="">Todos contratos</option>'+cs.map(c=>`<option ${c===cur?'selected':''}>${c}</option>`).join('');}
-  const ativos=embs.filter(d=>!d.cancelada&&(d.frete_total||0)>0&&(!_empresaFiltro||d.empresa===_empresaFiltro));
+  const _freteBase=embs.filter(d=>!d.cancelada&&(d.frete_total||0)>0&&(!_empresaFiltro||d.empresa===_empresaFiltro));
+  const _freteCts=[...new Set(_freteBase.map(d=>String(d.contrato)).filter(Boolean))].sort();
+  const _freteTransps=[...new Set(_freteBase.map(d=>d.transportadora).filter(Boolean))].sort();
+  msFilter('ms-frete-ct', _freteCts, 'renderFrete', 'Contrato');
+  msFilter('ms-frete-transp', _freteTransps, 'renderFrete', 'Transportadora');
+  const ativos=_freteBase;
   const f=ativos.filter(d=>{
     if(q&&!(d.motorista&&d.motorista.toLowerCase().includes(q))&&!(d.cpf&&d.cpf.includes(q))&&!String(d.contrato||'').includes(q))return false;
-    if(ct&&d.contrato!=ct)return false;
+    if(!msMatch('ms-frete-ct', String(d.contrato)))return false;
+    if(!msMatch('ms-frete-transp', d.transportadora||''))return false;
     if(st&&st==='aberto'&&(d.frete20_pago&&d.frete80_pago))return false;
     if(st&&st==='pago'&&(!d.frete20_pago||!d.frete80_pago))return false;
     if(mes||ano){const [y,m]=(d.embarque||'').split('-');if(mes&&m!==mes)return false;if(ano&&y!==ano)return false;}
@@ -2949,8 +2953,10 @@ function limparFluxo(){
 async function delFluxo(id){
   if(!usuarioLogado||usuarioLogado.perfil!=='admin'){toast('Apenas o administrador pode excluir!',true);return;}
   if(!confirm('Remover este lançamento?'))return;
+  showLoading('Removendo...');
+  await fetch(`${SB_URL}/rest/v1/fluxo?id=eq.${id}`,{method:'DELETE',headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}});
   fluxo=fluxo.filter(l=>String(l.id)!==String(id));
-  showLoading('Removendo...');await saveFluxo();hideLoading();
+  hideLoading();
   renderFluxo();renderARecParceiros();renderCapParc();toast('Removido.');
 }
 function exportFluxo(tipo='csv'){
@@ -3329,8 +3335,10 @@ function limparDesp(){
 async function delDesp(id){
   if(!usuarioLogado||usuarioLogado.perfil!=='admin'){toast('Apenas admin pode excluir!',true);return;}
   if(!confirm('Remover despesa?'))return;
-  despesas=despesas.filter(d=>d.id!==id);
-  showLoading('Removendo...');await saveDesp();hideLoading();
+  showLoading('Removendo...');
+  await fetch(`${SB_URL}/rest/v1/despesas?id=eq.${id}`,{method:'DELETE',headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}});
+  despesas=despesas.filter(d=>String(d.id)!==String(id));
+  hideLoading();
   renderDesp();toast('Removido.');
 }
 function exportDesp(tipo){
@@ -3375,12 +3383,14 @@ function limparCapParc(){
 
 
 function gerarCSV(cab,rows,nome){
-  // Numeros saem sem aspas para Excel reconhecer como numero
   function fmtCell(c){
     if(c===null||c===undefined||c==='')return '""';
-    const n=Number(String(c).replace(',','.'));
-    if(!isNaN(n)&&String(c).trim()!=='')return String(c); // numero: sem aspas
-    return '"'+String(c).replace(/"/g,'""')+'"'; // texto: com aspas
+    const s=String(c).trim();
+    // Tenta converter numero brasileiro (ex: "447.033,34") para numero puro
+    const semPonto=s.replace(/\.(?=\d{3})/g,'').replace(',','.');
+    const n=Number(semPonto);
+    if(!isNaN(n)&&s!=='')return semPonto; // numero: sem aspas, com ponto decimal
+    return '"'+s.replace(/"/g,'""')+'"'; // texto: com aspas
   }
   const csv=[cab,...rows].map(r=>r.map(fmtCell).join(';')).join('\n');
   const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'}));a.download=nome+'.csv';a.click();toast('Excel exportado!');
