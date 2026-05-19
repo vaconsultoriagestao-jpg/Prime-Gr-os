@@ -21,8 +21,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg-page);color:var(--text
 .login-logo-text{font-size:18px;font-weight:600;letter-spacing:-.3px}
 .login-logo-sub{font-size:12px;color:var(--text-muted)}
 .login-card h2{font-size:22px;font-weight:600;margin-bottom:6px}
-.login-card p{font-size:13px;color:var(--text-muted);margin-bottom:1.5rem}
-.login-card label{display:block;font-size:12px;font-weight:500;color:var(--text-muted);margin-bottom:5px}
+.login-card p{font-size:13px;color:#CBD8EF;margin-bottom:1.5rem}
+.login-card label{display:block;font-size:12px;font-weight:500;color:#CBD8EF;margin-bottom:5px}
 .login-card input{width:100%;padding:10px 14px;font-size:14px;font-family:inherit;border:1.5px solid var(--border);border-radius:var(--radius);background:var(--bg);color:var(--text);outline:none;margin-bottom:1rem;transition:border-color .15s}
 .login-card input:focus{border-color:#333}
 .btn-login{width:100%;padding:11px;background:#1B2B4B;color:#fff;border:none;border-radius:var(--radius);font-size:14px;font-weight:500;font-family:inherit;cursor:pointer}
@@ -37,16 +37,16 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg-page);color:var(--text
 .sidebar-logo-icon{width:32px;height:32px;background:#fff;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .sidebar-logo-icon svg{width:18px;height:18px;fill:#fff}
 .sidebar-logo-name{font-size:14px;font-weight:600;letter-spacing:-.2px;color:#fff}
-.sidebar-logo-sub{font-size:10px;color:#A8BBDB}
+.sidebar-logo-sub{font-size:10px;color:#CBD8EF}
 .sidebar-nav{flex:1;padding:1rem .75rem}
-.nav-label{font-size:10px;font-weight:500;color:var(--text-faint);text-transform:uppercase;letter-spacing:.08em;margin:.75rem .5rem .35rem}
-.nav-item{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:8px;cursor:pointer;font-size:13px;color:#A8BBDB;margin-bottom:2px;transition:all .15s;user-select:none}
+.nav-label{font-size:10px;font-weight:500;color:#7A9CC5;text-transform:uppercase;letter-spacing:.08em;margin:.75rem .5rem .35rem}
+.nav-item{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:8px;cursor:pointer;font-size:13px;color:#CBD8EF;margin-bottom:2px;transition:all .15s;user-select:none}
 .nav-item svg{width:16px;height:16px;flex-shrink:0;stroke:currentColor;fill:none;stroke-width:2}
 .nav-item:hover{background:var(--gray-100);color:var(--text)}
 .nav-item.active{background:#F0F4FC;color:#fff;font-weight:500}
 .sidebar-footer{padding:1rem;border-top:1px solid var(--border);flex-shrink:0}
-.sidebar-user{font-size:12px;color:var(--text-muted);margin-bottom:6px}
-.btn-logout{font-size:12px;color:#A8BBDB;background:none;border:none;cursor:pointer;font-family:inherit;padding:0}
+.sidebar-user{font-size:12px;color:#CBD8EF;margin-bottom:6px}
+.btn-logout{font-size:12px;color:#CBD8EF;background:none;border:none;cursor:pointer;font-family:inherit;padding:0}
 .btn-logout:hover{color:var(--red)}
 .main{margin-left:230px;flex:1;min-height:100vh}
 .topbar{background:#fff;border-bottom:1px solid var(--border);padding:0 2rem;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
@@ -143,7 +143,7 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
 
 /* MISC */
 .section-heading{font-size:22px;font-weight:600;letter-spacing:-.5px;margin-bottom:.25rem}
-.section-sub{font-size:13px;color:var(--text-muted);margin-bottom:1.5rem}
+.section-sub{font-size:13px;color:#CBD8EF;margin-bottom:1.5rem}
 .empty-state{padding:3rem;text-align:center;color:var(--text-faint);font-size:13px}
 .divider{border:none;border-top:1px solid var(--border);margin:1rem 0}
 
@@ -252,7 +252,7 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
     <div class="nav-item" id="nav-saidas" onclick="irPara('saidas',this)">
       <svg viewBox="0 0 24 24"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>Saídas de produto
     </div>
-    <div class="nav-item" id="nav-rel-industria" onclick="relatorioIndustria()" style="color:#A8BBDB">
+    <div class="nav-item" id="nav-rel-industria" onclick="relatorioIndustria()" style="color:#CBD8EF">
       <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>Rel. Indústria
     </div>
     <div class="nav-label">A Receber</div>
@@ -298,10 +298,10 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
   </nav>
   <div class="sidebar-footer">
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
-      <div style="width:30px;height:30px;border-radius:50%;background:#E8EEF8;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:#1B2B4B" id="user-avatar">—</div>
+      <div style="width:30px;height:30px;border-radius:50%;background:#2A3F6F;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:#fff" id="user-avatar">—</div>
       <div>
-        <div style="font-size:12px;font-weight:500;color:var(--text)" id="user-name-display">—</div>
-        <div style="font-size:10px;color:var(--text-faint)" id="user-role-display">—</div>
+        <div style="font-size:12px;font-weight:500;color:#fff" id="user-name-display">—</div>
+        <div style="font-size:10px;color:#A8BBDB" id="user-role-display">—</div>
       </div>
     </div>
     <button class="btn-logout" onclick="logout()">Sair do sistema</button>
@@ -1104,7 +1104,7 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
       <div class="form-body">
         <div id="usuarios-lista" style="margin-bottom:1rem"></div>
         <div id="form-usuario" style="border-top:1px solid var(--border);padding-top:1rem">
-          <p style="font-size:12px;font-weight:600;color:var(--text-muted);margin-bottom:12px;text-transform:uppercase;letter-spacing:.05em" id="form-user-titulo">Novo usuário</p>
+          <p style="font-size:12px;font-weight:600;color:#CBD8EF;margin-bottom:12px;text-transform:uppercase;letter-spacing:.05em" id="form-user-titulo">Novo usuário</p>
           <div class="form-grid">
             <div class="fg"><label>Nome completo <span class="star">*</span></label><input id="u_nome" type="text"></div>
             <div class="fg"><label>Usuário (login) <span class="star">*</span></label><input id="u_user" type="text"></div>
@@ -1136,6 +1136,28 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
     <button class="btn btn-primary" onclick="salvarCfgUI()">Salvar configurações</button>
   </div>
 
+
+<!-- MODAL RELATÓRIO INDÚSTRIA -->
+<div id="modal-rel-industria" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;display:none;align-items:center;justify-content:center">
+  <div style="background:#fff;border-radius:12px;padding:2rem;width:520px;max-width:95vw;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.3)">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem">
+      <h2 style="font-size:16px;font-weight:700">📄 Relatório Indústria</h2>
+      <button onclick="fecharRelIndustria()" style="background:none;border:none;font-size:20px;cursor:pointer;color:#666">×</button>
+    </div>
+    <div style="margin-bottom:1.25rem">
+      <div style="font-size:12px;font-weight:600;color:#666;margin-bottom:8px;text-transform:uppercase;letter-spacing:.05em">Indústria / Comprador</div>
+      <div id="rel-ind-industrias" style="display:flex;flex-wrap:wrap;gap:8px"></div>
+    </div>
+    <div style="margin-bottom:1.5rem">
+      <div style="font-size:12px;font-weight:600;color:#666;margin-bottom:8px;text-transform:uppercase;letter-spacing:.05em">Contrato</div>
+      <div id="rel-ind-contratos" style="display:flex;flex-wrap:wrap;gap:8px"></div>
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end">
+      <button onclick="fecharRelIndustria()" class="btn btn-secondary">Cancelar</button>
+      <button onclick="gerarRelIndustriaFiltrado()" class="btn btn-primary">Gerar PDF</button>
+    </div>
+  </div>
+</div>
 </main>
 </div>
 </div>
@@ -1169,7 +1191,7 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
         <div class="fg"><label>Vencimento</label><input id="mc_vencimento" type="date"></div>
         <div class="fg fg-full"><label>Indústria / Granja</label><input id="mc_industria" type="text" placeholder="Ex: AGROFOODS UNIDADE 2"></div>
         <div class="fg fg-full">
-          <label style="font-size:11px;font-weight:500;color:var(--text-muted);margin-bottom:8px;display:block">Comissionários deste contrato</label>
+          <label style="font-size:11px;font-weight:500;color:#CBD8EF;margin-bottom:8px;display:block">Comissionários deste contrato</label>
           <div id="mc_coms_sel" style="background:var(--gray-50);border-radius:8px;padding:.75rem;min-height:50px">
             <p style="font-size:11px;color:var(--text-faint)">Carregando comissionários...</p>
           </div>
@@ -3612,26 +3634,48 @@ function exportCapCom(tipo){
 
 
 function relatorioIndustria(){
-  // Pega embarques filtrados atualmente
-  const q=(document.getElementById('f-emb-q')||{value:''}).value.toLowerCase();
-  const canc=(document.getElementById('f-emb-canc')||{value:''}).value;
-  const selecionados=getSelected('tbody-embs');
+  // Popular filtros do modal
+  const industriasSet=new Set(embs.filter(d=>!d.cancelada&&(!_empresaFiltro||d.empresa===_empresaFiltro)).map(d=>d.industria||d.industria_granja).filter(Boolean));
+  const contratosSet=new Set(embs.filter(d=>!d.cancelada&&(!_empresaFiltro||d.empresa===_empresaFiltro)).map(d=>String(d.contrato)).filter(Boolean));
+
+  const elInd=document.getElementById('rel-ind-industrias');
+  const elCt=document.getElementById('rel-ind-contratos');
+
+  elInd.innerHTML=[...industriasSet].sort().map(v=>`
+    <label style="display:flex;align-items:center;gap:6px;background:#f5f5f5;padding:5px 10px;border-radius:6px;cursor:pointer;font-size:13px;user-select:none">
+      <input type="checkbox" value="${v}" class="rel-ind-check" checked style="accent-color:#1B2B4B"> ${v}
+    </label>`).join('') || '<span style="color:#999;font-size:13px">Nenhuma indústria encontrada</span>';
+
+  elCt.innerHTML=[...contratosSet].sort().map(v=>`
+    <label style="display:flex;align-items:center;gap:6px;background:#f5f5f5;padding:5px 10px;border-radius:6px;cursor:pointer;font-size:13px;user-select:none">
+      <input type="checkbox" value="${v}" class="rel-ct-check" checked style="accent-color:#1B2B4B"> ${v}
+    </label>`).join('') || '<span style="color:#999;font-size:13px">Nenhum contrato encontrado</span>';
+
+  const modal=document.getElementById('modal-rel-industria');
+  modal.style.display='flex';
+}
+
+function fecharRelIndustria(){
+  document.getElementById('modal-rel-industria').style.display='none';
+}
+
+function gerarRelIndustriaFiltrado(){
+  const industriasSel=[...document.querySelectorAll('.rel-ind-check:checked')].map(cb=>cb.value);
+  const contratosSel=[...document.querySelectorAll('.rel-ct-check:checked')].map(cb=>cb.value);
+
+  if(!industriasSel.length&&!contratosSel.length){toast('Selecione ao menos um filtro!',true);return;}
 
   const lista=embs.filter(d=>{
-    if(!_empresaFiltro||d.empresa===_empresaFiltro){}else return false;
-    if(selecionados.length&&!selecionados.includes(String(d.id)))return false;
     if(d.cancelada)return false;
-    if(q&&!String(d.contrato||'').toLowerCase().includes(q)&&!String(d.nf||'').toLowerCase().includes(q)&&!String(d.motorista||'').toLowerCase().includes(q))return false;
-    if(!msMatch('ms-emb-prod',d.produto))return false;
-    if(!msMatch('ms-emb-ct',String(d.contrato)))return false;
-    if(!msMatch('ms-emb-transp',d.transportadora||''))return false;
-    if(!msMatch('ms-emb-st',d.status))return false;
-    if(canc==='0'&&d.cancelada)return false;
-    if(canc==='1'&&!d.cancelada)return false;
+    if(_empresaFiltro&&d.empresa!==_empresaFiltro)return false;
+    if(industriasSel.length&&!industriasSel.includes(d.industria||d.industria_granja))return false;
+    if(contratosSel.length&&!contratosSel.includes(String(d.contrato)))return false;
     return true;
   }).sort((a,b)=>a.embarque>b.embarque?1:-1);
 
-  if(!lista.length){toast('Nenhum embarque para exportar!',true);return;}
+  if(!lista.length){toast('Nenhum embarque com esses filtros!',true);return;}
+
+  fecharRelIndustria();
 
   const {jsPDF}=window.jspdf;
   const doc=new jsPDF({orientation:'landscape',unit:'mm',format:'a4'});
