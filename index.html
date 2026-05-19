@@ -1957,7 +1957,7 @@ function calcular(){
 
   // Comissões do contrato (por contrato, não por comprador)
   const comsVinc=(ctObj&&ctObj.comissionarios_ct)||[];
-  const com_total=comsVinc.reduce((s,c)=>s+((c.valor||0)*sc_emb),0);
+  const com_total=comsVinc.reduce((s,c)=>s+((c.valor||0)*sc_ent),0);
 
   const lucro=total_venda-total_compra-frete_total-cn_val-cte-com_total-fundo-imposto-desc_fin-imp_desc-desc_quebra-outros+comp_desc;
   const lucro_pct=total_venda>0?(lucro/total_venda)*100:0;
@@ -2129,7 +2129,7 @@ async function salvarEdit(){
   const temFundo=e.tem_fundo||temFundoCt;
   e.fundo=temFundo?e.total_venda*(fundoPctCt/100):0;
   const comsVE=(ctEd&&ctEd.comissionarios_ct)||[];
-  e.com_total=comsVE.reduce((s,c)=>s+((c.valor||0)*e.sc_emb),0);
+  e.com_total=comsVE.reduce((s,c)=>s+((c.valor||0)*e.sc_ent),0);
   e.lucro=e.total_venda-e.total_compra-e.frete_total-cn-ct-e.com_total-e.fundo-im-df-e.imp_desc-e.desc_quebra-ou+e.comp_desc;
   e.lucro_pct=e.total_venda>0?(e.lucro/e.total_venda)*100:0;
   e.frete80=e.frete_total*0.8;e.frete20=e.frete_total*0.2;
