@@ -3386,10 +3386,18 @@ function gerarCSV(cab,rows,nome){
   function fmtCell(c){
     if(c===null||c===undefined||c==='')return '""';
     const s=String(c).trim();
-    // Tenta converter numero brasileiro (ex: "447.033,34") para numero puro
-    const semPonto=s.replace(/\.(?=\d{3})/g,'').replace(',','.');
-    const n=Number(semPonto);
-    if(!isNaN(n)&&s!=='')return semPonto; // numero: sem aspas, com ponto decimal
+    // Tenta detectar numero: remove ponto de milhar BR e troca virgula por ponto
+    const semPonto=s.replace(/\.(\d{3})/g,'$1').replace(',','.');
+    const nDireto=Number(s);
+    const nBR=Number(semPonto);
+    if(!isNaN(nDireto)&&s!==''){
+      // Numero puro (ex: 43048.4) -> converte para formato BR sem milhar (ex: 43048,40)
+      return parseFloat(s).toFixed(2).replace('.',',');
+    }
+    if(!isNaN(nBR)&&s!==''){
+      // Numero BR (ex: 447.033,34 ou -50.000,00) -> remove milhar, mantém virgula decimal
+      return nBR.toFixed(2).replace('.',',');
+    }
     return '"'+s.replace(/"/g,'""')+'"'; // texto: com aspas
   }
   const csv=[cab,...rows].map(r=>r.map(fmtCell).join(';')).join('\n');
