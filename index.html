@@ -21,8 +21,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg-page);color:var(--text
 .login-logo-text{font-size:18px;font-weight:600;letter-spacing:-.3px}
 .login-logo-sub{font-size:12px;color:var(--text-muted)}
 .login-card h2{font-size:22px;font-weight:600;margin-bottom:6px}
-.login-card p{font-size:13px;color:#CBD8EF;margin-bottom:1.5rem}
-.login-card label{display:block;font-size:12px;font-weight:500;color:#CBD8EF;margin-bottom:5px}
+.login-card p{font-size:13px;color:#6b7280;margin-bottom:1.5rem}
+.login-card label{display:block;font-size:12px;font-weight:500;color:#374151;margin-bottom:5px}
 .login-card input{width:100%;padding:10px 14px;font-size:14px;font-family:inherit;border:1.5px solid var(--border);border-radius:var(--radius);background:var(--bg);color:var(--text);outline:none;margin-bottom:1rem;transition:border-color .15s}
 .login-card input:focus{border-color:#333}
 .btn-login{width:100%;padding:11px;background:#1B2B4B;color:#fff;border:none;border-radius:var(--radius);font-size:14px;font-weight:500;font-family:inherit;cursor:pointer}
@@ -965,9 +965,17 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
       </div>
     </div>
     <div class="table-card">
-      <div class="table-header"><h3>Devoluções registradas</h3></div>
+      <div class="table-header"><h3>Devoluções registradas</h3>
+        <div style="display:flex;gap:6px;align-items:center">
+          <div id="ms-cap-parc" style="display:inline-block"></div>
+          <button class="btn btn-secondary btn-sm" onclick="exportCapParc('csv')">⬇ Excel</button>
+        </div>
+      </div>
       <div class="tbl-wrap"><table><thead><tr>
-        <th>Data</th><th>Parceiro</th><th>Descrição</th><th>Valor</th><th></th>
+        <th onclick="sortTable('tbody-cap-parc',0)" style="cursor:pointer">Data ↕</th>
+        <th>Parceiro</th><th>Descrição</th>
+        <th onclick="sortTable('tbody-cap-parc',3,true)" style="cursor:pointer">Valor ↕</th>
+        <th></th>
       </tr></thead><tbody id="tbody-cap-parc"></tbody></table></div>
     </div>
   </div>
@@ -3384,19 +3392,34 @@ function exportDesp(tipo){
 function renderCapParc(){
   const emp=_empresaFiltro;
   const lancamentos=fluxo.filter(l=>l.tipo==="entrada"&&(l.categoria==="parceiro"||(!l.categoria&&l.parceiro&&l.parceiro.toUpperCase()!=="BANCO"&&l.parceiro!=="Escritório"))&&(!emp||l.empresa===emp));
-  const total=lancamentos.reduce((s,l)=>s+(l.valor||0),0);
+
+  // ms-filter por parceiro
+  const _capParcNms=[...new Set(lancamentos.map(l=>l.parceiro).filter(Boolean))].sort();
+  msFilter('ms-cap-parc', _capParcNms, 'renderCapParc', 'Parceiro');
+
+  const f=lancamentos.filter(l=>msMatch('ms-cap-parc', l.parceiro||''));
+  const total=f.reduce((s,l)=>s+(l.valor||0),0);
   document.getElementById('cap-parc-cards').innerHTML=`
     <div class="stat-card red"><div class="s-label">Total devolvido</div><div class="s-value">${fmt(total)}</div></div>
-    <div class="stat-card"><div class="s-label">Lançamentos</div><div class="s-value">${lancamentos.length}</div></div>
+    <div class="stat-card"><div class="s-label">Lançamentos</div><div class="s-value">${f.length}</div></div>
   `;
-  document.getElementById('tbody-cap-parc').innerHTML=lancamentos.length
-    ?[...lancamentos].sort((a,b)=>b.data>a.data?1:-1).map(l=>`<tr>
+  document.getElementById('tbody-cap-parc').innerHTML=f.length
+    ?[...f].sort((a,b)=>b.data>a.data?1:-1).map(l=>`<tr>
       <td>${l.data||'—'}</td><td><strong>${l.parceiro||'—'}</strong></td>
       <td>${l.descricao||'—'}</td>
       <td class="mono neg">${fmt(l.valor||0)}</td>
       <td><button class="btn btn-danger" onclick="delFluxo(${l.id})">×</button></td>
     </tr>`).join('')
     :'<tr><td colspan="5" class="empty-state">Nenhuma devolução.</td></tr>';
+}
+
+function exportCapParc(tipo){
+  const emp=_empresaFiltro;
+  const lancamentos=fluxo.filter(l=>l.tipo==="entrada"&&(l.categoria==="parceiro"||(!l.categoria&&l.parceiro&&l.parceiro.toUpperCase()!=="BANCO"&&l.parceiro!=="Escritório"))&&(!emp||l.empresa===emp));
+  const f=lancamentos.filter(l=>msMatch('ms-cap-parc', l.parceiro||''));
+  const cab=['Data','Parceiro','Descrição','Valor R$'];
+  const rows=f.map(l=>[l.data,l.parceiro,l.descricao,(l.valor||0).toFixed(2)]);
+  gerarCSV(cab,rows,'cap-parceiros');
 }
 async function salvarCapParc(){
   const data=document.getElementById('capparc-data').value;
