@@ -2486,6 +2486,7 @@ function renderPainel(){
   }
   const atrasados=embs.filter(d=>{
     if(d.cancelada||d.descarga)return false;
+    if(_empresaFiltro&&d.empresa!==_empresaFiltro)return false;
     if(!d.embarque)return false;
     const de=new Date(d.embarque+'T12:00:00');
     const horas=(agora-de)/3600000;
