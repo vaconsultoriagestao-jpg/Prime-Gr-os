@@ -547,6 +547,14 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
         </div>
       </div>
 
+      <!-- Fretes por motorista -->
+      <div class="table-card" style="margin-bottom:1.25rem">
+        <div class="form-card-header">Fretes por motorista</div>
+        <div class="tbl-wrap"><table><thead><tr>
+          <th>Motorista</th><th>CPF</th><th>Total frete</th><th>Pago 80%</th><th>Saldo 20%</th>
+        </tr></thead><tbody id="fc-tbody-frete"></tbody></table></div>
+      </div>
+
       <!-- DISTRIBUIÇÃO DE LUCRO -->
       <div class="table-card" style="margin-bottom:1.25rem">
         <div class="form-card-header" style="color:var(--green)">💰 Distribuição de Lucro por Sócio</div>
@@ -3710,7 +3718,8 @@ function initFechContrato(){
     const its=embs.filter(d=>!d.cancelada&&String(d.contrato)===String(ct)&&(!_empresaFiltro||d.empresa===_empresaFiltro));
     const totalVenda=its.reduce((s,d)=>s+(d.total_venda||0),0);
     const totalRecebido=its.reduce((s,d)=>s+(d.recebido||0),0);
-    const recebido100=totalVenda>0&&totalRecebido>=totalVenda*0.99;
+    const todosComDataRec=its.length>0&&its.every(d=>d.data_rec&&(d.recebido||0)>0);
+    const recebido100=todosComDataRec||(totalVenda>0&&totalRecebido>=totalVenda*0.99);
     if(statusFiltro==='recebido')return recebido100;
     if(statusFiltro==='pendente')return !recebido100;
     if(statusFiltro==='distribuido')return !!(co&&co.distribuicao_socios&&co.distribuicao_socios.length>0);
@@ -3723,7 +3732,8 @@ function initFechContrato(){
     const its=embs.filter(d=>!d.cancelada&&String(d.contrato)===String(ct)&&(!_empresaFiltro||d.empresa===_empresaFiltro));
     const totalVenda=its.reduce((s,d)=>s+(d.total_venda||0),0);
     const totalRecebido=its.reduce((s,d)=>s+(d.recebido||0),0);
-    const recebido100=totalVenda>0&&totalRecebido>=totalVenda*0.99;
+    const todosComDataRec=its.length>0&&its.every(d=>d.data_rec&&(d.recebido||0)>0);
+    const recebido100=todosComDataRec||(totalVenda>0&&totalRecebido>=totalVenda*0.99);
     const distribuido=co&&co.distribuicao_socios&&co.distribuicao_socios.length>0;
     const badgeRec=recebido100?'<span style="font-size:9px;background:#d1fae5;color:#065f46;padding:1px 5px;border-radius:4px;margin-left:4px">✓ Recebido</span>':'<span style="font-size:9px;background:#fef3c7;color:#92400e;padding:1px 5px;border-radius:4px;margin-left:4px">Pendente</span>';
     const badgeDist=distribuido?'<span style="font-size:9px;background:#e0e7ff;color:#3730a3;padding:1px 5px;border-radius:4px;margin-left:4px">✓ Distribuído</span>':'<span style="font-size:9px;background:#f3f4f6;color:#6b7280;padding:1px 5px;border-radius:4px;margin-left:4px">Não distribuído</span>';
