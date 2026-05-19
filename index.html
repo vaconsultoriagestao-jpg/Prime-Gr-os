@@ -8,15 +8,15 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 <style>
-:root{--green:#2D6A4F;--green-light:#40916C;--green-pale:#D8F3DC;--green-faint:#F0FAF2;--amber:#B5451B;--amber-pale:#FDEBD0;--red:#C0392B;--red-pale:#FDECEA;--blue:#1A5276;--blue-pale:#D6EAF8;--gray-50:#F8F9FA;--gray-100:#F1F3F4;--gray-200:#E8EAED;--gray-300:#DADCE0;--gray-700:#5F6368;--text:#1a1a1a;--text-muted:#5f6368;--text-faint:#9aa0a6;--border:#e0e0e0;--bg:#fff;--bg-page:#f5f5f0;--radius:10px;--radius-lg:16px;--shadow:0 1px 3px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.04);--shadow-md:0 4px 12px rgba(0,0,0,.10),0 2px 4px rgba(0,0,0,.06)}
+:root{--green:#1a1a1a;--green-light:#333333;--green-pale:#e8e8e8;--green-faint:#f5f5f5;--amber:#B5451B;--amber-pale:#FDEBD0;--red:#C0392B;--red-pale:#FDECEA;--blue:#1A5276;--blue-pale:#D6EAF8;--gray-50:#F8F9FA;--gray-100:#F1F3F4;--gray-200:#E8EAED;--gray-300:#DADCE0;--gray-700:#5F6368;--text:#1a1a1a;--text-muted:#5f6368;--text-faint:#9aa0a6;--border:#e0e0e0;--bg:#fff;--bg-page:#f5f5f0;--radius:10px;--radius-lg:16px;--shadow:0 1px 3px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.04);--shadow-md:0 4px 12px rgba(0,0,0,.10),0 2px 4px rgba(0,0,0,.06)}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'DM Sans',sans-serif;background:var(--bg-page);color:var(--text);font-size:14px;line-height:1.5;min-height:100vh}
 
 /* LOGIN */
-#login-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--green);background-image:repeating-linear-gradient(45deg,transparent,transparent 40px,rgba(255,255,255,.03) 40px,rgba(255,255,255,.03) 80px)}
+#login-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;background:#1a1a1a;background-image:repeating-linear-gradient(45deg,transparent,transparent 40px,rgba(255,255,255,.03) 40px,rgba(255,255,255,.03) 80px)}
 .login-card{background:#fff;border-radius:var(--radius-lg);padding:3rem 2.5rem;width:100%;max-width:380px;box-shadow:var(--shadow-md)}
 .login-logo{display:flex;align-items:center;gap:10px;margin-bottom:2rem}
-.login-logo-icon{width:40px;height:40px;background:var(--green);border-radius:10px;display:flex;align-items:center;justify-content:center}
+.login-logo-icon{width:40px;height:40px;background:#1a1a1a;border-radius:10px;display:flex;align-items:center;justify-content:center}
 .login-logo-icon svg{width:22px;height:22px;fill:white}
 .login-logo-text{font-size:18px;font-weight:600;letter-spacing:-.3px}
 .login-logo-sub{font-size:12px;color:var(--text-muted)}
@@ -24,29 +24,29 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg-page);color:var(--text
 .login-card p{font-size:13px;color:var(--text-muted);margin-bottom:1.5rem}
 .login-card label{display:block;font-size:12px;font-weight:500;color:var(--text-muted);margin-bottom:5px}
 .login-card input{width:100%;padding:10px 14px;font-size:14px;font-family:inherit;border:1.5px solid var(--border);border-radius:var(--radius);background:var(--bg);color:var(--text);outline:none;margin-bottom:1rem;transition:border-color .15s}
-.login-card input:focus{border-color:var(--green-light)}
-.btn-login{width:100%;padding:11px;background:var(--green);color:#fff;border:none;border-radius:var(--radius);font-size:14px;font-weight:500;font-family:inherit;cursor:pointer}
-.btn-login:hover{background:var(--green-light)}
+.login-card input:focus{border-color:#333}
+.btn-login{width:100%;padding:11px;background:#1a1a1a;color:#fff;border:none;border-radius:var(--radius);font-size:14px;font-weight:500;font-family:inherit;cursor:pointer}
+.btn-login:hover{background:#333}
 .login-error{font-size:12px;color:var(--red);margin-top:8px;display:none}
 
 /* LAYOUT */
 #app{display:none;min-height:100vh}
 .layout{display:flex;min-height:100vh}
-.sidebar{width:230px;flex-shrink:0;background:#fff;border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:100;overflow-y:auto}
+.sidebar{width:230px;flex-shrink:0;background:#1a1a1a;border-right:1px solid #333;display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:100;overflow-y:auto}
 .sidebar-logo{padding:1.25rem 1.25rem 1rem;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;flex-shrink:0}
-.sidebar-logo-icon{width:32px;height:32px;background:var(--green);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.sidebar-logo-icon{width:32px;height:32px;background:#fff;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .sidebar-logo-icon svg{width:18px;height:18px;fill:#fff}
-.sidebar-logo-name{font-size:14px;font-weight:600;letter-spacing:-.2px}
-.sidebar-logo-sub{font-size:10px;color:var(--text-faint)}
+.sidebar-logo-name{font-size:14px;font-weight:600;letter-spacing:-.2px;color:#fff}
+.sidebar-logo-sub{font-size:10px;color:#999}
 .sidebar-nav{flex:1;padding:1rem .75rem}
 .nav-label{font-size:10px;font-weight:500;color:var(--text-faint);text-transform:uppercase;letter-spacing:.08em;margin:.75rem .5rem .35rem}
-.nav-item{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:8px;cursor:pointer;font-size:13px;color:var(--text-muted);margin-bottom:2px;transition:all .15s;user-select:none}
+.nav-item{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:8px;cursor:pointer;font-size:13px;color:#aaa;margin-bottom:2px;transition:all .15s;user-select:none}
 .nav-item svg{width:16px;height:16px;flex-shrink:0;stroke:currentColor;fill:none;stroke-width:2}
 .nav-item:hover{background:var(--gray-100);color:var(--text)}
-.nav-item.active{background:var(--green-faint);color:var(--green);font-weight:500}
+.nav-item.active{background:#f5f5f5;color:#fff;font-weight:500}
 .sidebar-footer{padding:1rem;border-top:1px solid var(--border);flex-shrink:0}
 .sidebar-user{font-size:12px;color:var(--text-muted);margin-bottom:6px}
-.btn-logout{font-size:12px;color:var(--text-faint);background:none;border:none;cursor:pointer;font-family:inherit;padding:0}
+.btn-logout{font-size:12px;color:#999;background:none;border:none;cursor:pointer;font-family:inherit;padding:0}
 .btn-logout:hover{color:var(--red)}
 .main{margin-left:230px;flex:1;min-height:100vh}
 .topbar{background:#fff;border-bottom:1px solid var(--border);padding:0 2rem;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
@@ -60,7 +60,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg-page);color:var(--text
 .stat-card .s-label{font-size:11px;font-weight:500;color:var(--text-faint);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
 .stat-card .s-value{font-size:20px;font-weight:600;color:var(--text);letter-spacing:-.5px}
 .stat-card .s-sub{font-size:11px;color:var(--text-faint);margin-top:2px}
-.stat-card.green .s-value{color:var(--green)}.stat-card.red .s-value{color:var(--red)}.stat-card.amber .s-value{color:var(--amber)}
+.stat-card.green .s-value{color:#1a1a1a}.stat-card.red .s-value{color:var(--red)}.stat-card.amber .s-value{color:var(--amber)}
 
 /* TABLE */
 .table-card{background:#fff;border-radius:var(--radius-lg);border:1px solid var(--border);box-shadow:var(--shadow);overflow:hidden;margin-bottom:1.5rem}
@@ -71,20 +71,20 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg-page);color:var(--text
 /* Multi-select filter dropdown */
 .ms-filter{position:relative;display:inline-block}
 .ms-filter-btn{padding:6px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg);font-size:12px;cursor:pointer;display:flex;align-items:center;gap:6px;min-width:130px;justify-content:space-between;font-family:inherit;color:var(--text)}
-.ms-filter-btn.active{border-color:var(--green);color:var(--green);background:var(--green-faint)}
+.ms-filter-btn.active{border-color:#1a1a1a;color:#1a1a1a;background:#f5f5f5}
 .ms-filter-btn:after{content:'▾';font-size:10px;opacity:.6}
 .ms-filter-dropdown{position:absolute;top:calc(100% + 4px);left:0;min-width:180px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);box-shadow:0 4px 12px rgba(0,0,0,.1);z-index:999;padding:6px 0;display:none;max-height:240px;overflow-y:auto}
 .ms-filter-dropdown.open{display:block}
 .ms-filter-item{display:flex;align-items:center;gap:8px;padding:6px 12px;font-size:12px;cursor:pointer;color:var(--text)}
 .ms-filter-item:hover{background:var(--gray-50)}
-.ms-filter-item input{accent-color:var(--green);width:14px;height:14px;cursor:pointer}
+.ms-filter-item input{accent-color:#1a1a1a;width:14px;height:14px;cursor:pointer}
 .ms-filter-divider{border:none;border-top:1px solid var(--border);margin:4px 0}
 .ms-filter-actions{display:flex;gap:6px;padding:6px 12px}
 .ms-filter-actions button{flex:1;font-size:11px;padding:3px 6px;border:1px solid var(--border);border-radius:4px;background:transparent;cursor:pointer;font-family:inherit;color:var(--text-muted)}
 .ms-filter-actions button:hover{background:var(--gray-50)}
 
 .filter-select{font-size:12px;padding:6px 10px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);font-family:inherit;outline:none}
-.filter-input:focus,.filter-select:focus{border-color:var(--green-light)}
+.filter-input:focus,.filter-select:focus{border-color:#333}
 .tbl-wrap{overflow-x:auto}
 table{width:100%;border-collapse:collapse;font-size:12px}
 th{background:var(--gray-50);color:var(--text-muted);font-weight:500;text-align:left;padding:9px 12px;border-bottom:1px solid var(--border);white-space:nowrap;font-size:11px;text-transform:uppercase;letter-spacing:.04em}
@@ -94,11 +94,11 @@ tr:hover td{background:var(--gray-50)}
 tr.cancelada td{opacity:.4;text-decoration:line-through}
 tr.cancelada td:last-child{text-decoration:none;opacity:1}
 .mono{font-family:'DM Mono',monospace;font-size:11px}
-.pos{color:var(--green);font-weight:500}.neg{color:var(--red);font-weight:500}.amber-txt{color:var(--amber);font-weight:500}
+.pos{color:#1a1a1a;font-weight:500}.neg{color:var(--red);font-weight:500}.amber-txt{color:var(--amber);font-weight:500}
 
 /* BADGES */
 .badge{display:inline-flex;align-items:center;font-size:10px;font-weight:500;padding:3px 8px;border-radius:99px}
-.badge-green{background:var(--green-pale);color:var(--green)}.badge-blue{background:var(--blue-pale);color:var(--blue)}
+.badge-green{background:#e8e8e8;color:#1a1a1a}.badge-blue{background:var(--blue-pale);color:var(--blue)}
 .badge-red{background:var(--red-pale);color:var(--red)}.badge-amber{background:var(--amber-pale);color:var(--amber)}
 .badge-gray{background:var(--gray-200);color:var(--gray-700)}
 
@@ -112,7 +112,7 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
 .fg{display:flex;flex-direction:column;gap:4px}
 .fg label{font-size:11px;font-weight:500;color:var(--text-muted)}
 .fg input,.fg select,.fg textarea{padding:8px 11px;font-size:13px;font-family:inherit;border:1.5px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);outline:none;transition:border-color .15s}
-.fg input:focus,.fg select:focus{border-color:var(--green-light)}
+.fg input:focus,.fg select:focus{border-color:#333}
 .fg input[readonly],.fg input[disabled]{background:var(--gray-50);color:var(--text-muted);border-style:dashed;cursor:default}
 .fg .hint{font-size:10px;color:var(--text-faint)}
 .fg-full{grid-column:1/-1}
@@ -126,19 +126,19 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
 .cancel-toggle.on span{color:var(--red)}
 
 /* RESULT BAR */
-.result-bar{background:var(--green);color:#fff;border-radius:var(--radius-lg);padding:1.1rem 1.5rem;display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:1rem;margin-bottom:1.25rem}
+.result-bar{background:#1a1a1a;color:#fff;border-radius:var(--radius-lg);padding:1.1rem 1.5rem;display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:1rem;margin-bottom:1.25rem}
 .r-label{font-size:10px;opacity:.7;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px}
 .r-value{font-size:16px;font-weight:600;letter-spacing:-.3px}
 .r-value.neg{color:#FFCDD2}
 
 /* BUTTONS */
 .btn{display:inline-flex;align-items:center;gap:7px;padding:9px 18px;border-radius:8px;font-size:13px;font-weight:500;font-family:inherit;cursor:pointer;border:1.5px solid transparent;transition:all .15s}
-.btn-primary{background:var(--green);color:#fff;border-color:var(--green)}.btn-primary:hover{background:var(--green-light);border-color:var(--green-light)}
+.btn-primary{background:#1a1a1a;color:#fff;border-color:#1a1a1a}.btn-primary:hover{background:#333;border-color:#333}
 .btn-secondary{background:#fff;color:var(--text);border-color:var(--border)}.btn-secondary:hover{background:var(--gray-50)}
 .btn-danger{background:none;color:var(--red);border-color:transparent;padding:3px 8px;font-size:11px}.btn-danger:hover{background:var(--red-pale)}
 .btn-sm{padding:5px 12px;font-size:12px}
 .btn-edit{background:none;border:1px solid var(--border);color:var(--text-muted);border-radius:6px;padding:3px 9px;font-size:11px;cursor:pointer;font-family:inherit}
-.btn-edit:hover{border-color:var(--green-light);color:var(--green)}
+.btn-edit:hover{border-color:#333;color:#1a1a1a}
 .btn svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2}
 
 /* MISC */
@@ -157,25 +157,25 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
 .modal-footer{padding:1rem 1.5rem;border-top:1px solid var(--border);display:flex;gap:10px}
 
 /* TOAST */
-.toast{position:fixed;bottom:2rem;right:2rem;background:var(--green);color:#fff;padding:12px 20px;border-radius:var(--radius);font-size:13px;font-weight:500;box-shadow:var(--shadow-md);z-index:1000;transform:translateY(100px);opacity:0;transition:all .3s cubic-bezier(.34,1.56,.64,1)}
+.toast{position:fixed;bottom:2rem;right:2rem;background:#1a1a1a;color:#fff;padding:12px 20px;border-radius:var(--radius);font-size:13px;font-weight:500;box-shadow:var(--shadow-md);z-index:1000;transform:translateY(100px);opacity:0;transition:all .3s cubic-bezier(.34,1.56,.64,1)}
 .toast.show{transform:translateY(0);opacity:1}.toast.error{background:var(--red)}
 
 /* FRETE */
 .frete-card{background:#fff;border-radius:var(--radius-lg);border:1px solid var(--border);padding:1.25rem;margin-bottom:1rem;box-shadow:var(--shadow)}
 .frete-split{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
 .split-box{border-radius:var(--radius);padding:.9rem;border:1px solid var(--border)}
-.split-box.parcela-1{background:var(--green-faint);border-color:var(--green-pale)}
+.split-box.parcela-1{background:#f5f5f5;border-color:#e8e8e8}
 .split-box.parcela-2{background:var(--amber-pale);border-color:#f5cba7}
 .split-label{font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
 .split-value{font-size:18px;font-weight:600;margin-bottom:8px}
 .flag-btn{font-size:11px;padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:#fff;cursor:pointer;font-family:inherit;font-weight:500}
-.flag-btn.pago{background:var(--green-pale);color:var(--green);border-color:var(--green-pale)}
+.flag-btn.pago{background:#e8e8e8;color:#1a1a1a;border-color:#e8e8e8}
 .flag-btn.aberto{background:var(--amber-pale);color:var(--amber);border-color:var(--amber-pale)}
 
 /* CT CHECKS */
 .ct-check{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border:1px solid var(--border);border-radius:8px;cursor:pointer;font-size:13px;user-select:none;transition:all .15s}
-.ct-check:hover{border-color:var(--green-light)}.ct-check input{accent-color:var(--green);width:14px;height:14px}
-.ct-check.on{border-color:var(--green);background:var(--green-faint);color:var(--green);font-weight:500}
+.ct-check:hover{border-color:#333}.ct-check input{accent-color:#1a1a1a;width:14px;height:14px}
+.ct-check.on{border-color:#1a1a1a;background:#f5f5f5;color:#1a1a1a;font-weight:500}
 
 /* COMISSAO LIST */
 .com-item{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-radius:8px;background:var(--gray-50);margin-bottom:6px}
@@ -203,7 +203,7 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
      <label>Empresa</label>
      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:4px">
        <button type="button" id="btn-emp-prime" onclick="selecionarEmpresaLogin('Prime Grãos')"
-         style="padding:10px;border:2px solid var(--green);border-radius:8px;background:var(--green);color:#fff;font-weight:600;cursor:pointer;font-size:13px">
+         style="padding:10px;border:2px solid #1a1a1a;border-radius:8px;background:#1a1a1a;color:#fff;font-weight:600;cursor:pointer;font-size:13px">
          Prime Grãos
        </button>
        <button type="button" id="btn-emp-zf" onclick="selecionarEmpresaLogin('ZF Grãos')"
@@ -295,7 +295,7 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
   </nav>
   <div class="sidebar-footer">
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
-      <div style="width:30px;height:30px;border-radius:50%;background:var(--green-pale);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:var(--green)" id="user-avatar">—</div>
+      <div style="width:30px;height:30px;border-radius:50%;background:#e8e8e8;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:#1a1a1a" id="user-avatar">—</div>
       <div>
         <div style="font-size:12px;font-weight:500;color:var(--text)" id="user-name-display">—</div>
         <div style="font-size:10px;color:var(--text-faint)" id="user-role-display">—</div>
@@ -311,7 +311,7 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
     <div style="display:flex;align-items:center;gap:12px">
       <div style="display:flex;align-items:center;gap:6px">
         <span style="font-size:11px;color:var(--text-faint);font-weight:500">Empresa:</span>
-        <span id="filtro-empresa-global" style="font-size:12px;padding:5px 10px;border:1.5px solid var(--green-pale);border-radius:8px;background:var(--green-faint);color:var(--green);font-weight:600;display:inline-block">Prime Grãos</span>
+        <span id="filtro-empresa-global" style="font-size:12px;padding:5px 10px;border:1.5px solid #e8e8e8;border-radius:8px;background:#f5f5f5;color:#1a1a1a;font-weight:600;display:inline-block">Prime Grãos</span>
       </div>
       <span id="topbar-date" style="font-size:12px;color:var(--text-faint)"></span>
       <button class="btn btn-secondary btn-sm" onclick="fazerBackup()" title="Baixar backup completo dos dados" style="font-size:11px">💾 Backup</button>
@@ -393,7 +393,7 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
     <div class="stats-grid" id="flx-cards" style="margin-bottom:1.25rem"></div>
 
     <!-- Fluxo de Caixa é somente leitura - lançamentos nas telas dedicadas -->
-    <div style="background:var(--green-faint);border:1px solid var(--green);border-radius:var(--radius);padding:.75rem 1rem;margin-bottom:1rem;font-size:13px;color:var(--green-dark)">
+    <div style="background:#f5f5f5;border:1px solid #1a1a1a;border-radius:var(--radius);padding:.75rem 1rem;margin-bottom:1rem;font-size:13px;color:var(--green-dark)">
       💡 Para lançar aportes/devoluções de parceiros acesse <strong>A Receber → Parceiros</strong>. Para despesas acesse <strong>Contas a Pagar → Despesas</strong>.
     </div>
 
@@ -421,7 +421,7 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
     <!-- Resumo A receber / A pagar -->
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:1rem">
       <div class="table-card">
-        <div class="form-card-header" style="color:var(--green)">A receber das indústrias</div>
+        <div class="form-card-header" style="color:#1a1a1a">A receber das indústrias</div>
         <div class="tbl-wrap"><table><thead><tr>
           <th>Contrato</th><th>Comprador</th><th>A receber</th><th>Líquido (c/fundo)</th>
         </tr></thead><tbody id="tbody-flx-receber"></tbody></table></div>
@@ -557,7 +557,7 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
 
       <!-- DISTRIBUIÇÃO DE LUCRO -->
       <div class="table-card" style="margin-bottom:1.25rem">
-        <div class="form-card-header" style="color:var(--green)">💰 Distribuição de Lucro por Sócio</div>
+        <div class="form-card-header" style="color:#1a1a1a">💰 Distribuição de Lucro por Sócio</div>
         <div class="form-body">
           <div style="display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap;margin-bottom:1rem">
             <div class="fg" style="flex:2;min-width:150px"><label>Nome do sócio</label><input id="fc-socio-nome" type="text" placeholder="Ex: João Silva"></div>
@@ -616,11 +616,11 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
           </div>
           <button class="btn btn-secondary btn-sm" onclick="exportContratos('csv')">⬇ Excel</button>
           <button class="btn btn-secondary btn-sm" onclick="exportContratos('pdf')">⬇ PDF</button>
-          <span id="sel-count-tbody-cts" style="font-size:12px;color:var(--green);font-weight:500"></span>
+          <span id="sel-count-tbody-cts" style="font-size:12px;color:#1a1a1a;font-weight:500"></span>
         </div>
       </div>
       <div class="tbl-wrap"><table><thead><tr>
-        <th style="width:32px"><input type="checkbox" onchange="toggleAll('tbody-cts',this.checked)" style="accent-color:var(--green)"></th>
+        <th style="width:32px"><input type="checkbox" onchange="toggleAll('tbody-cts',this.checked)" style="accent-color:#1a1a1a"></th>
         <th>Nº</th><th>Empresa</th><th>Comprador</th><th>Produto</th><th>Qtd (sc)</th><th>Valor R$/sc</th>
         <th>Valor total</th><th>Prazo receb.</th><th>Fundo</th><th>% Fundo</th>
         <th>Tipo frete</th><th>Vencimento</th><th>Vendedor</th><th>Situação</th><th></th>
@@ -647,11 +647,12 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
           </select>
           <button class="btn btn-secondary btn-sm" onclick="exportEmb('csv')">⬇ Excel</button>
           <button class="btn btn-secondary btn-sm" onclick="exportEmb('pdf')">⬇ PDF</button>
-          <span id="sel-count-tbody-emb" style="font-size:12px;color:var(--green);font-weight:500"></span>
+          <button class="btn btn-primary btn-sm" onclick="relatorioIndustria()">📄 Rel. Indústria</button>
+          <span id="sel-count-tbody-emb" style="font-size:12px;color:#1a1a1a;font-weight:500"></span>
         </div>
       </div>
       <div class="tbl-wrap"><table><thead><tr>
-        <th style="width:32px"><input type="checkbox" onchange="toggleAll('tbody-emb',this.checked)" style="accent-color:var(--green)"></th>
+        <th style="width:32px"><input type="checkbox" onchange="toggleAll('tbody-emb',this.checked)" style="accent-color:#1a1a1a"></th>
         <th onclick="sortTable('tbody-emb',1)" style="cursor:pointer">Contrato ↕</th><th>Empresa</th><th onclick="sortTable('tbody-emb',3)" style="cursor:pointer">NF ↕</th><th>Status</th><th>Nota</th><th>Produto</th>
         <th>Dono da carga</th>
         <th onclick="sortTable('tbody-emb',8)" style="cursor:pointer">Embarque ↕</th><th onclick="sortTable('tbody-emb',9)" style="cursor:pointer">Descarga ↕</th><th>Prazo receb.</th><th>Data receb.</th><th>Prazo</th>
@@ -718,7 +719,7 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
       <div class="form-body"><div class="form-grid">
         <div class="fg"><label>Data embarque <span class="star">*</span></label><input id="f_embarque" type="date" oninput="calcular()"></div>
         <div class="fg"><label>Data descarga</label><input id="f_descarga" type="date" oninput="calcular()"><span class="hint">Preencher quando souber</span></div>
-        <div class="fg"><label>Prazo recebimento <span style="color:var(--green)">(auto)</span></label><input id="f_prazo_rec" type="text" readonly placeholder="—"></div>
+        <div class="fg"><label>Prazo recebimento <span style="color:#1a1a1a">(auto)</span></label><input id="f_prazo_rec" type="text" readonly placeholder="—"></div>
         <div class="fg"><label>Data recebimento</label><input id="f_data_rec" type="date" oninput="calcular()"></div>
         <div class="fg"><label>Transportadora</label>
           <select id="f_transportadora_id" onchange="preencherTransportadora()"><option value="">— selecione —</option></select>
@@ -737,12 +738,12 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
       <div class="form-body"><div class="form-grid">
         <div class="fg"><label>Peso líquido (kg) <span class="star">*</span></label><input id="f_pliq" type="number" value="0" oninput="calcular()"></div>
         <div class="fg"><label>Peso descarga (kg)</label><input id="f_pdesc" type="number" value="0" oninput="calcular()"></div>
-        <div class="fg"><label>Sacas embarque <span style="color:var(--green)">(auto)</span></label><input id="f_sc_emb" type="text" readonly></div>
-        <div class="fg"><label>Quebra (sc) <span style="color:var(--green)">(auto)</span></label><input id="f_quebra" type="text" readonly></div>
-        <div class="fg"><label>SCS entregues <span style="color:var(--green)">(auto)</span></label><input id="f_sc_ent" type="text" readonly></div>
-        <div class="fg"><label>Desconto quebra (R$) <span style="color:var(--green)">(auto)</span></label><input id="f_desc_quebra" type="text" readonly><span class="hint">Acima de 3 sc de tolerância</span></div>
+        <div class="fg"><label>Sacas embarque <span style="color:#1a1a1a">(auto)</span></label><input id="f_sc_emb" type="text" readonly></div>
+        <div class="fg"><label>Quebra (sc) <span style="color:#1a1a1a">(auto)</span></label><input id="f_quebra" type="text" readonly></div>
+        <div class="fg"><label>SCS entregues <span style="color:#1a1a1a">(auto)</span></label><input id="f_sc_ent" type="text" readonly></div>
+        <div class="fg"><label>Desconto quebra (R$) <span style="color:#1a1a1a">(auto)</span></label><input id="f_desc_quebra" type="text" readonly><span class="hint">Acima de 3 sc de tolerância</span></div>
         <div class="fg"><label>Impureza (kg)</label><input id="f_impureza" type="number" step="0.1" value="0" oninput="calcular()"><span class="hint">Informe os kg de impureza</span></div>
-        <div class="fg"><label>Desconto impureza (R$) <span style="color:var(--green)">(auto)</span></label><input id="f_imp_desc" type="text" readonly><span class="hint">Venda/60 × kg impureza</span></div>
+        <div class="fg"><label>Desconto impureza (R$) <span style="color:#1a1a1a">(auto)</span></label><input id="f_imp_desc" type="text" readonly><span class="hint">Venda/60 × kg impureza</span></div>
       </div></div>
     </div>
 
@@ -752,11 +753,11 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
         <div class="fg"><label>R$ Compra / sc <span class="star">*</span></label><input id="f_compra" type="number" step="0.01" value="0" oninput="calcular()"></div>
         <div class="fg"><label>R$ Venda / sc</label><input id="f_venda" type="number" step="0.01" value="0" readonly disabled></div>
         <div class="fg"><label>RS / Ton (frete)</label><input id="f_rs_ton" type="number" step="0.01" value="0" oninput="calcular()"></div>
-        <div class="fg"><label>Frete total motorista <span style="color:var(--green)">(auto)</span></label><input id="f_frete_total" type="text" readonly></div>
-        <div class="fg"><label>Total compra <span style="color:var(--green)">(auto)</span></label><input id="f_total_compra" type="text" readonly></div>
-        <div class="fg"><label>Total venda <span style="color:var(--green)">(auto)</span></label><input id="f_total_venda" type="text" readonly></div>
+        <div class="fg"><label>Frete total motorista <span style="color:#1a1a1a">(auto)</span></label><input id="f_frete_total" type="text" readonly></div>
+        <div class="fg"><label>Total compra <span style="color:#1a1a1a">(auto)</span></label><input id="f_total_compra" type="text" readonly></div>
+        <div class="fg"><label>Total venda <span style="color:#1a1a1a">(auto)</span></label><input id="f_total_venda" type="text" readonly></div>
         <div class="fg"><label>R$ Recebido</label><input id="f_recebido" type="number" step="0.01" value="0" oninput="calcular()"></div>
-        <div class="fg"><label>Comp. desc. <span style="color:var(--green)">(auto)</span></label><input id="f_comp_desc" type="text" readonly></div>
+        <div class="fg"><label>Comp. desc. <span style="color:#1a1a1a">(auto)</span></label><input id="f_comp_desc" type="text" readonly></div>
       </div></div>
     </div>
 
@@ -764,21 +765,21 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
       <div class="form-card-header"><svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>Custos adicionais</div>
       <div class="form-body"><div class="form-grid">
         <div class="fg"><label>Custo nota (R$/saco)</label><input id="f_cn_sc" type="number" step="0.01" value="0" oninput="calcular()"></div>
-        <div class="fg"><label>Custo nota total <span style="color:var(--green)">(auto)</span></label><input id="f_cn_val" type="text" readonly></div>
+        <div class="fg"><label>Custo nota total <span style="color:#1a1a1a">(auto)</span></label><input id="f_cn_val" type="text" readonly></div>
         <div class="fg"><label>CTE (R$/saco)</label><input id="f_cte_sc" type="number" step="0.01" value="0" oninput="calcular()"></div>
-        <div class="fg"><label>CTE total <span style="color:var(--green)">(auto)</span></label><input id="f_cte" type="text" readonly></div>
+        <div class="fg"><label>CTE total <span style="color:#1a1a1a">(auto)</span></label><input id="f_cte" type="text" readonly></div>
         <div class="fg" style="grid-column:1/-1">
           <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;font-weight:500;color:var(--text-muted)">
-            <input type="checkbox" id="f_tem_fundo" onchange="toggleFundoEmb()" style="accent-color:var(--green);width:15px;height:15px">
+            <input type="checkbox" id="f_tem_fundo" onchange="toggleFundoEmb()" style="accent-color:#1a1a1a;width:15px;height:15px">
             Este embarque possui desconto de fundo (5% sobre valor venda)
           </label>
         </div>
         <div id="f_fundo_campos" style="display:none;grid-column:1/-1">
           <div class="form-grid">
-            <div class="fg"><label>Fundo calculado <span style="color:var(--green)">(auto — 5% total venda)</span></label><input id="f_fundo" type="text" readonly></div>
+            <div class="fg"><label>Fundo calculado <span style="color:#1a1a1a">(auto — 5% total venda)</span></label><input id="f_fundo" type="text" readonly></div>
           </div>
         </div>
-        <div class="fg"><label>Comissão total <span style="color:var(--green)">(auto)</span></label><input id="f_com_total" type="text" readonly></div>
+        <div class="fg"><label>Comissão total <span style="color:#1a1a1a">(auto)</span></label><input id="f_com_total" type="text" readonly></div>
         <div class="fg"><label>Imposto (R$)</label><input id="f_imposto" type="number" step="0.01" value="0" oninput="calcular()"></div>
         <div class="fg"><label>Desconto financeiro (R$)</label><input id="f_desc_fin" type="number" step="0.01" value="0" oninput="calcular()"></div>
         <div class="fg"><label>Outros (R$)</label><input id="f_outros" type="number" step="0.01" value="0" oninput="calcular()"></div>
@@ -1148,11 +1149,11 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
         <div class="fg"><label>Produto <span class="star">*</span></label><select id="mc_produto"><option>SOJA</option><option>MILHO</option><option>TRIGO</option></select></div>
         <div class="fg"><label>Quantidade (sc) <span class="star">*</span></label><input id="mc_qtd" type="number" placeholder="0" oninput="calcVtCt()"></div>
         <div class="fg"><label>Valor R$/sc <span class="star">*</span></label><input id="mc_valor" type="number" step="0.01" placeholder="0.00" oninput="calcVtCt()"></div>
-        <div class="fg"><label>Valor total <span style="color:var(--green)">(auto)</span></label><input id="mc_vt" type="text" readonly></div>
+        <div class="fg"><label>Valor total <span style="color:#1a1a1a">(auto)</span></label><input id="mc_vt" type="text" readonly></div>
         <div class="fg"><label>Prazo recebimento (horas) <span class="star">*</span></label><input id="mc_prazo" type="number" value="72"></div>
         <div class="fg" style="grid-column:1/-1">
           <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;font-weight:500;color:var(--text-muted)">
-            <input type="checkbox" id="mc_tem_fundo" onchange="toggleFundoCt()" style="accent-color:var(--green);width:15px;height:15px">
+            <input type="checkbox" id="mc_tem_fundo" onchange="toggleFundoCt()" style="accent-color:#1a1a1a;width:15px;height:15px">
             Este contrato possui desconto de fundo (5%)
           </label>
         </div>
@@ -1431,10 +1432,10 @@ function selecionarEmpresaLogin(empresa){
   const btnPrime=document.getElementById('btn-emp-prime');
   const btnZF=document.getElementById('btn-emp-zf');
   if(empresa==='Prime Grãos'){
-    btnPrime.style.background='var(--green)';btnPrime.style.color='#fff';btnPrime.style.borderColor='var(--green)';
+    btnPrime.style.background='#1a1a1a';btnPrime.style.color='#fff';btnPrime.style.borderColor='#1a1a1a';
     btnZF.style.background='transparent';btnZF.style.color='var(--text)';btnZF.style.borderColor='var(--border)';
   } else {
-    btnZF.style.background='var(--green)';btnZF.style.color='#fff';btnZF.style.borderColor='var(--green)';
+    btnZF.style.background='#1a1a1a';btnZF.style.color='#fff';btnZF.style.borderColor='#1a1a1a';
     btnPrime.style.background='transparent';btnPrime.style.color='var(--text)';btnPrime.style.borderColor='var(--border)';
   }
 }
@@ -1530,7 +1531,7 @@ function togglePermissoesUI(){
   if(!checks.innerHTML){
     checks.innerHTML=_MENUS.map(m=>`
       <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;padding:4px 0">
-        <input type="checkbox" id="uperm_${m.id}" value="${m.id}" style="accent-color:var(--green);width:14px;height:14px">
+        <input type="checkbox" id="uperm_${m.id}" value="${m.id}" style="accent-color:#1a1a1a;width:14px;height:14px">
         ${m.label}
       </label>`).join('');
   }
@@ -1561,7 +1562,7 @@ function renderUsuarios(){
   lista.innerHTML=usuarios.map(u=>`
     <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:.5px solid var(--border)">
       <div style="display:flex;align-items:center;gap:10px">
-        <div style="width:34px;height:34px;border-radius:50%;background:${u.perfil==='admin'?'var(--green-pale)':'var(--blue-pale)'};display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:${u.perfil==='admin'?'var(--green)':'var(--blue)'};flex-shrink:0">${u.nome.charAt(0).toUpperCase()}</div>
+        <div style="width:34px;height:34px;border-radius:50%;background:${u.perfil==='admin'?'#e8e8e8':'var(--blue-pale)'};display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:${u.perfil==='admin'?'#1a1a1a':'var(--blue)'};flex-shrink:0">${u.nome.charAt(0).toUpperCase()}</div>
         <div>
           <div style="font-size:13px;font-weight:500">${u.nome}</div>
           <div style="font-size:11px;color:var(--text-faint)">@${u.user} · <span class="badge ${u.perfil==='admin'?'badge-green':'badge-blue'}" style="font-size:9px">${u.perfil==='admin'?'Admin':'Operador'}</span>${u.perfil!=='admin'&&u.permissoes&&u.permissoes.length?` · ${u.permissoes.length} menu(s)`:''}</div>
@@ -1784,7 +1785,7 @@ function abrirModalCt(id=null){
         // Busca por ID ou por nome (fallback)
         const vinc=ctComs.find(x=>x.id===cm.id||(x.nome&&x.nome.toUpperCase())===(cm.nome&&cm.nome.toUpperCase()));
         return`<div style="display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:.5px solid var(--border)">
-          <input type="checkbox" id="mc_com_${cm.id}" value="${cm.id}" ${vinc?'checked':''} style="accent-color:var(--green);width:15px;height:15px">
+          <input type="checkbox" id="mc_com_${cm.id}" value="${cm.id}" ${vinc?'checked':''} style="accent-color:#1a1a1a;width:15px;height:15px">
           <label for="mc_com_${cm.id}" style="flex:1;font-size:13px;cursor:pointer">${cm.nome}</label>
           <input type="number" id="mc_com_val_${cm.id}" step="0.01" value="${vinc?vinc.valor:cm.valor||0}" style="width:90px;padding:4px 8px;font-size:12px;border:1px solid var(--border);border-radius:6px;font-family:inherit" placeholder="R$/sc">
         </div>`;
@@ -1834,7 +1835,7 @@ function renderContratos(){
     return true;
   }).sort((a,b)=>String(b.numero).localeCompare(String(a.numero),undefined,{numeric:true}));
   document.getElementById('tbody-cts').innerHTML=f.length
-    ?f.map(c=>`<tr ondblclick="abrirModalCt(${c.id})" style="cursor:pointer;${c.encerrado?'opacity:.6':''}" title="Duplo clique para editar"><td><input type="checkbox" value="${c.id}" onchange="updateSelCount('tbody-cts')" style="accent-color:var(--green)" onclick="event.stopPropagation()"></td><td><strong>${c.numero}</strong></td>
+    ?f.map(c=>`<tr ondblclick="abrirModalCt(${c.id})" style="cursor:pointer;${c.encerrado?'opacity:.6':''}" title="Duplo clique para editar"><td><input type="checkbox" value="${c.id}" onchange="updateSelCount('tbody-cts')" style="accent-color:#1a1a1a" onclick="event.stopPropagation()"></td><td><strong>${c.numero}</strong></td>
       <td><span class="badge ${c.empresa==='ZF Grãos'?'badge-blue':'badge-green'}">${c.empresa||'Prime Grãos'}</span></td>
       <td>${c.comprador}</td><td>${c.produto}</td><td class="mono">${fmtN(c.qtd,0)}</td><td class="mono">${fmt(c.valor)}</td>
       <td class="mono">${fmt((c.qtd||0)*(c.valor||0))}</td><td>${c.prazo||72}h</td>
@@ -1844,7 +1845,7 @@ function renderContratos(){
       <td>${c.encerrado?'<span class="badge badge-gray">Encerrado</span>':'<span class="badge badge-green">Ativo</span>'}</td>
       <td style="display:flex;gap:4px">
         <button class="btn-edit" onclick="abrirModalCt(${c.id})">Editar</button>
-        <button class="btn-edit" onclick="encerrarCt(${c.id})" style="color:${c.encerrado?'var(--green)':'var(--amber)'}">${c.encerrado?'Reabrir':'Encerrar'}</button>
+        <button class="btn-edit" onclick="encerrarCt(${c.id})" style="color:${c.encerrado?'#1a1a1a':'var(--amber)'}">${c.encerrado?'Reabrir':'Encerrar'}</button>
         <button class="btn btn-danger" onclick="delCt(${c.id})">×</button>
       </td></tr>`).join('')
     :'<tr><td colspan="15" class="empty-state">Nenhum contrato cadastrado.</td></tr>';
@@ -1885,7 +1886,7 @@ function preencherDoCt(){
   if(progressEl){
     progressEl.innerHTML=`<div style="font-size:12px;color:var(--text-muted);margin-top:6px">
       Contrato: <strong>${fmtN(scEmbarcadas,0)}</strong> sc embarcadas de <strong>${fmtN(c.qtd,0)}</strong> sc 
-      (${pct}%) — Faltam: <strong style="color:${scFaltantes>0?'var(--amber)':'var(--green)'}">${fmtN(scFaltantes,0)} sc</strong>
+      (${pct}%) — Faltam: <strong style="color:${scFaltantes>0?'var(--amber)':'#1a1a1a'}">${fmtN(scFaltantes,0)} sc</strong>
     </div>`;
   }
   // Comissões do contrato
@@ -2094,7 +2095,7 @@ function abrirEdit(id){
   const e=embs.find(d=>String(d.id)===sid);if(!e)return;editEmb=e.id;
   document.getElementById('edit-grid').innerHTML=editCampos.map(c=>{
     if(c.t==='chk')return`<div class="fg" style="grid-column:1/-1"><label style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" id="ed__canc" ${e.cancelada?'checked':''} style="accent-color:var(--red);width:16px;height:16px"> Cancelada / Recusada</label></div>`;
-    if(c.t==='chkfundo')return`<div class="fg" style="grid-column:1/-1"><label style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" id="ed__fundo" ${e.tem_fundo?'checked':''} style="accent-color:var(--green);width:15px;height:15px"> Possui desconto de fundo (5%)</label></div>`;
+    if(c.t==='chkfundo')return`<div class="fg" style="grid-column:1/-1"><label style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" id="ed__fundo" ${e.tem_fundo?'checked':''} style="accent-color:#1a1a1a;width:15px;height:15px"> Possui desconto de fundo (5%)</label></div>`;
     const v=e[c.id]??'';
     if(c.t==='sel')return`<div class="fg"><label>${c.l}</label><select id="ed_${c.id}">${c.o.map(o=>`<option ${o===v?'selected':''}>${o}</option>`).join('')}</select></div>`;
     return`<div class="fg"><label>${c.l}</label><input id="ed_${c.id}" type="${c.t}" value="${v}" ${c.t==='number'?'step="0.01"':''}></div>`;
@@ -2299,7 +2300,7 @@ function renderCapTransp(){
     <div class="stat-card green"><div class="s-label">Pago</div><div class="s-value">${fmt(totPago)}</div></div>
   `;
   document.getElementById('tbody-capt').innerHTML=f.length
-    ?f.map(d=>`<tr><td><input type="checkbox" value="${d.id}" onchange="updateSelCount('tbody-capt')" style="accent-color:var(--green)"></td>
+    ?f.map(d=>`<tr><td><input type="checkbox" value="${d.id}" onchange="updateSelCount('tbody-capt')" style="accent-color:#1a1a1a"></td>
       <td><strong>${d.transportadora||'—'}</strong></td>
       <td><span class="badge ${d.empresa==='ZF Grãos'?'badge-blue':'badge-green'}">${d.empresa||'Prime Grãos'}</span></td>
       <td>${d.contrato}</td><td>${d.nf||'—'}</td><td>${d.motorista||'—'}</td>
@@ -2350,7 +2351,7 @@ function renderCapCom(){
     <div class="stat-card green"><div class="s-label">Pago</div><div class="s-value">${fmt(totPago)}</div></div>
   `;
   document.getElementById('tbody-capc').innerHTML=f.length
-    ?f.map(l=>`<tr><td><input type="checkbox" value="${l.embId}" onchange="updateSelCount('tbody-capc')" style="accent-color:var(--green)"></td>
+    ?f.map(l=>`<tr><td><input type="checkbox" value="${l.embId}" onchange="updateSelCount('tbody-capc')" style="accent-color:#1a1a1a"></td>
       <td><strong>${l.nome}</strong></td><td>${l.comprador}</td>
       <td>${l.contrato}</td><td>${l.nf||'—'}</td><td>${l.embarque||'—'}</td>
       <td class="mono">${fmtN(l.sc_emb)}</td>
@@ -2584,7 +2585,7 @@ function renderEmbarques(){
     return true;
   });
   document.getElementById('tbody-emb').innerHTML=f.length
-    ?f.map(d=>{const sp=sprazo(d);return`<tr class="${d.cancelada?'cancelada':''}" ondblclick="abrirEdit('${d.id}')" style="cursor:pointer" title="Duplo clique para editar"><td><input type="checkbox" value="${d.id}" onchange="updateSelCount('tbody-emb')" style="accent-color:var(--green)" onclick="event.stopPropagation()"></td>
+    ?f.map(d=>{const sp=sprazo(d);return`<tr class="${d.cancelada?'cancelada':''}" ondblclick="abrirEdit('${d.id}')" style="cursor:pointer" title="Duplo clique para editar"><td><input type="checkbox" value="${d.id}" onchange="updateSelCount('tbody-emb')" style="accent-color:#1a1a1a" onclick="event.stopPropagation()"></td>
       <td><strong>${d.contrato}</strong></td>
       <td><span class="badge ${d.empresa==='ZF Grãos'?'badge-blue':'badge-green'}">${d.empresa||'Prime Grãos'}</span></td>
       <td>${d.nf||'—'}</td>
@@ -2765,7 +2766,7 @@ function renderFluxo(){
 
   document.getElementById('flx-cards').innerHTML=`
     <div style="width:100%;grid-column:1/-1">
-      <p style="font-size:12px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">✅ O que tenho</p>
+      <p style="font-size:12px;font-weight:700;color:#1a1a1a;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">✅ O que tenho</p>
     </div>
     <div class="stat-card amber"><div class="s-label">A receber indústrias</div><div class="s-value">${fmt(aReceberTotal)}</div></div>
     <div class="stat-card green"><div class="s-label">Saldo em banco</div><div class="s-value">${fmt(saldoBanco)}</div><div class="s-sub">Parceiro "Banco"</div></div>
@@ -2792,7 +2793,7 @@ function renderFluxo(){
     <div style="width:100%;grid-column:1/-1;margin-top:.5rem">
       <p style="font-size:12px;font-weight:700;color:var(--text);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">💰 Resultado</p>
     </div>
-    <div class="stat-card ${saldoReal>=0?'green':'red'}" style="border:2px solid ${saldoReal>=0?'var(--green)':'var(--red)'}">
+    <div class="stat-card ${saldoReal>=0?'green':'red'}" style="border:2px solid ${saldoReal>=0?'#1a1a1a':'var(--red)'}">
       <div class="s-label" style="font-weight:700;font-size:12px">SALDO REAL (o que sobra)</div>
       <div class="s-value" style="font-size:1.6rem">${fmt(saldoReal)}</div>
     </div>
@@ -3606,6 +3607,169 @@ function exportCapCom(tipo){
 }
 
 
+
+function relatorioIndustria(){
+  // Pega embarques filtrados atualmente
+  const q=(document.getElementById('f-emb-q')||{value:''}).value.toLowerCase();
+  const canc=(document.getElementById('f-emb-canc')||{value:''}).value;
+  const selecionados=getSelected('tbody-embs');
+
+  const lista=embs.filter(d=>{
+    if(!_empresaFiltro||d.empresa===_empresaFiltro){}else return false;
+    if(selecionados.length&&!selecionados.includes(String(d.id)))return false;
+    if(d.cancelada)return false;
+    if(q&&!String(d.contrato||'').toLowerCase().includes(q)&&!String(d.nf||'').toLowerCase().includes(q)&&!String(d.motorista||'').toLowerCase().includes(q))return false;
+    if(!msMatch('ms-emb-prod',d.produto))return false;
+    if(!msMatch('ms-emb-ct',String(d.contrato)))return false;
+    if(!msMatch('ms-emb-transp',d.transportadora||''))return false;
+    if(!msMatch('ms-emb-st',d.status))return false;
+    if(canc==='0'&&d.cancelada)return false;
+    if(canc==='1'&&!d.cancelada)return false;
+    return true;
+  }).sort((a,b)=>a.embarque>b.embarque?1:-1);
+
+  if(!lista.length){toast('Nenhum embarque para exportar!',true);return;}
+
+  const {jsPDF}=window.jspdf;
+  const doc=new jsPDF({orientation:'landscape',unit:'mm',format:'a4'});
+  const empresa=_empresaFiltro||'Prime Grãos';
+  const dataHoje=new Date().toLocaleDateString('pt-BR');
+
+  // Agrupar por contrato
+  const porContrato={};
+  lista.forEach(d=>{
+    const k=String(d.contrato||'S/C');
+    if(!porContrato[k])porContrato[k]=[];
+    porContrato[k].push(d);
+  });
+
+  Object.entries(porContrato).forEach(([ctNum,its],ctIdx)=>{
+    if(ctIdx>0)doc.addPage();
+    const ct=cts.find(c=>String(c.numero)===ctNum)||{};
+
+    // === CABEÇALHO PRETO ===
+    doc.setFillColor(20,20,20);
+    doc.rect(0,0,297,30,'F');
+
+    // Logo placeholder (quadrado branco)
+    doc.setFillColor(255,255,255);
+    doc.rect(10,6,18,18,'F');
+    doc.setTextColor(20,20,20);
+    doc.setFontSize(7);
+    doc.setFont('helvetica','bold');
+    doc.text('LOGO',19,16,{align:'center'});
+
+    // Nome empresa
+    doc.setTextColor(255,255,255);
+    doc.setFontSize(16);
+    doc.setFont('helvetica','bold');
+    doc.text(empresa,32,13);
+    doc.setFontSize(8);
+    doc.setFont('helvetica','normal');
+    doc.setTextColor(200,200,200);
+    doc.text('Controle de Contratos e Embarques',32,19);
+
+    // Titulo do relatório
+    doc.setTextColor(255,255,255);
+    doc.setFontSize(10);
+    doc.setFont('helvetica','bold');
+    doc.text('RELATÓRIO DE EMBARQUES',297-14,10,{align:'right'});
+    doc.setFontSize(8);
+    doc.setFont('helvetica','normal');
+    doc.setTextColor(200,200,200);
+    doc.text('Emitido em: '+dataHoje,297-14,16,{align:'right'});
+    doc.text('Contrato: '+ctNum,297-14,22,{align:'right'});
+
+    // === LINHA DECORATIVA ===
+    doc.setFillColor(180,180,180);
+    doc.rect(0,30,297,1,'F');
+
+    // === CARD DE INFO DO CONTRATO ===
+    doc.setFillColor(245,245,245);
+    doc.rect(0,31,297,16,'F');
+    doc.setDrawColor(220,220,220);
+    doc.setLineWidth(0.2);
+    doc.rect(0,31,297,16,'S');
+
+    const infos=[
+      ['COMPRADOR',ct.comprador||'—'],
+      ['INDÚSTRIA',ct.industria||ct.vendedor||'—'],
+      ['PRODUTO',ct.produto||'—'],
+      ['QTD CONTRATADA',fmtN(ct.qtd||0,0)+' sc'],
+      ['PREÇO VENDA','R$ '+fmt(ct.valor||0)+'/sc'],
+    ];
+    doc.setFontSize(7);
+    infos.forEach((info,i)=>{
+      const x=14+(i*56);
+      doc.setFont('helvetica','bold');
+      doc.setTextColor(100,100,100);
+      doc.text(info[0],x,37);
+      doc.setFont('helvetica','normal');
+      doc.setTextColor(20,20,20);
+      doc.setFontSize(8.5);
+      doc.text(String(info[1]),x,43);
+      doc.setFontSize(7);
+    });
+
+    // === TABELA ===
+    const cab=[['DATA EMBARQUE','NF','MOTORISTA','CPF','PLACA','PESO LÍQ. (KG)','R$/SC VENDA','TOTAL VENDA (R$)']];
+    const linhas=its.map(d=>[
+      d.embarque||'—',
+      d.nf||'—',
+      d.motorista||'—',
+      d.cpf||'—',
+      d.placa||'—',
+      fmtN(d.pliq||0,0),
+      fmt(d.venda||0),
+      fmt(d.total_venda||0)
+    ]);
+
+    const totalPliq=its.reduce((s,d)=>s+(d.pliq||0),0);
+    const totalVenda=its.reduce((s,d)=>s+(d.total_venda||0),0);
+    linhas.push(['','','','','TOTAL',fmtN(totalPliq,0),'',fmt(totalVenda)]);
+
+    doc.autoTable({
+      head:cab,
+      body:linhas,
+      startY:49,
+      margin:{left:14,right:14},
+      styles:{fontSize:8,cellPadding:3,lineColor:[220,220,220],lineWidth:0.2,textColor:[30,30,30]},
+      headStyles:{fillColor:[20,20,20],textColor:[255,255,255],fontStyle:'bold',fontSize:7.5,cellPadding:3.5},
+      alternateRowStyles:{fillColor:[250,250,250]},
+      didParseCell:function(data){
+        if(data.row.index===linhas.length-1){
+          data.cell.styles.fontStyle='bold';
+          data.cell.styles.fillColor=[230,230,230];
+          data.cell.styles.textColor=[20,20,20];
+        }
+      },
+      columnStyles:{
+        0:{cellWidth:24},
+        1:{cellWidth:22},
+        2:{cellWidth:55},
+        3:{cellWidth:30},
+        4:{cellWidth:18},
+        5:{cellWidth:26,halign:'right'},
+        6:{cellWidth:22,halign:'right'},
+        7:{cellWidth:32,halign:'right'},
+      }
+    });
+
+    // === RODAPÉ ===
+    const pH=doc.internal.pageSize.height;
+    doc.setFillColor(20,20,20);
+    doc.rect(0,pH-10,297,10,'F');
+    doc.setFontSize(7);
+    doc.setFont('helvetica','normal');
+    doc.setTextColor(180,180,180);
+    doc.text(empresa+' — Documento confidencial — '+dataHoje,14,pH-4);
+    doc.text('Pág. '+(ctIdx+1)+' / '+Object.keys(porContrato).length,297-14,pH-4,{align:'right'});
+  });
+
+  doc.save('Relatorio_Embarques_'+empresa.replace(' ','_')+'_'+dataHoje.replace(/\//g,'-')+'.pdf');
+  toast('Relatório gerado!');
+}
+
 function exportEmb(tipo='csv'){
   // Respeita filtros ativos e checkboxes selecionados
   const selecionados=getSelected('tbody-emb');
@@ -3808,7 +3972,7 @@ function gerarFechContrato(){
     <div style="width:100%;grid-column:1/-1;padding-bottom:4px">
       <p style="font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;margin:0">💰 Lucro Parcial — embarques recebidos</p>
     </div>
-    <div class="stat-card ${lucro_parcial>=0?'green':'red'}" style="border:2px solid ${lucro_parcial>=0?'var(--green)':'var(--red)'}">
+    <div class="stat-card ${lucro_parcial>=0?'green':'red'}" style="border:2px solid ${lucro_parcial>=0?'#1a1a1a':'var(--red)'}">
       <div class="s-label" style="font-weight:600">Lucro parcial R$</div>
       <div class="s-value">${fmt(lucro_parcial)}</div>
       <div class="s-sub">${fmtP(lucro_parcial_pct)} sobre recebido</div>
@@ -3821,7 +3985,7 @@ function gerarFechContrato(){
     <div class="stat-card">
       <div class="s-label">Embarques recebidos</div>
       <div class="s-value">${qtd_recebidos} / ${qtd_total}</div>
-      <div style="margin-top:8px;height:6px;background:var(--gray-100);border-radius:4px"><div style="width:${pct_recebidos}%;height:100%;background:var(--green);border-radius:4px;transition:width .3s"></div></div>
+      <div style="margin-top:8px;height:6px;background:var(--gray-100);border-radius:4px"><div style="width:${pct_recebidos}%;height:100%;background:#1a1a1a;border-radius:4px;transition:width .3s"></div></div>
     </div>
     <div style="width:100%;grid-column:1/-1;padding:8px 0 4px">
       <p style="font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;margin:0">📊 Resultado total do contrato</p>
@@ -4022,7 +4186,7 @@ function gerarFechamento(){
   const embAtivos=embs.filter(d=>!d.cancelada&&selStr.includes(String(d.contrato).trim())&&(!_empresaFiltro||d.empresa===_empresaFiltro));
   const pendentes=embAtivos.filter(d=>!(d.recebido>0));
   document.getElementById('tbody-pend').innerHTML=pendentes.length
-    ?pendentes.map(d=>{const sp=sprazo(d);const pv=d.total_venda-(d.recebido||0);return`<tr ondblclick="abrirEdit('${d.id}')" style="cursor:pointer" title="Duplo clique para editar"><td><input type="checkbox" value="${d.id}" onchange="updateSelCount('tbody-frete')" style="accent-color:var(--green)" onclick="event.stopPropagation()"></td>
+    ?pendentes.map(d=>{const sp=sprazo(d);const pv=d.total_venda-(d.recebido||0);return`<tr ondblclick="abrirEdit('${d.id}')" style="cursor:pointer" title="Duplo clique para editar"><td><input type="checkbox" value="${d.id}" onchange="updateSelCount('tbody-frete')" style="accent-color:#1a1a1a" onclick="event.stopPropagation()"></td>
       <td><strong>${d.contrato}</strong></td><td>${d.nf||'—'}</td><td>${d.motorista||'—'}</td>
       <td>${d.descarga||'—'}</td><td>${d.prazo_rec||'—'}</td>
       <td><span class="badge ${sp.badge}">${sp.txt}</span></td>
