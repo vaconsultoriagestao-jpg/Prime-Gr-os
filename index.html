@@ -4351,8 +4351,6 @@ async function ensureTables(){
     try{
       showLoading('Carregando sistema...');
       await load();
-      const _sb=localStorage.getItem('_saldoBanco_'+(_emp||'Prime Grãos'))||localStorage.getItem('_saldoBanco');
-      if(_sb)_saldoBanco=parseFloat(_sb)||0;
       hideLoading();
       const _auth=JSON.parse(_saved);
       const _u=usuarios.find(x=>x.id===_auth.id&&x.user.trim().toLowerCase()===_auth.user.trim().toLowerCase());
@@ -4360,6 +4358,8 @@ async function ensureTables(){
         usuarioLogado=_u;
         const _emp=_auth.empresa||'Prime Grãos';
         _empresaFiltro=_emp;
+        const _sb=localStorage.getItem('_saldoBanco_'+(_emp||'Prime Grãos'))||localStorage.getItem('_saldoBanco');
+        if(_sb)_saldoBanco=parseFloat(_sb)||0;
         const spanEmp=document.getElementById('filtro-empresa-global');
         if(spanEmp)spanEmp.textContent=_emp;
         document.getElementById('login-screen').style.display='none';
