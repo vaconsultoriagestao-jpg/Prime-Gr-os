@@ -2673,7 +2673,7 @@ function sortTable(tbodyId, colIndex, isNumeric=false){
   _sortState[key]=!_sortState[key]; // toggle asc/desc
   const asc=_sortState[key];
   // Excluir linhas de totalizador (data-total="1")
-  const allRows=[...tbody.querySelectorAll('tr')];
+  const allRows=[...tbody.children].filter(el=>el.tagName==='TR');
   const totalRows=allRows.filter(r=>r.dataset.total==='1');
   const rows=allRows.filter(r=>r.dataset.total!=='1');
   rows.sort((a,b)=>{
