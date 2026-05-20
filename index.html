@@ -2669,10 +2669,10 @@ function sortTable(tbodyId, colIndex, isNumeric=false){
   const key=tbodyId+'-'+colIndex;
   _sortState[key]=!_sortState[key]; // toggle asc/desc
   const asc=_sortState[key];
-  // Excluir linhas de totalizador (style com font-weight:700)
+  // Excluir linhas de totalizador (data-total="1")
   const allRows=[...tbody.querySelectorAll('tr')];
-  const totalRows=allRows.filter(r=>r.style.fontWeight==='700'||r.style.fontWeight==='bold');
-  const rows=allRows.filter(r=>r.style.fontWeight!=='700'&&r.style.fontWeight!=='bold');
+  const totalRows=allRows.filter(r=>r.dataset.total==='1');
+  const rows=allRows.filter(r=>r.dataset.total!=='1');
   rows.sort((a,b)=>{
     const ac=(a.cells[colIndex]&&a.cells[colIndex].textContent&&a.cells[colIndex].textContent.trim())||'';
     const bc=(b.cells[colIndex]&&b.cells[colIndex].textContent&&b.cells[colIndex].textContent.trim())||'';
@@ -2851,11 +2851,11 @@ function renderFluxo(){
       <td style="color:var(--text-faint);font-size:11px">${l.lancado_por||'—'}</td>
       <td><button class="btn btn-danger" onclick="event.stopPropagation();delFluxo(${l.id})">×</button></td>
     </tr>`).join('')
-    +(f.length?`<tr style="font-weight:700;border-top:2px solid var(--border);background:#f8f9fa">
+    +(f.length?`<tr data-total="1" style="font-weight:700;border-top:2px solid var(--border);background:#f8f9fa">
       <td colspan="4">Total entradas</td>
       <td class="mono pos">${fmt(f.filter(l=>l.tipo==='entrada').reduce((s,l)=>s+(l.valor||0),0))}</td>
       <td colspan="3"></td></tr>
-      <tr style="font-weight:700;background:#f8f9fa">
+      <tr data-total="1" style="font-weight:700;background:#f8f9fa">
       <td colspan="4">Total saídas</td>
       <td class="mono neg">${fmt(f.filter(l=>l.tipo==='saida').reduce((s,l)=>s+(l.valor||0),0))}</td>
       <td colspan="3"></td></tr>`:'')
@@ -3300,7 +3300,7 @@ function renderARecParceiros(){
       <td>${l.descricao||'—'}</td>
       <td class="mono ${l.tipo==='entrada'?'pos':'neg'}">${fmt(l.valor||0)}</td>
       <td><button class="btn btn-danger" onclick="delFluxo(${l.id})">×</button></td>
-    </tr>`).join('')+`<tr style="font-weight:700;border-top:2px solid var(--border);background:#f8f9fa">
+    </tr>`).join('')+`<tr data-total="1" style="font-weight:700;border-top:2px solid var(--border);background:#f8f9fa">
       <td colspan="4">Saldo</td>
       <td class="mono ${_totalArecParc>=0?'pos':'neg'}">${fmt(Math.abs(_totalArecParc))}</td><td></td>
     </tr>`
@@ -3360,7 +3360,7 @@ function renderDesp(){
       <td style="color:var(--text-faint);font-size:12px">${d.obs||'—'}</td>
       <td style="color:var(--text-faint);font-size:11px">${d.lancado_por||'—'}</td>
       <td><button class="btn btn-danger" onclick="delDesp(${d.id})">×</button></td>
-    </tr>`).join('')+`<tr style="font-weight:700;border-top:2px solid var(--border);background:#f8f9fa">
+    </tr>`).join('')+`<tr data-total="1" style="font-weight:700;border-top:2px solid var(--border);background:#f8f9fa">
       <td colspan="3">Total</td>
       <td class="mono neg">${fmt(_totalDesp)}</td><td></td><td></td><td></td>
     </tr>`
@@ -3430,7 +3430,7 @@ function renderCapParc(){
       <td>${l.descricao||'—'}</td>
       <td class="mono neg">${fmt(l.valor||0)}</td>
       <td><button class="btn btn-danger" onclick="delFluxo(${l.id})">×</button></td>
-    </tr>`).join('')+`<tr style="font-weight:700;border-top:2px solid var(--border);background:#f8f9fa">
+    </tr>`).join('')+`<tr data-total="1" style="font-weight:700;border-top:2px solid var(--border);background:#f8f9fa">
       <td colspan="3">Total</td>
       <td class="mono neg">${fmt(total)}</td><td></td>
     </tr>`
