@@ -1332,7 +1332,7 @@ function aplicarFiltroEmpresa(){
 function showLoading(msg='Carregando...'){
   let el=document.getElementById('loading-overlay');
   if(!el){el=document.createElement('div');el.id='loading-overlay';el.style.cssText='position:fixed;inset:0;background:rgba(255,255,255,.88);z-index:9999;display:flex;align-items:center;justify-content:center;font-family:DM Sans,sans-serif;font-size:14px;color:#5f6368;gap:10px';document.body.appendChild(el);}
-  el.innerHTML=`<div style="width:18px;height:18px;border:2px solid #e0e0e0;border-top-color:#2D6A4F;border-radius:50%;animation:spin .7s linear infinite"></div>${msg}`;
+  el.innerHTML=`<div style="width:18px;height:18px;border:2px solid #e0e0e0;border-top-color:#1B2B4B;border-radius:50%;animation:spin .7s linear infinite"></div>${msg}`;
   el.style.display='flex';
   if(!document.getElementById('spin-style')){const s=document.createElement('style');s.id='spin-style';s.textContent='@keyframes spin{to{transform:rotate(360deg)}}';document.head.appendChild(s);}
 }
@@ -2669,7 +2669,10 @@ function sortTable(tbodyId, colIndex, isNumeric=false){
   const key=tbodyId+'-'+colIndex;
   _sortState[key]=!_sortState[key]; // toggle asc/desc
   const asc=_sortState[key];
-  const rows=[...tbody.querySelectorAll('tr')];
+  // Excluir linhas de totalizador (style com font-weight:700)
+  const allRows=[...tbody.querySelectorAll('tr')];
+  const totalRows=allRows.filter(r=>r.style.fontWeight==='700'||r.style.fontWeight==='bold');
+  const rows=allRows.filter(r=>r.style.fontWeight!=='700'&&r.style.fontWeight!=='bold');
   rows.sort((a,b)=>{
     const ac=(a.cells[colIndex]&&a.cells[colIndex].textContent&&a.cells[colIndex].textContent.trim())||'';
     const bc=(b.cells[colIndex]&&b.cells[colIndex].textContent&&b.cells[colIndex].textContent.trim())||'';
@@ -2681,6 +2684,8 @@ function sortTable(tbodyId, colIndex, isNumeric=false){
     return asc?ac.localeCompare(bc,'pt-BR'):bc.localeCompare(ac,'pt-BR');
   });
   rows.forEach(r=>tbody.appendChild(r));
+  // Recolocar totalizadores no final
+  totalRows.forEach(r=>tbody.appendChild(r));
   // Update header arrows
   const table=tbody.closest('table');
   if(table){
