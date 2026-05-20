@@ -1852,6 +1852,7 @@ async function delCt(id){
   cts=cts.filter(c=>c.id!==id);await saveCts();renderContratos();updSelCts();toast('Contrato removido.');
 }
 function renderContratos(){
+  if(!document.getElementById('tbody-cts'))return;
   const q=(document.getElementById('f-ct-q')||{value:''}).value.toLowerCase();
   // Init msFilters
   const prods=[...new Set(cts.map(c=>c.produto).filter(Boolean))].sort();
@@ -2425,6 +2426,7 @@ async function toggleFretePago(embId,parcela){
   await saveEmb(embs[idx]);renderFrete();toast('Status atualizado!');
 }
 function renderFrete(){
+  if(!document.getElementById('tbody-frete'))return;
   const q=(document.getElementById('f-frete-q')||{value:''}).value.toLowerCase();
   const mes=(document.getElementById('f-frete-mes')||{value:''}).value;
   const ano=(document.getElementById('f-frete-ano')||{value:''}).value;
@@ -2591,6 +2593,7 @@ function renderPainel(){
 
 // ===== EMBARQUES =====
 function renderEmbarques(){
+  if(!document.getElementById('tbody-emb'))return;
   const q=(document.getElementById('f-emb-q')||{value:''}).value.toLowerCase();
   const canc=(document.getElementById('f-emb-canc')||{value:''}).value;
   // Init msFilters
@@ -2708,6 +2711,7 @@ async function saveFluxo(){
   }catch(e){console.error(e);}
 }
 function renderFluxo(){
+  if(!document.getElementById('tbody-fluxo'))return;
   const mes=(document.getElementById('flx-mes')||{value:''}).value;
   const ano=(document.getElementById('flx-ano')||{value:'2026'}).value;
   const tipo=(document.getElementById('flx-tipo')||{value:''}).value;
@@ -3212,6 +3216,7 @@ function getSelected(tbodyId){
 
 // ===== A RECEBER INDUSTRIAS =====
 function renderARecInd(){
+  if(!document.getElementById('tbody-arec-ind'))return;
   const emp=_empresaFiltro;
   const ctNums=[...new Set(embs.filter(d=>!d.cancelada&&(!emp||d.empresa===emp)).map(d=>String(d.contrato)))].sort();
   const compradores=[...new Set(embs.filter(d=>!d.cancelada&&(!emp||d.empresa===emp)).map(d=>d.empresa).filter(Boolean))].sort();
@@ -3271,6 +3276,7 @@ function exportARecInd(tipo){
 
 // ===== A RECEBER / CAP PARCEIROS (usa fluxo array) =====
 function renderARecParceiros(){
+  if(!document.getElementById('tbody-arec-parc'))return;
   const filtro=(document.getElementById('arec-parc-filtro')||{value:''}).value;
   const emp=_empresaFiltro;
   // Set default empresa in form
@@ -3340,6 +3346,7 @@ async function saveDesp(){
   }catch(e){console.error(e);}
 }
 function renderDesp(){
+  if(!document.getElementById('tbody-desp'))return;
   const emp=_empresaFiltro;
   // Set default empresa in form
   const empSel=document.getElementById('desp-emp');
@@ -3411,6 +3418,7 @@ function exportDesp(tipo){
 
 // ===== CAP PARCEIROS (DEVOLUÇÃO) =====
 function renderCapParc(){
+  if(!document.getElementById('tbody-cap-parc'))return;
   const emp=_empresaFiltro;
   const lancamentos=fluxo.filter(l=>l.tipo==="entrada"&&(l.categoria==="parceiro"||(!l.categoria&&l.parceiro&&l.parceiro.toUpperCase()!=="BANCO"&&l.parceiro!=="Escritório"))&&(!emp||l.empresa===emp));
 
