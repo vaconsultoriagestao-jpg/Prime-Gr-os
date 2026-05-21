@@ -8,7 +8,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 <style>
-:root{--green:#1a1a1a;--green-light:#333333;--green-pale:#E8EEF8;--green-faint:#F0F4FC;--amber:#B5451B;--amber-pale:#FDEBD0;--red:#C0392B;--red-pale:#FDECEA;--blue:#1A5276;--blue-pale:#D6EAF8;--gray-50:#F8F9FA;--gray-100:#F1F3F4;--gray-200:#E8EAED;--gray-300:#DADCE0;--gray-700:#5F6368;--text:#1a1a1a;--text-muted:#5f6368;--text-faint:#9aa0a6;--border:#e0e0e0;--bg:#fff;--bg-page:#f5f5f0;--radius:10px;--radius-lg:16px;--shadow:0 1px 3px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.04);--shadow-md:0 4px 12px rgba(0,0,0,.10),0 2px 4px rgba(0,0,0,.06)}
+:root{--green:#1B2B4B;--green-light:#2A3F6F;--green-pale:#E8EEF8;--green-faint:#F0F4FC;--green-dark:#1B2B4B;--amber:#B5451B;--amber-pale:#FDEBD0;--red:#C0392B;--red-pale:#FDECEA;--blue:#1A5276;--blue-pale:#D6EAF8;--gray-50:#F8F9FA;--gray-100:#F1F3F4;--gray-200:#E8EAED;--gray-300:#DADCE0;--gray-700:#5F6368;--text:#1B2B4B;--text-muted:#5f6368;--text-faint:#9aa0a6;--border:#e0e0e0;--bg:#fff;--bg-page:#f5f5f0;--radius:10px;--radius-lg:16px;--shadow:0 1px 3px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.04);--shadow-md:0 4px 12px rgba(0,0,0,.10),0 2px 4px rgba(0,0,0,.06)}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'DM Sans',sans-serif;background:var(--bg-page);color:var(--text);font-size:14px;line-height:1.5;min-height:100vh}
 
@@ -203,7 +203,7 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
      <label>Empresa</label>
      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:4px">
        <button type="button" id="btn-emp-prime" onclick="selecionarEmpresaLogin('Prime Grãos')"
-         style="padding:10px;border:2px solid #1a1a1a;border-radius:8px;background:#1B2B4B;color:#fff;font-weight:600;cursor:pointer;font-size:13px">
+         style="padding:10px;border:2px solid #1B2B4B;border-radius:8px;background:#1B2B4B;color:#fff;font-weight:600;cursor:pointer;font-size:13px">
          Prime Grãos
        </button>
        <button type="button" id="btn-emp-zf" onclick="selecionarEmpresaLogin('ZF Grãos')"
@@ -396,7 +396,7 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
     <div class="stats-grid" id="flx-cards" style="margin-bottom:1.25rem"></div>
 
     <!-- Fluxo de Caixa é somente leitura - lançamentos nas telas dedicadas -->
-    <div style="background:#F0F4FC;border:1px solid #1a1a1a;border-radius:var(--radius);padding:.75rem 1rem;margin-bottom:1rem;font-size:13px;color:var(--green-dark)">
+    <div style="background:#F0F4FC;border:1px solid #1B2B4B;border-radius:var(--radius);padding:.75rem 1rem;margin-bottom:1rem;font-size:13px;color:var(--green-dark)">
       💡 Para lançar aportes/devoluções de parceiros acesse <strong>A Receber → Parceiros</strong>. Para despesas acesse <strong>Contas a Pagar → Despesas</strong>.
     </div>
 
@@ -1482,10 +1482,10 @@ function selecionarEmpresaLogin(empresa){
   const btnPrime=document.getElementById('btn-emp-prime');
   const btnZF=document.getElementById('btn-emp-zf');
   if(empresa==='Prime Grãos'){
-    btnPrime.style.background='#1a1a1a';btnPrime.style.color='#fff';btnPrime.style.borderColor='#1a1a1a';
+    btnPrime.style.background='#1B2B4B';btnPrime.style.color='#fff';btnPrime.style.borderColor='#1B2B4B';
     btnZF.style.background='transparent';btnZF.style.color='var(--text)';btnZF.style.borderColor='var(--border)';
   } else {
-    btnZF.style.background='#1a1a1a';btnZF.style.color='#fff';btnZF.style.borderColor='#1a1a1a';
+    btnZF.style.background='#1B2B4B';btnZF.style.color='#fff';btnZF.style.borderColor='#1B2B4B';
     btnPrime.style.background='transparent';btnPrime.style.color='var(--text)';btnPrime.style.borderColor='var(--border)';
   }
 }
@@ -1622,7 +1622,7 @@ function renderUsuarios(){
   lista.innerHTML=usuarios.map(u=>`
     <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:.5px solid var(--border)">
       <div style="display:flex;align-items:center;gap:10px">
-        <div style="width:34px;height:34px;border-radius:50%;background:${u.perfil==='admin'?'#E8EEF8':'var(--blue-pale)'};display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:${u.perfil==='admin'?'#1a1a1a':'var(--blue)'};flex-shrink:0">${u.nome.charAt(0).toUpperCase()}</div>
+        <div style="width:34px;height:34px;border-radius:50%;background:${u.perfil==='admin'?'#E8EEF8':'var(--blue-pale)'};display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:${u.perfil==='admin'?'#1B2B4B':'var(--blue)'};flex-shrink:0">${u.nome.charAt(0).toUpperCase()}</div>
         <div>
           <div style="font-size:13px;font-weight:500">${u.nome}</div>
           <div style="font-size:11px;color:var(--text-faint)">@${u.user} · <span class="badge ${u.perfil==='admin'?'badge-green':'badge-blue'}" style="font-size:9px">${u.perfil==='admin'?'Admin':'Operador'}</span>${u.perfil!=='admin'&&u.permissoes&&u.permissoes.length?` · ${u.permissoes.length} menu(s)`:''}</div>
@@ -1906,7 +1906,7 @@ function renderContratos(){
       <td>${c.encerrado?'<span class="badge badge-gray">Encerrado</span>':'<span class="badge badge-green">Ativo</span>'}</td>
       <td style="display:flex;gap:4px">
         <button class="btn-edit" onclick="abrirModalCt(${c.id})">Editar</button>
-        <button class="btn-edit" onclick="encerrarCt(${c.id})" style="color:${c.encerrado?'#1a1a1a':'var(--amber)'}">${c.encerrado?'Reabrir':'Encerrar'}</button>
+        <button class="btn-edit" onclick="encerrarCt(${c.id})" style="color:${c.encerrado?'#1B2B4B':'var(--amber)'}">${c.encerrado?'Reabrir':'Encerrar'}</button>
         <button class="btn btn-danger" onclick="delCt(${c.id})">×</button>
       </td></tr>`).join('')
     :'<tr><td colspan="15" class="empty-state">Nenhum contrato cadastrado.</td></tr>';
@@ -1947,7 +1947,7 @@ function preencherDoCt(){
   if(progressEl){
     progressEl.innerHTML=`<div style="font-size:12px;color:var(--text-muted);margin-top:6px">
       Contrato: <strong>${fmtN(scEmbarcadas,0)}</strong> sc embarcadas de <strong>${fmtN(c.qtd,0)}</strong> sc 
-      (${pct}%) — Faltam: <strong style="color:${scFaltantes>0?'var(--amber)':'#1a1a1a'}">${fmtN(scFaltantes,0)} sc</strong>
+      (${pct}%) — Faltam: <strong style="color:${scFaltantes>0?'var(--amber)':'#1B2B4B'}">${fmtN(scFaltantes,0)} sc</strong>
     </div>`;
   }
   // Comissões do contrato
@@ -2862,7 +2862,7 @@ function renderFluxo(){
     <div style="width:100%;grid-column:1/-1;margin-top:.5rem">
       <p style="font-size:12px;font-weight:700;color:var(--text);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">💰 Resultado</p>
     </div>
-    <div class="stat-card ${saldoReal>=0?'green':'red'}" style="border:2px solid ${saldoReal>=0?'#1a1a1a':'var(--red)'}">
+    <div class="stat-card ${saldoReal>=0?'green':'red'}" style="border:2px solid ${saldoReal>=0?'#1B2B4B':'var(--red)'}">
       <div class="s-label" style="font-weight:700;font-size:12px">SALDO REAL (o que sobra)</div>
       <div class="s-value" style="font-size:1.6rem">${fmt(saldoReal)}</div>
     </div>
@@ -4180,7 +4180,7 @@ function gerarFechContrato(){
     <div style="width:100%;grid-column:1/-1;padding-bottom:4px">
       <p style="font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;margin:0">💰 Lucro Parcial — embarques recebidos</p>
     </div>
-    <div class="stat-card ${lucro_parcial>=0?'green':'red'}" style="border:2px solid ${lucro_parcial>=0?'#1a1a1a':'var(--red)'}">
+    <div class="stat-card ${lucro_parcial>=0?'green':'red'}" style="border:2px solid ${lucro_parcial>=0?'#1B2B4B':'var(--red)'}">
       <div class="s-label" style="font-weight:600">Lucro parcial R$</div>
       <div class="s-value">${fmt(lucro_parcial)}</div>
       <div class="s-sub">${fmtP(lucro_parcial_pct)} sobre recebido</div>
