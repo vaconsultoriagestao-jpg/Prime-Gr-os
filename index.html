@@ -2436,7 +2436,7 @@ async function toggleFretePago(embId,parcela){
   await saveEmb(embs[idx]);renderFrete();toast('Status atualizado!');
 }
 function renderFrete(){
-  if(!document.getElementById('tbody-frete'))return;
+  if(!document.getElementById('frete-lista'))return;
   const q=(document.getElementById('f-frete-q')||{value:''}).value.toLowerCase();
   const mes=(document.getElementById('f-frete-mes')||{value:''}).value;
   const ano=(document.getElementById('f-frete-ano')||{value:''}).value;
@@ -3000,7 +3000,7 @@ async function salvarFluxo(){
   limparFluxo();renderFluxo();toast('Lançamento salvo!');
 }
 function editarFluxo(id){
-  const l=fluxo.find(x=>x.id===id);if(!l)return;
+  const l=fluxo.find(x=>String(x.id)===String(id));if(!l)return;
   editFluxoId=id;
   document.getElementById('flx-data').value=l.data||'';
   document.getElementById('flx-tipo-lanc').value=l.tipo||'entrada';
@@ -3309,13 +3309,16 @@ function renderARecParceiros(){
 
   const _totalArecParc=f.filter(l=>l.tipo==='entrada').reduce((s,l)=>s+(l.valor||0),0)-f.filter(l=>l.tipo==='saida').reduce((s,l)=>s+(l.valor||0),0);
   document.getElementById('tbody-arec-parc').innerHTML=f.length
-    ?[...f].sort((a,b)=>b.data>a.data?1:-1).map(l=>`<tr>
+    ?[...f].sort((a,b)=>b.data>a.data?1:-1).map(l=>`<tr ondblclick="editarFluxo('${l.id}')" style="cursor:pointer" title="Duplo clique para editar">
       <td>${l.data||'—'}</td>
       <td><span class="badge ${l.tipo==='entrada'?'badge-green':'badge-red'}">${l.tipo==='entrada'?'Aporte':'Devolução'}</span></td>
       <td><strong>${l.parceiro||'—'}</strong></td>
       <td>${l.descricao||'—'}</td>
       <td class="mono ${l.tipo==='entrada'?'pos':'neg'}">${fmt(l.valor||0)}</td>
-      <td><button class="btn btn-danger" onclick="delFluxo(${l.id})">×</button></td>
+      <td style="display:flex;gap:4px">
+        <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();editarFluxo('${l.id}')">✏</button>
+        <button class="btn btn-danger" onclick="event.stopPropagation();delFluxo('${l.id}')">×</button>
+      </td>
     </tr>`).join('')+`<tr data-total="1" style="font-weight:700;border-top:2px solid var(--border);background:#f8f9fa">
       <td colspan="4">Saldo</td>
       <td class="mono ${_totalArecParc>=0?'pos':'neg'}">${fmt(Math.abs(_totalArecParc))}</td><td></td>
@@ -3443,11 +3446,14 @@ function renderCapParc(){
     <div class="stat-card"><div class="s-label">Lançamentos</div><div class="s-value">${f.length}</div></div>
   `;
   document.getElementById('tbody-cap-parc').innerHTML=f.length
-    ?[...f].sort((a,b)=>b.data>a.data?1:-1).map(l=>`<tr>
+    ?[...f].sort((a,b)=>b.data>a.data?1:-1).map(l=>`<tr ondblclick="editarFluxo('${l.id}')" style="cursor:pointer" title="Duplo clique para editar">
       <td>${l.data||'—'}</td><td><strong>${l.parceiro||'—'}</strong></td>
       <td>${l.descricao||'—'}</td>
       <td class="mono neg">${fmt(l.valor||0)}</td>
-      <td><button class="btn btn-danger" onclick="delFluxo(${l.id})">×</button></td>
+      <td style="display:flex;gap:4px">
+        <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();editarFluxo('${l.id}')">✏</button>
+        <button class="btn btn-danger" onclick="event.stopPropagation();delFluxo('${l.id}')">×</button>
+      </td>
     </tr>`).join('')+`<tr data-total="1" style="font-weight:700;border-top:2px solid var(--border);background:#f8f9fa">
       <td colspan="3">Total</td>
       <td class="mono neg">${fmt(total)}</td><td></td>
@@ -3826,21 +3832,29 @@ function gerarRelIndustriaFiltrado(){
     });
 
     // === TABELA ===
-    const cab=[['DATA EMBARQUE','NF','MOTORISTA','CPF','PLACA','PESO LÍQ. (KG)','R$/SC VENDA','TOTAL VENDA (R$)']];
-    const linhas=its.map(d=>[
-      d.embarque||'—',
-      d.nf||'—',
-      d.motorista||'—',
-      d.cpf||'—',
-      d.placa||'—',
-      fmtN(d.pliq||0,0),
-      fmt(d.venda||0),
-      fmt(d.total_venda||0)
-    ]);
+    const cab=[['DATA EMBARQUE','DATA DESCARGA','NF','MOTORISTA','CPF','PLACA','PESO LÍQ. (KG)','PESO DESC. (KG)','R$/SC VENDA','TOTAL VENDA (R$)','A RECEBER (R$)']];
+    const linhas=its.map(d=>{
+      const aRec=Math.max(0,(d.total_venda||0)-(d.recebido||0));
+      return [
+        d.embarque||'—',
+        d.descarga||'—',
+        d.nf||'—',
+        d.motorista||'—',
+        d.cpf||'—',
+        d.placa||'—',
+        fmtN(d.pliq||0,0),
+        fmtN(d.pdesc||d.pliq||0,0),
+        fmt(d.venda||0),
+        fmt(d.total_venda||0),
+        aRec>0?fmt(aRec):'—'
+      ];
+    });
 
     const totalPliq=its.reduce((s,d)=>s+(d.pliq||0),0);
+    const totalPdesc=its.reduce((s,d)=>s+(d.pdesc||d.pliq||0),0);
     const totalVenda=its.reduce((s,d)=>s+(d.total_venda||0),0);
-    linhas.push(['','','','','TOTAL',fmtN(totalPliq,0),'',fmt(totalVenda)]);
+    const totalARec=its.reduce((s,d)=>s+Math.max(0,(d.total_venda||0)-(d.recebido||0)),0);
+    linhas.push(['','','','','','TOTAL',fmtN(totalPliq,0),fmtN(totalPdesc,0),'',fmt(totalVenda),totalARec>0?fmt(totalARec):'—']);
 
     doc.autoTable({
       head:cab,
@@ -3858,14 +3872,17 @@ function gerarRelIndustriaFiltrado(){
         }
       },
       columnStyles:{
-        0:{cellWidth:24},
-        1:{cellWidth:22},
-        2:{cellWidth:55},
-        3:{cellWidth:30},
-        4:{cellWidth:18},
-        5:{cellWidth:26,halign:'right'},
-        6:{cellWidth:22,halign:'right'},
-        7:{cellWidth:32,halign:'right'},
+        0:{cellWidth:20},
+        1:{cellWidth:20},
+        2:{cellWidth:18},
+        3:{cellWidth:44},
+        4:{cellWidth:25},
+        5:{cellWidth:14},
+        6:{cellWidth:20,halign:'right'},
+        7:{cellWidth:20,halign:'right'},
+        8:{cellWidth:16,halign:'right'},
+        9:{cellWidth:26,halign:'right'},
+        10:{cellWidth:26,halign:'right'},
       }
     });
 
