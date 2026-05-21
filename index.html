@@ -3874,7 +3874,7 @@ function gerarRelIndustriaFiltrado(){
       ['INDÚSTRIA',ct.industria||ct.vendedor||'—'],
       ['PRODUTO',ct.produto||'—'],
       ['QTD CONTRATADA',fmtN(ct.qtd||0,0)+' sc'],
-      ['PREÇO VENDA','R$ '+fmt(ct.valor||0)+'/sc'],
+      ['PREÇO VENDA',fmt(ct.valor||0)+'/sc'],
     ];
     doc.setFontSize(7);
     infos.forEach((info,i)=>{
@@ -3918,8 +3918,8 @@ function gerarRelIndustriaFiltrado(){
 
     const totalPliq=its.reduce((s,d)=>s+(d.pliq||0),0);
     const totalPdesc=its.reduce((s,d)=>s+(d.pdesc||d.pliq||0),0);
-    const totalQuebraKg=totalPliq-totalPdesc;
-    const totalQuebraRS=its.reduce((s,d)=>{const q=(d.pliq||0)-(d.pdesc||d.pliq||0);return s+(q/60)*(d.venda||0);},0);
+    const totalQuebraKg=Math.abs(totalPliq-totalPdesc);
+    const totalQuebraRS=its.reduce((s,d)=>{const q=Math.abs((d.pliq||0)-(d.pdesc||d.pliq||0));return s+(q/60)*(d.venda||0);},0);
     const totalVenda=its.reduce((s,d)=>s+((d.pliq||0)/60)*(d.venda||0),0);
     const totalARec=its.reduce((s,d)=>{const v=((d.pdesc||d.pliq||0)/60)*(d.venda||0);return s+Math.max(0,v-(d.recebido||0));},0);
     linhas.push(['','','','','','TOTAL',fmtN(totalPliq,0),fmtN(totalPdesc,0),fmtN(totalQuebraKg,0),fmt(totalQuebraRS),'',fmt(totalVenda),totalARec>0?fmt(totalARec):'—']);
@@ -3929,8 +3929,8 @@ function gerarRelIndustriaFiltrado(){
       body:linhas,
       startY:51,
       margin:{left:14,right:14},
-      styles:{fontSize:7,cellPadding:2,lineColor:[210,220,235],lineWidth:0.2,textColor:[30,30,30]},
-      headStyles:{fillColor:[27,43,75],textColor:[255,255,255],fontStyle:'bold',fontSize:7.5,cellPadding:3.5},
+      styles:{fontSize:6.5,cellPadding:1.8,lineColor:[210,220,235],lineWidth:0.2,textColor:[30,30,30],overflow:'ellipsize'},
+      headStyles:{fillColor:[27,43,75],textColor:[255,255,255],fontStyle:'bold',fontSize:6.5,cellPadding:2},
       alternateRowStyles:{fillColor:[250,250,250]},
       didParseCell:function(data){
         if(data.row.index===linhas.length-1){
@@ -3940,19 +3940,19 @@ function gerarRelIndustriaFiltrado(){
         }
       },
       columnStyles:{
-        0:{cellWidth:20},
-        1:{cellWidth:20},
-        2:{cellWidth:18},
-        3:{cellWidth:38},
-        4:{cellWidth:24},
-        5:{cellWidth:14},
-        6:{cellWidth:19,halign:'right'},
-        7:{cellWidth:19,halign:'right'},
-        8:{cellWidth:17,halign:'right'},
-        9:{cellWidth:22,halign:'right'},
-        10:{cellWidth:13,halign:'right'},
-        11:{cellWidth:24,halign:'right'},
-        12:{cellWidth:24,halign:'right'},
+        0:{cellWidth:18},
+        1:{cellWidth:18},
+        2:{cellWidth:17},
+        3:{cellWidth:36},
+        4:{cellWidth:22},
+        5:{cellWidth:15},
+        6:{cellWidth:18,halign:'right'},
+        7:{cellWidth:18,halign:'right'},
+        8:{cellWidth:16,halign:'right'},
+        9:{cellWidth:20,halign:'right'},
+        10:{cellWidth:12,halign:'right'},
+        11:{cellWidth:22,halign:'right'},
+        12:{cellWidth:22,halign:'right'},
       },
       didParseCell:function(data){
         if(data.row.index===linhas.length-1){
