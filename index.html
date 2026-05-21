@@ -1518,6 +1518,7 @@ async function fazerLogin(){
     localStorage.setItem(AK,JSON.stringify({id:u.id,user:u.user,empresa}));
     document.getElementById('login-screen').classList.remove('visible');
     document.getElementById('app').style.display='block';
+    atualizarLogoEmpresa();
     iniciar();
   }else{
     document.getElementById('login-error').style.display='block';
@@ -1697,6 +1698,7 @@ async function trocarMinhaSenha(){
 
 const ptitles={'arec-industria':'A Receber — Indústrias','arec-parceiros':'A Receber — Parceiros','cap-desp':'Despesas','cap-parceiros':'Parceiros (Devolução)',fluxo:'Fluxo de Caixa',fechamento:'Fechamento Indústria',painel:'Painel','fech-contrato':'Fechamento por Contrato',saidas:'Saídas de produto',contratos:'Contratos',embarques:'Embarques',novo:'Novo embarque',frete:'Frete — Motoristas','cap-transp':'CTE — Transportadoras','cap-com':'Comissões a Pagar','cap-nota':'Notas Fiscais a Pagar',transportadoras:'Transportadoras',comissionarios:'Cadastro Comissionários',fornecedores:'Fornecedores de Nota',config:'Configurações'};
 function irPara(id,el){
+  if(!usuarioLogado){return;} // não faz nada se não estiver logado
   if(id==='config'&&(!usuarioLogado||usuarioLogado.perfil!=='admin')){toast('Acesso restrito ao administrador.',true);return;}
   if(!temPermissao(id)){toast('Você não tem permissão para acessar esta área.',true);return;}
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
