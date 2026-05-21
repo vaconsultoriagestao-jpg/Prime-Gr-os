@@ -2687,7 +2687,7 @@ function renderEmbarques(){
       <td class="${(d.lucro_pct||0)>=0?'pos':'neg'}">${fmtP(d.lucro_pct)}</td>
       <td style="color:var(--text-faint);font-size:11px">${d.lancado_por||'—'}</td>
       <td>${d.obs||'—'}</td>
-      <td><button class="btn-edit" onclick="abrirEdit('${d.id}')">Editar</button> <button class="btn btn-danger" onclick="delEmb('${d.id}')">×</button></td></tr>`;}).join('').join('')
+      <td><button class="btn-edit" onclick="abrirEdit('${d.id}')">Editar</button> <button class="btn btn-danger" onclick="delEmb('${d.id}')">×</button></td></tr>`;}).join('')
     :'<tr><td colspan="45" class="empty-state">Nenhum embarque encontrado.</td></tr>';
 }
 
