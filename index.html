@@ -3892,7 +3892,10 @@ function gerarRelIndustriaFiltrado(){
     // === TABELA ===
     const cab=[['DATA EMBARQUE','DATA DESCARGA','NF','MOTORISTA','CPF','PLACA','PESO LÍQ. (KG)','PESO DESC. (KG)','R$/SC VENDA','TOTAL VENDA (R$)','A RECEBER (R$)']];
     const linhas=its.map(d=>{
-      const aRec=Math.max(0,(d.total_venda||0)-(d.recebido||0));
+      const pdesc=d.pdesc||d.pliq||0;
+      const scDesc=pdesc/60;
+      const valorDesc=scDesc*(d.venda||0);
+      const aRec=Math.max(0,valorDesc-(d.recebido||0));
       return [
         d.embarque||'—',
         d.descarga||'—',
@@ -3901,17 +3904,17 @@ function gerarRelIndustriaFiltrado(){
         d.cpf||'—',
         d.placa||'—',
         fmtN(d.pliq||0,0),
-        fmtN(d.pdesc||d.pliq||0,0),
+        fmtN(pdesc,0),
         fmt(d.venda||0),
-        fmt(d.total_venda||0),
-        aRec>0?fmt(aRec):'—'
+        fmt(valorDesc),
+        aRec>0?fmt(aRec):'Quitado'
       ];
     });
 
     const totalPliq=its.reduce((s,d)=>s+(d.pliq||0),0);
     const totalPdesc=its.reduce((s,d)=>s+(d.pdesc||d.pliq||0),0);
-    const totalVenda=its.reduce((s,d)=>s+(d.total_venda||0),0);
-    const totalARec=its.reduce((s,d)=>s+Math.max(0,(d.total_venda||0)-(d.recebido||0)),0);
+    const totalVenda=its.reduce((s,d)=>s+((d.pdesc||d.pliq||0)/60)*(d.venda||0),0);
+    const totalARec=its.reduce((s,d)=>{const v=((d.pdesc||d.pliq||0)/60)*(d.venda||0);return s+Math.max(0,v-(d.recebido||0));},0);
     linhas.push(['','','','','','TOTAL',fmtN(totalPliq,0),fmtN(totalPdesc,0),'',fmt(totalVenda),totalARec>0?fmt(totalARec):'—']);
 
     doc.autoTable({
@@ -3930,17 +3933,27 @@ function gerarRelIndustriaFiltrado(){
         }
       },
       columnStyles:{
-        0:{cellWidth:20},
-        1:{cellWidth:20},
-        2:{cellWidth:18},
-        3:{cellWidth:44},
-        4:{cellWidth:25},
-        5:{cellWidth:14},
-        6:{cellWidth:20,halign:'right'},
-        7:{cellWidth:20,halign:'right'},
-        8:{cellWidth:16,halign:'right'},
-        9:{cellWidth:26,halign:'right'},
-        10:{cellWidth:26,halign:'right'},
+        0:{cellWidth:22},
+        1:{cellWidth:22},
+        2:{cellWidth:20},
+        3:{cellWidth:46},
+        4:{cellWidth:26},
+        5:{cellWidth:16},
+        6:{cellWidth:22,halign:'right'},
+        7:{cellWidth:22,halign:'right'},
+        8:{cellWidth:18,halign:'right'},
+        9:{cellWidth:28,halign:'right'},
+        10:{cellWidth:28,halign:'right'},
+      },
+      didParseCell:function(data){
+        if(data.row.index===linhas.length-1){
+          data.cell.styles.fontStyle='bold';
+          data.cell.styles.fillColor=[224,232,248];
+          data.cell.styles.textColor=[27,43,75];
+        }
+        // Wrap prevention
+        data.cell.styles.overflow='linebreak';
+        data.cell.styles.minCellHeight=10;
       }
     });
 
