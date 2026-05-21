@@ -3908,8 +3908,8 @@ function gerarRelIndustriaFiltrado(){
         d.placa||'—',
         fmtN(pliq,0),
         fmtN(pdesc,0),
-        quebraKg>0?fmtN(quebraKg,0):'—',
-        quebraKg>0?fmt(quebraRS):'—',
+        pdesc>0?fmtN(quebraKg,0):'—',
+        pdesc>0?fmt(quebraRS):'—',
         fmt(venda),
         fmt(totalVendaLinha),
         aRecLinha>0?fmt(aRecLinha):'Quitado'
@@ -3918,8 +3918,8 @@ function gerarRelIndustriaFiltrado(){
 
     const totalPliq=its.reduce((s,d)=>s+(d.pliq||0),0);
     const totalPdesc=its.reduce((s,d)=>s+(d.pdesc||d.pliq||0),0);
-    const totalQuebraKg=Math.abs(totalPliq-totalPdesc);
-    const totalQuebraRS=its.reduce((s,d)=>{const q=Math.abs((d.pliq||0)-(d.pdesc||d.pliq||0));return s+(q/60)*(d.venda||0);},0);
+    const totalQuebraKg=its.reduce((s,d)=>s+(d.pdesc>0?(d.pliq||0)-(d.pdesc||d.pliq||0):0),0);
+    const totalQuebraRS=its.reduce((s,d)=>s+(d.pdesc>0?((d.pliq||0)-(d.pdesc||d.pliq||0))/60*(d.venda||0):0),0);
     const totalVenda=its.reduce((s,d)=>s+((d.pliq||0)/60)*(d.venda||0),0);
     const totalARec=its.reduce((s,d)=>{const v=((d.pdesc||d.pliq||0)/60)*(d.venda||0);return s+Math.max(0,v-(d.recebido||0));},0);
     linhas.push(['','','','','','TOTAL',fmtN(totalPliq,0),fmtN(totalPdesc,0),fmtN(totalQuebraKg,0),fmt(totalQuebraRS),'',fmt(totalVenda),totalARec>0?fmt(totalARec):'—']);
