@@ -3890,12 +3890,15 @@ function gerarRelIndustriaFiltrado(){
     });
 
     // === TABELA ===
-    const cab=[['DATA EMBARQUE','DATA DESCARGA','NF','MOTORISTA','CPF','PLACA','PESO LÍQ. (KG)','PESO DESC. (KG)','R$/SC VENDA','TOTAL VENDA (R$)','A RECEBER (R$)']];
+    const cab=[['DATA EMB.','DATA DESC.','NF','MOTORISTA','CPF','PLACA','PESO LÍQ.(KG)','PESO DESC.(KG)','QUEBRA(KG)','QUEBRA(R$)','R$/SC','TOTAL VENDA(R$)','A RECEBER(R$)']];
     const linhas=its.map(d=>{
-      const pdesc=d.pdesc||d.pliq||0;
-      const scDesc=pdesc/60;
-      const valorDesc=scDesc*(d.venda||0);
-      const aRec=Math.max(0,valorDesc-(d.recebido||0));
+      const pliq=d.pliq||0;
+      const pdesc=d.pdesc||pliq;
+      const venda=d.venda||0;
+      const totalVendaLinha=(pliq/60)*venda;
+      const aRecLinha=Math.max(0,(pdesc/60)*venda-(d.recebido||0));
+      const quebraKg=pliq-pdesc;
+      const quebraRS=(quebraKg/60)*venda;
       return [
         d.embarque||'—',
         d.descarga||'—',
@@ -3903,26 +3906,30 @@ function gerarRelIndustriaFiltrado(){
         d.motorista||'—',
         d.cpf||'—',
         d.placa||'—',
-        fmtN(d.pliq||0,0),
+        fmtN(pliq,0),
         fmtN(pdesc,0),
-        fmt(d.venda||0),
-        fmt(valorDesc),
-        aRec>0?fmt(aRec):'Quitado'
+        quebraKg>0?fmtN(quebraKg,0):'—',
+        quebraKg>0?fmt(quebraRS):'—',
+        fmt(venda),
+        fmt(totalVendaLinha),
+        aRecLinha>0?fmt(aRecLinha):'Quitado'
       ];
     });
 
     const totalPliq=its.reduce((s,d)=>s+(d.pliq||0),0);
     const totalPdesc=its.reduce((s,d)=>s+(d.pdesc||d.pliq||0),0);
-    const totalVenda=its.reduce((s,d)=>s+((d.pdesc||d.pliq||0)/60)*(d.venda||0),0);
+    const totalQuebraKg=totalPliq-totalPdesc;
+    const totalQuebraRS=its.reduce((s,d)=>{const q=(d.pliq||0)-(d.pdesc||d.pliq||0);return s+(q/60)*(d.venda||0);},0);
+    const totalVenda=its.reduce((s,d)=>s+((d.pliq||0)/60)*(d.venda||0),0);
     const totalARec=its.reduce((s,d)=>{const v=((d.pdesc||d.pliq||0)/60)*(d.venda||0);return s+Math.max(0,v-(d.recebido||0));},0);
-    linhas.push(['','','','','','TOTAL',fmtN(totalPliq,0),fmtN(totalPdesc,0),'',fmt(totalVenda),totalARec>0?fmt(totalARec):'—']);
+    linhas.push(['','','','','','TOTAL',fmtN(totalPliq,0),fmtN(totalPdesc,0),fmtN(totalQuebraKg,0),fmt(totalQuebraRS),'',fmt(totalVenda),totalARec>0?fmt(totalARec):'—']);
 
     doc.autoTable({
       head:cab,
       body:linhas,
       startY:51,
       margin:{left:14,right:14},
-      styles:{fontSize:8,cellPadding:3,lineColor:[210,220,235],lineWidth:0.2,textColor:[30,30,30]},
+      styles:{fontSize:7,cellPadding:2,lineColor:[210,220,235],lineWidth:0.2,textColor:[30,30,30]},
       headStyles:{fillColor:[27,43,75],textColor:[255,255,255],fontStyle:'bold',fontSize:7.5,cellPadding:3.5},
       alternateRowStyles:{fillColor:[250,250,250]},
       didParseCell:function(data){
@@ -3933,17 +3940,19 @@ function gerarRelIndustriaFiltrado(){
         }
       },
       columnStyles:{
-        0:{cellWidth:22},
-        1:{cellWidth:22},
-        2:{cellWidth:20},
-        3:{cellWidth:46},
-        4:{cellWidth:26},
-        5:{cellWidth:16},
-        6:{cellWidth:22,halign:'right'},
-        7:{cellWidth:22,halign:'right'},
-        8:{cellWidth:18,halign:'right'},
-        9:{cellWidth:28,halign:'right'},
-        10:{cellWidth:28,halign:'right'},
+        0:{cellWidth:20},
+        1:{cellWidth:20},
+        2:{cellWidth:18},
+        3:{cellWidth:38},
+        4:{cellWidth:24},
+        5:{cellWidth:14},
+        6:{cellWidth:19,halign:'right'},
+        7:{cellWidth:19,halign:'right'},
+        8:{cellWidth:17,halign:'right'},
+        9:{cellWidth:22,halign:'right'},
+        10:{cellWidth:13,halign:'right'},
+        11:{cellWidth:24,halign:'right'},
+        12:{cellWidth:24,halign:'right'},
       },
       didParseCell:function(data){
         if(data.row.index===linhas.length-1){
@@ -3951,9 +3960,6 @@ function gerarRelIndustriaFiltrado(){
           data.cell.styles.fillColor=[224,232,248];
           data.cell.styles.textColor=[27,43,75];
         }
-        // Wrap prevention
-        data.cell.styles.overflow='linebreak';
-        data.cell.styles.minCellHeight=10;
       }
     });
 
