@@ -872,7 +872,12 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
       <div class="form-body">
         <div class="form-grid">
           <div class="fg"><label>Data <span class="star">*</span></label><input id="arec-data" type="date"></div>
-          <input type="hidden" id="arec-tipo" value="entrada">
+          <div class="fg"><label>Tipo <span class="star">*</span></label>
+            <select id="arec-tipo">
+              <option value="entrada">Aporte (parceiro me enviou)</option>
+              <option value="saida">Retirada (devolvi ao parceiro)</option>
+            </select>
+          </div>
           <div class="fg"><label>Parceiro <span class="star">*</span></label><input id="arec-parceiro" type="text" placeholder="Nome do parceiro"></div>
           <div class="fg"><label>Valor R$ <span class="star">*</span></label><input id="arec-valor" type="number" step="0.01" placeholder="0,00"></div>
           <div class="fg fg-full"><label>Descrição</label><input id="arec-desc" type="text" placeholder="Ex: Aporte operação soja..."></div>
