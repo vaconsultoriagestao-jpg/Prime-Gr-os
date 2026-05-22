@@ -15,6 +15,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg-page);color:var(--text
 /* LOGIN */
 #login-screen{min-height:100vh;display:none;align-items:center;justify-content:center;background:#1B2B4B;background-image:repeating-linear-gradient(45deg,transparent,transparent 40px,rgba(255,255,255,.03) 40px,rgba(255,255,255,.03) 80px)}
 #login-screen.visible{display:flex}
+body.logged-in #login-screen{display:none!important}
 .login-card{background:#fff;border-radius:var(--radius-lg);padding:3rem 2.5rem;width:100%;max-width:380px;box-shadow:var(--shadow-md)}
 .login-logo{display:flex;align-items:center;gap:10px;margin-bottom:2rem}
 .login-logo-icon{width:40px;height:40px;background:#1B2B4B;border-radius:10px;display:flex;align-items:center;justify-content:center}
@@ -1517,6 +1518,7 @@ async function fazerLogin(){
     if(spanEmp)spanEmp.textContent=empresa;
     localStorage.setItem(AK,JSON.stringify({id:u.id,user:u.user,empresa}));
     document.getElementById('login-screen').classList.remove('visible');
+    document.body.classList.add('logged-in');
     document.getElementById('app').style.display='block';
     atualizarLogoEmpresa();
     iniciar();
@@ -1553,7 +1555,7 @@ function fazerBackup(){
   toast('Backup baixado com sucesso!');
 }
 
-function logout(){localStorage.removeItem(AK);usuarioLogado=null;location.reload();}
+function logout(){localStorage.removeItem(AK);usuarioLogado=null;document.body.classList.remove('logged-in');location.reload();}
 
 // ===== PERMISSÕES =====
 const _MENUS=[
@@ -4464,6 +4466,7 @@ async function ensureTables(){
         const spanEmp=document.getElementById('filtro-empresa-global');
         if(spanEmp)spanEmp.textContent=_emp;
         document.getElementById('login-screen').classList.remove('visible');
+        document.body.classList.add('logged-in');
         document.getElementById('app').style.display='block';
         iniciar();
       }
