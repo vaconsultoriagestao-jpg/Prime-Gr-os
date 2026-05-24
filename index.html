@@ -75,7 +75,7 @@ body.logged-in #login-screen{display:none!important}
 .ms-filter-btn{padding:6px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg);font-size:12px;cursor:pointer;display:flex;align-items:center;gap:6px;min-width:130px;justify-content:space-between;font-family:inherit;color:var(--text)}
 .ms-filter-btn.active{border-color:#1B2B4B;color:#1B2B4B;background:#F0F4FC}
 .ms-filter-btn:after{content:'▾';font-size:10px;opacity:.6}
-.ms-filter-dropdown{position:absolute;top:calc(100% + 4px);left:0;min-width:180px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);box-shadow:0 4px 12px rgba(0,0,0,.1);z-index:999;padding:6px 0;display:none;max-height:240px;overflow-y:auto}
+.ms-filter-dropdown{position:fixed;min-width:180px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);box-shadow:0 4px 12px rgba(0,0,0,.1);z-index:9999;padding:6px 0;display:none;max-height:240px;overflow-y:auto}
 .ms-filter-dropdown.open{display:block}
 .ms-filter-item{display:flex;align-items:center;gap:8px;padding:6px 12px;font-size:12px;cursor:pointer;color:var(--text)}
 .ms-filter-item:hover{background:var(--gray-50)}
@@ -259,6 +259,9 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
     </div>
     <div class="nav-item" id="nav-icms" onclick="irPara('icms',this)">
       <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5M2 17l10 5 10-5M2 12l10 5 10-5"/></svg>Apuração ICMS
+    </div>
+    <div class="nav-item" id="nav-estoque" onclick="irPara('estoque',this)">
+      <svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/></svg>Estoque
     </div>
     <div class="nav-label">A Receber</div>
     <div class="nav-item" id="nav-arec-industria" onclick="irPara('arec-industria',this)">
@@ -684,9 +687,9 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
     <h1 class="section-heading">Apuração de ICMS</h1>
     <p class="section-sub">Cálculo mensal do ICMS sobre vendas embarcadas.</p>
 
-    <div class="table-card" style="margin-bottom:1.25rem">
-      <div class="form-body">
-        <div class="form-grid">
+    <div class="table-card" style="margin-bottom:1.25rem;overflow:visible">
+      <div class="form-body" style="overflow:visible">
+        <div class="form-grid" style="overflow:visible">
           <div class="fg">
             <label>Mês</label>
             <select id="icms-mes" onchange="renderICMS()">
@@ -741,6 +744,93 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
           <th onclick="sortTable('tbody-icms',8,true)" style="cursor:pointer">ICMS ↕</th>
         </tr></thead>
         <tbody id="tbody-icms"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ESTOQUE -->
+  <div class="page" id="page-estoque">
+    <h1 class="section-heading">Controle de Estoque</h1>
+    <p class="section-sub">Entradas manuais e saídas automáticas pelos embarques.</p>
+
+    <!-- Cards saldo atual -->
+    <div id="estoque-cards" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;margin-bottom:1.25rem"></div>
+
+    <!-- Formulário de entrada -->
+    <div class="table-card" style="margin-bottom:1.25rem">
+      <div class="form-card-header">Nova entrada de estoque</div>
+      <div class="form-body">
+        <div class="form-grid">
+          <div class="fg"><label>Data <span class="star">*</span></label><input id="est-data" type="date"></div>
+          <div class="fg"><label>Produto <span class="star">*</span></label>
+            <select id="est-produto">
+              <option value="">— selecione —</option>
+              <option>SOJA</option><option>MILHO</option><option>TRIGO</option>
+            </select>
+          </div>
+          <div class="fg"><label>Fornecedor</label><input id="est-fornecedor" type="text" placeholder="Nome do fornecedor"></div>
+          <div class="fg"><label>Quantidade (sc) <span class="star">*</span></label><input id="est-qtd" type="number" step="0.01" min="0" placeholder="0"></div>
+          <div class="fg"><label>Peso (kg)</label><input id="est-peso" type="number" step="0.01" min="0" placeholder="0"></div>
+          <div class="fg"><label>Preço/sc (R$)</label><input id="est-preco" type="number" step="0.01" min="0" placeholder="0,00"></div>
+          <div class="fg fg-full"><label>Observação</label><input id="est-obs" type="text" placeholder="Ex: Compra safra 2026..."></div>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:8px">
+          <button class="btn btn-primary" onclick="salvarEntradaEstoque()">Salvar entrada</button>
+          <button class="btn btn-secondary" onclick="limparFormEstoque()">Limpar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filtros movimentação -->
+    <div class="table-card" style="margin-bottom:1.25rem;overflow:visible">
+      <div class="form-body" style="overflow:visible">
+        <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;overflow:visible">
+          <div>
+            <label style="font-size:11px;font-weight:600;color:var(--text-muted);display:block;margin-bottom:4px">MÊS</label>
+            <select id="est-fmes" onchange="renderEstoque()" class="filter-select">
+              <option value="">Todos</option>
+              <option value="01">Janeiro</option><option value="02">Fevereiro</option>
+              <option value="03">Março</option><option value="04">Abril</option>
+              <option value="05">Maio</option><option value="06">Junho</option>
+              <option value="07">Julho</option><option value="08">Agosto</option>
+              <option value="09">Setembro</option><option value="10">Outubro</option>
+              <option value="11">Novembro</option><option value="12">Dezembro</option>
+            </select>
+          </div>
+          <div>
+            <label style="font-size:11px;font-weight:600;color:var(--text-muted);display:block;margin-bottom:4px">ANO</label>
+            <select id="est-fano" onchange="renderEstoque()" class="filter-select">
+              <option value="2026">2026</option><option value="2025">2025</option><option value="2024">2024</option>
+            </select>
+          </div>
+          <div id="ms-est-prod" style="display:inline-block"></div>
+          <div style="margin-left:auto;display:flex;gap:8px">
+            <button class="btn btn-secondary btn-sm" onclick="exportEstoque('csv')">⬇ Excel</button>
+            <button class="btn btn-secondary btn-sm" onclick="exportEstoque('pdf')">⬇ PDF</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabela movimentação -->
+    <div class="table-card">
+      <div class="table-header"><h3>Movimentação</h3></div>
+      <div class="tbl-wrap">
+        <table><thead><tr>
+          <th onclick="sortTable('tbody-estoque',0)" style="cursor:pointer">Data ↕</th>
+          <th>Tipo</th>
+          <th>Produto</th>
+          <th>Fornecedor / Motorista</th>
+          <th>NF / Ref.</th>
+          <th onclick="sortTable('tbody-estoque',5,true)" style="cursor:pointer">Qtd (sc) ↕</th>
+          <th onclick="sortTable('tbody-estoque',6,true)" style="cursor:pointer">Peso (kg) ↕</th>
+          <th onclick="sortTable('tbody-estoque',7,true)" style="cursor:pointer">Preço/sc ↕</th>
+          <th>Obs</th>
+          <th></th>
+        </tr></thead>
+        <tbody id="tbody-estoque"></tbody>
         </table>
       </div>
     </div>
@@ -1551,6 +1641,8 @@ async function load(){
       saveUsers();
     }
   }catch(e){console.error('Erro ao carregar:',e);}
+  // Carregar estoque
+  try{await loadEstoque();}catch(e){}
   hideLoading();
 }
 
@@ -1797,6 +1889,7 @@ function irPara(id,el){
   if(id==='contratos')renderContratos();
   if(id==='embarques')renderEmbarques();
   if(id==='icms')renderICMS();
+  if(id==='estoque'){loadEstoque().then(renderEstoque);}
   if(id==='novo'){updSelCts();updSelTransp();updSelForn();calcular();}
   if(id==='frete')renderFrete();
   if(id==='cap-transp')renderCapTransp();
@@ -3275,7 +3368,17 @@ function msToggle(id){
   document.querySelectorAll('.ms-filter-dropdown.open').forEach(d=>{
     if(d.id!=='ms-dd-'+id) d.classList.remove('open');
   });
-  document.getElementById('ms-dd-'+id).classList.toggle('open');
+  const dd=document.getElementById('ms-dd-'+id);
+  const isOpen=dd.classList.toggle('open');
+  if(isOpen){
+    // Position using fixed coordinates to escape overflow:hidden
+    const btn=document.querySelector('#'+id+' .ms-filter-btn');
+    if(btn){
+      const r=btn.getBoundingClientRect();
+      dd.style.top=(r.bottom+4)+'px';
+      dd.style.left=r.left+'px';
+    }
+  }
 }
 
 function msCheck(id, val, checked, cb){
@@ -4050,6 +4153,209 @@ function gerarRelIndustriaFiltrado(){
   toast('Relatório gerado!');
 }
 
+
+
+// ===== CONTROLE DE ESTOQUE =====
+let estoqueEntradas = [];
+let editEstoqueId = null;
+
+async function loadEstoque(){
+  try{
+    const r=await fetch(`${SB_URL}/rest/v1/estoque?select=id,data&order=id`,{headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}});
+    const d=await r.json();
+    estoqueEntradas=Array.isArray(d)?d.filter(x=>x.data&&(!_empresaFiltro||x.data.empresa===_empresaFiltro)).map(x=>({...x.data,id:x.id})):[];
+  }catch(e){estoqueEntradas=[];}
+}
+
+async function salvarEntradaEstoque(){
+  const data=document.getElementById('est-data').value;
+  const produto=document.getElementById('est-produto').value;
+  const qtd=parseFloat(document.getElementById('est-qtd').value)||0;
+  if(!data||!produto||!qtd){toast('Preencha data, produto e quantidade!',true);return;}
+  const obj={
+    id:editEstoqueId||Date.now(),
+    data,produto,
+    empresa:_empresaFiltro||'Prime Grãos',
+    fornecedor:document.getElementById('est-fornecedor').value,
+    qtd,
+    peso:parseFloat(document.getElementById('est-peso').value)||0,
+    preco:parseFloat(document.getElementById('est-preco').value)||0,
+    obs:document.getElementById('est-obs').value,
+    tipo:'entrada',
+    lancado_por:(usuarioLogado&&usuarioLogado.nome)||'—'
+  };
+  showLoading('Salvando...');
+  try{
+    await fetch(`${SB_URL}/rest/v1/estoque`,{method:'POST',headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=minimal'},body:JSON.stringify([{id:obj.id,data:obj}])});
+    if(editEstoqueId){
+      estoqueEntradas=estoqueEntradas.map(x=>String(x.id)===String(editEstoqueId)?obj:x);
+    } else {
+      estoqueEntradas.push(obj);
+    }
+    editEstoqueId=null;
+    limparFormEstoque();
+    renderEstoque();
+    toast(editEstoqueId?'Entrada atualizada!':'Entrada registrada!');
+  }catch(e){toast('Erro ao salvar!',true);}
+  hideLoading();
+}
+
+function limparFormEstoque(){
+  ['est-data','est-produto','est-fornecedor','est-qtd','est-peso','est-preco','est-obs'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el)el.value=id==='est-produto'?'':'';
+  });
+  editEstoqueId=null;
+}
+
+async function delEntradaEstoque(id){
+  if(!confirm('Remover esta entrada?'))return;
+  showLoading('Removendo...');
+  await fetch(`${SB_URL}/rest/v1/estoque?id=eq.${id}`,{method:'DELETE',headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}});
+  estoqueEntradas=estoqueEntradas.filter(x=>String(x.id)!==String(id));
+  hideLoading();
+  renderEstoque();
+  toast('Entrada removida.');
+}
+
+function editarEntradaEstoque(id){
+  const e=estoqueEntradas.find(x=>String(x.id)===String(id));
+  if(!e)return;
+  editEstoqueId=id;
+  document.getElementById('est-data').value=e.data||'';
+  document.getElementById('est-produto').value=e.produto||'';
+  document.getElementById('est-fornecedor').value=e.fornecedor||'';
+  document.getElementById('est-qtd').value=e.qtd||0;
+  document.getElementById('est-peso').value=e.peso||0;
+  document.getElementById('est-preco').value=e.preco||0;
+  document.getElementById('est-obs').value=e.obs||'';
+  window.scrollTo(0,0);
+  toast('Editando entrada — faça as alterações e salve.');
+}
+
+function renderEstoque(){
+  if(!document.getElementById('tbody-estoque'))return;
+  const mes=(document.getElementById('est-fmes')||{value:''}).value;
+  const ano=(document.getElementById('est-fano')||{value:'2026'}).value;
+
+  // Entradas filtradas
+  const entradas=estoqueEntradas.filter(e=>(!_empresaFiltro||e.empresa===_empresaFiltro));
+  const prods=[...new Set(entradas.map(e=>e.produto).filter(Boolean))].sort();
+  // Add embarques products too
+  const prodsEmb=[...new Set(embs.filter(d=>!d.cancelada&&(!_empresaFiltro||d.empresa===_empresaFiltro)).map(d=>d.produto).filter(Boolean))].sort();
+  const allProds=[...new Set([...prods,...prodsEmb])].sort();
+  msFilter('ms-est-prod', allProds, 'renderEstoque', 'Produto');
+
+  // Saídas = embarques não cancelados
+  const saidas=embs.filter(d=>!d.cancelada&&(!_empresaFiltro||d.empresa===_empresaFiltro));
+
+  // Cards: saldo por produto
+  const saldoPorProd={};
+  allProds.forEach(p=>{
+    const entTotal=entradas.filter(e=>e.produto===p).reduce((s,e)=>s+(e.qtd||0),0);
+    const saiTotal=saidas.filter(d=>d.produto===p).reduce((s,d)=>s+(d.sc_emb||d.qtd||0),0);
+    saldoPorProd[p]={ent:entTotal,sai:saiTotal,saldo:entTotal-saiTotal};
+  });
+
+  document.getElementById('estoque-cards').innerHTML=allProds.map(p=>{
+    const s=saldoPorProd[p]||{ent:0,sai:0,saldo:0};
+    const cor=s.saldo>=0?'var(--green)':'var(--red)';
+    return`<div class="stat-card">
+      <div class="s-label">${p}</div>
+      <div style="font-size:13px;color:var(--text-muted);margin:4px 0">Entradas: <strong>${fmtN(s.ent,0)} sc</strong></div>
+      <div style="font-size:13px;color:var(--text-muted);margin:4px 0">Saídas: <strong>${fmtN(s.sai,0)} sc</strong></div>
+      <div style="font-size:18px;font-weight:700;color:${cor};margin-top:8px">Saldo: ${fmtN(s.saldo,0)} sc</div>
+    </div>`;
+  }).join('') || '<div class="stat-card"><div class="s-label">Sem movimentação</div></div>';
+
+  // Movimentação filtrada por período e produto
+  const entFilt=entradas.filter(e=>{
+    if(!msMatch('ms-est-prod',e.produto))return false;
+    if(!e.data)return false;
+    const[y,m]=e.data.split('-');
+    if(ano&&y!==ano)return false;
+    if(mes&&m!==mes)return false;
+    return true;
+  }).map(e=>({...e,_tipo:'entrada'}));
+
+  const saiFilt=saidas.filter(d=>{
+    if(!msMatch('ms-est-prod',d.produto))return false;
+    if(!d.embarque)return false;
+    const[y,m]=d.embarque.split('-');
+    if(ano&&y!==ano)return false;
+    if(mes&&m!==mes)return false;
+    return true;
+  }).map(d=>({
+    id:d.id,data:d.embarque,produto:d.produto,
+    fornecedor:d.motorista,ref:d.nf,
+    qtd:-(d.sc_emb||d.qtd||0),
+    peso:-(d.pliq||0),
+    preco:d.venda||0,obs:'Embarque',
+    tipo:'saida',_tipo:'saida',empresa:d.empresa
+  }));
+
+  const movim=[...entFilt,...saiFilt].sort((a,b)=>a.data>b.data?1:-1);
+
+  // Totais
+  const totEnt=entFilt.reduce((s,e)=>s+(e.qtd||0),0);
+  const totSai=Math.abs(saiFilt.reduce((s,e)=>s+(e.qtd||0),0));
+  const totSaldo=totEnt-totSai;
+
+  document.getElementById('tbody-estoque').innerHTML=movim.length
+    ?movim.map(m=>`<tr>
+      <td>${m.data||'—'}</td>
+      <td><span class="badge ${m._tipo==='entrada'?'badge-green':'badge-red'}">${m._tipo==='entrada'?'Entrada':'Saída'}</span></td>
+      <td>${m.produto||'—'}</td>
+      <td>${m.fornecedor||'—'}</td>
+      <td>${m.ref||m.nf||'—'}</td>
+      <td class="mono ${m._tipo==='entrada'?'pos':'neg'}">${m._tipo==='entrada'?'+':''}${fmtN(Math.abs(m.qtd||0),2)}</td>
+      <td class="mono">${fmtN(Math.abs(m.peso||0),0)}</td>
+      <td class="mono">${m.preco?fmt(m.preco):'—'}</td>
+      <td style="color:var(--text-faint);font-size:12px">${m.obs||'—'}</td>
+      <td>${m._tipo==='entrada'?`<button class="btn-edit" onclick="editarEntradaEstoque('${m.id}')">✏</button> <button class="btn btn-danger" onclick="delEntradaEstoque('${m.id}')">×</button>`:'—'}</td>
+    </tr>`).join('')+`<tr data-total="1" style="font-weight:700;border-top:2px solid var(--border);background:#f8f9fa">
+      <td colspan="5">Saldo do período</td>
+      <td class="mono ${totSaldo>=0?'pos':'neg'}">${fmtN(totSaldo,2)}</td>
+      <td colspan="4"></td>
+    </tr>`
+    :'<tr><td colspan="10" class="empty-state">Nenhuma movimentação encontrada.</td></tr>';
+}
+
+function exportEstoque(tipo){
+  if(!document.getElementById('tbody-estoque'))return;
+  const mes=(document.getElementById('est-fmes')||{value:''}).value;
+  const ano=(document.getElementById('est-fano')||{value:'2026'}).value;
+  const empresa=_empresaFiltro||'Prime Grãos';
+  const periodoLabel=mes?(mes+'/'+ano):ano;
+
+  const entradas=estoqueEntradas.filter(e=>(!_empresaFiltro||e.empresa===_empresaFiltro)&&msMatch('ms-est-prod',e.produto||''));
+  const saidas=embs.filter(d=>!d.cancelada&&(!_empresaFiltro||d.empresa===_empresaFiltro)&&msMatch('ms-est-prod',d.produto||''));
+
+  const entFilt=entradas.filter(e=>{
+    if(!e.data)return false;
+    const[y,m]=e.data.split('-');
+    if(ano&&y!==ano)return false;
+    if(mes&&m!==mes)return false;
+    return true;
+  });
+  const saiFilt=saidas.filter(d=>{
+    if(!d.embarque)return false;
+    const[y,m]=d.embarque.split('-');
+    if(ano&&y!==ano)return false;
+    if(mes&&m!==mes)return false;
+    return true;
+  });
+
+  const movim=[
+    ...entFilt.map(e=>['Entrada',e.data,e.produto,e.fornecedor||'—','—',e.qtd,e.peso||0,e.preco||0,e.obs||'—']),
+    ...saiFilt.map(d=>['Saída',d.embarque,d.produto,d.motorista||'—',d.nf||'—',-(d.sc_emb||d.qtd||0),-(d.pliq||0),d.venda||0,'Embarque'])
+  ].sort((a,b)=>a[1]>b[1]?1:-1);
+
+  if(!movim.length){toast('Nenhum dado para exportar.',true);return;}
+
+  const cab=['Tipo','Data','Produto','Fornecedor/Motorista','NF/Ref','Qtd(sc)','Peso(kg)','Preço/sc','Obs'];
+  gerarCSV(cab,movim,'Estoque_'+empresa.replace(' ','_')+'_'+periodoLabel);
+}
 
 // ===== APURAÇÃO ICMS =====
 function renderICMS(){
