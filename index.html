@@ -257,6 +257,9 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
     <div class="nav-item" id="nav-rel-industria" onclick="relatorioIndustria()" style="color:#CBD8EF">
       <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>Rel. Indústria
     </div>
+    <div class="nav-item" id="nav-icms" onclick="irPara('icms',this)">
+      <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5M2 17l10 5 10-5M2 12l10 5 10-5"/></svg>Apuração ICMS
+    </div>
     <div class="nav-label">A Receber</div>
     <div class="nav-item" id="nav-arec-industria" onclick="irPara('arec-industria',this)">
       <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Indústrias
@@ -672,6 +675,74 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
         <th>Comissão</th><th>Fundo</th><th>Imposto</th><th>Desc.fin.</th><th>Outros</th>
         <th>Lucro R$</th><th>Lucro %</th><th>Lançado por</th><th>Obs</th><th></th>
       </tr></thead><tbody id="tbody-emb"></tbody></table></div>
+    </div>
+  </div>
+
+
+  <!-- APURAÇÃO ICMS -->
+  <div class="page" id="page-icms">
+    <h1 class="section-heading">Apuração de ICMS</h1>
+    <p class="section-sub">Cálculo mensal do ICMS sobre vendas embarcadas.</p>
+
+    <div class="table-card" style="margin-bottom:1.25rem">
+      <div class="form-body">
+        <div class="form-grid">
+          <div class="fg">
+            <label>Mês</label>
+            <select id="icms-mes" onchange="renderICMS()">
+              <option value="">Todos</option>
+              <option value="01">Janeiro</option><option value="02">Fevereiro</option>
+              <option value="03">Março</option><option value="04">Abril</option>
+              <option value="05">Maio</option><option value="06">Junho</option>
+              <option value="07">Julho</option><option value="08">Agosto</option>
+              <option value="09">Setembro</option><option value="10">Outubro</option>
+              <option value="11">Novembro</option><option value="12">Dezembro</option>
+            </select>
+          </div>
+          <div class="fg">
+            <label>Ano</label>
+            <select id="icms-ano" onchange="renderICMS()">
+              <option value="2026">2026</option>
+              <option value="2025">2025</option>
+              <option value="2024">2024</option>
+            </select>
+          </div>
+          <div class="fg">
+            <label>Alíquota ICMS (%)</label>
+            <input id="icms-aliq" type="number" value="12" step="0.1" min="0" max="100" oninput="renderICMS()" style="max-width:120px">
+          </div>
+          <div id="ms-icms-ct" style="display:inline-flex;align-items:flex-end"></div>
+          <div id="ms-icms-ind" style="display:inline-flex;align-items:flex-end"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Cards totalizadores -->
+    <div id="icms-cards" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1rem;margin-bottom:1.25rem"></div>
+
+    <div class="table-card">
+      <div class="table-header">
+        <h3>Lançamentos</h3>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-secondary btn-sm" onclick="exportICMS('csv')">⬇ Excel</button>
+          <button class="btn btn-secondary btn-sm" onclick="exportICMS('pdf')">⬇ PDF</button>
+        </div>
+      </div>
+      <div class="tbl-wrap">
+        <table><thead><tr>
+          <th onclick="sortTable('tbody-icms',0)" style="cursor:pointer">Data ↕</th>
+          <th>Contrato</th>
+          <th>Indústria</th>
+          <th>NF</th>
+          <th onclick="sortTable('tbody-icms',4,true)" style="cursor:pointer">Qtd Emb. (sc) ↕</th>
+          <th onclick="sortTable('tbody-icms',5,true)" style="cursor:pointer">Peso Líq. (kg) ↕</th>
+          <th onclick="sortTable('tbody-icms',6,true)" style="cursor:pointer">R$/sc ↕</th>
+          <th onclick="sortTable('tbody-icms',7,true)" style="cursor:pointer">Base Cálculo ↕</th>
+          <th onclick="sortTable('tbody-icms',8,true)" style="cursor:pointer">ICMS ↕</th>
+        </tr></thead>
+        <tbody id="tbody-icms"></tbody>
+        </table>
+      </div>
     </div>
   </div>
 
@@ -1725,6 +1796,7 @@ function irPara(id,el){
   if(id==='painel')renderPainel();
   if(id==='contratos')renderContratos();
   if(id==='embarques')renderEmbarques();
+  if(id==='icms')renderICMS();
   if(id==='novo'){updSelCts();updSelTransp();updSelForn();calcular();}
   if(id==='frete')renderFrete();
   if(id==='cap-transp')renderCapTransp();
@@ -3976,6 +4048,199 @@ function gerarRelIndustriaFiltrado(){
 
   doc.save('Relatorio_Embarques_'+empresa.replace(' ','_')+'_'+dataHoje.replace(/\//g,'-')+'.pdf');
   toast('Relatório gerado!');
+}
+
+
+// ===== APURAÇÃO ICMS =====
+function renderICMS(){
+  if(!document.getElementById('tbody-icms'))return;
+  const mes=(document.getElementById('icms-mes')||{value:''}).value;
+  const ano=(document.getElementById('icms-ano')||{value:'2026'}).value;
+  const aliq=parseFloat((document.getElementById('icms-aliq')||{value:'12'}).value)||12;
+
+  const base=embs.filter(d=>!d.cancelada&&(!_empresaFiltro||d.empresa===_empresaFiltro));
+
+  // ms-filters
+  const cts=[...new Set(base.map(d=>String(d.contrato)).filter(Boolean))].sort();
+  const inds=[...new Set(base.map(d=>d.industria||d.industria_granja).filter(Boolean))].sort();
+  msFilter('ms-icms-ct', cts, 'renderICMS', 'Contrato');
+  msFilter('ms-icms-ind', inds, 'renderICMS', 'Indústria');
+
+  const f=base.filter(d=>{
+    if(!d.embarque)return false;
+    const [y,m]=d.embarque.split('-');
+    if(ano&&y!==ano)return false;
+    if(mes&&m!==mes)return false;
+    if(!msMatch('ms-icms-ct',String(d.contrato)))return false;
+    if(!msMatch('ms-icms-ind',d.industria||d.industria_granja||''))return false;
+    return true;
+  }).sort((a,b)=>a.embarque>b.embarque?1:-1);
+
+  // Calcular totais
+  const totalSc=f.reduce((s,d)=>s+(d.sc_emb||d.qtd||0),0);
+  const totalPliq=f.reduce((s,d)=>s+(d.pliq||0),0);
+  const totalBase=f.reduce((s,d)=>s+((d.pliq||0)/60)*(d.venda||0),0);
+  const totalIcms=totalBase*(aliq/100);
+
+  // Cards
+  document.getElementById('icms-cards').innerHTML=`
+    <div class="stat-card"><div class="s-label">Embarques</div><div class="s-value">${f.length}</div></div>
+    <div class="stat-card"><div class="s-label">Total sc embarcadas</div><div class="s-value">${fmtN(totalSc,0)} sc</div></div>
+    <div class="stat-card"><div class="s-label">Peso líquido total</div><div class="s-value">${fmtN(totalPliq,0)} kg</div></div>
+    <div class="stat-card"><div class="s-label">Base de cálculo</div><div class="s-value">${fmt(totalBase)}</div></div>
+    <div class="stat-card" style="background:#FFF3E0"><div class="s-label">ICMS ${aliq}%</div><div class="s-value" style="color:var(--amber)">${fmt(totalIcms)}</div></div>
+  `;
+
+  // Tabela
+  document.getElementById('tbody-icms').innerHTML=f.length
+    ?f.map(d=>{
+      const sc=d.sc_emb||d.qtd||0;
+      const pliq=d.pliq||0;
+      const venda=d.venda||0;
+      const baseCalc=(pliq/60)*venda;
+      const icms=baseCalc*(aliq/100);
+      return`<tr>
+        <td>${d.embarque||'—'}</td>
+        <td>${d.contrato||'—'}</td>
+        <td>${d.industria||d.industria_granja||'—'}</td>
+        <td>${d.nf||'—'}</td>
+        <td class="mono">${fmtN(sc,0)}</td>
+        <td class="mono">${fmtN(pliq,0)}</td>
+        <td class="mono">${fmt(venda)}</td>
+        <td class="mono">${fmt(baseCalc)}</td>
+        <td class="mono" style="font-weight:600;color:var(--amber)">${fmt(icms)}</td>
+      </tr>`;
+    }).join('')+`<tr data-total="1" style="font-weight:700;border-top:2px solid var(--border);background:#FFF3E0">
+      <td colspan="4">TOTAL</td>
+      <td class="mono">${fmtN(totalSc,0)}</td>
+      <td class="mono">${fmtN(totalPliq,0)}</td>
+      <td></td>
+      <td class="mono">${fmt(totalBase)}</td>
+      <td class="mono" style="color:var(--amber)">${fmt(totalIcms)}</td>
+    </tr>`
+    :'<tr><td colspan="9" class="empty-state">Nenhum embarque encontrado.</td></tr>';
+}
+
+function exportICMS(tipo){
+  if(!document.getElementById('tbody-icms'))return;
+  const mes=(document.getElementById('icms-mes')||{value:''}).value;
+  const ano=(document.getElementById('icms-ano')||{value:'2026'}).value;
+  const aliq=parseFloat((document.getElementById('icms-aliq')||{value:'12'}).value)||12;
+
+  const f=embs.filter(d=>{
+    if(d.cancelada)return false;
+    if(_empresaFiltro&&d.empresa!==_empresaFiltro)return false;
+    if(!d.embarque)return false;
+    const [y,m]=d.embarque.split('-');
+    if(ano&&y!==ano)return false;
+    if(mes&&m!==mes)return false;
+    if(!msMatch('ms-icms-ct',String(d.contrato)))return false;
+    if(!msMatch('ms-icms-ind',d.industria||d.industria_granja||''))return false;
+    return true;
+  }).sort((a,b)=>a.embarque>b.embarque?1:-1);
+
+  if(!f.length){toast('Nenhum dado para exportar.',true);return;}
+
+  const empresa=_empresaFiltro||'Prime Grãos';
+  const periodoLabel=mes?(mes+'/'+ano):ano;
+
+  if(tipo==='csv'){
+    const cab=['Data','Contrato','Indústria','NF','Sc Embarcadas','Peso Líq.(kg)','R$/sc','Base Cálculo(R$)','ICMS '+aliq+'%(R$)'];
+    const rows=f.map(d=>{
+      const pliq=d.pliq||0;
+      const venda=d.venda||0;
+      const baseCalc=(pliq/60)*venda;
+      const icms=baseCalc*(aliq/100);
+      return[d.embarque,d.contrato,d.industria||d.industria_granja,d.nf,
+        (d.sc_emb||d.qtd||0).toFixed(0),pliq.toFixed(0),
+        venda.toFixed(2),baseCalc.toFixed(2),icms.toFixed(2)];
+    });
+    const totalBase=f.reduce((s,d)=>s+((d.pliq||0)/60)*(d.venda||0),0);
+    const totalIcms=totalBase*(aliq/100);
+    rows.push(['','','','TOTAL',
+      f.reduce((s,d)=>s+(d.sc_emb||d.qtd||0),0).toFixed(0),
+      f.reduce((s,d)=>s+(d.pliq||0),0).toFixed(0),
+      '',totalBase.toFixed(2),totalIcms.toFixed(2)]);
+    gerarCSV(cab,rows,'ICMS_'+empresa.replace(' ','_')+'_'+periodoLabel);
+  } else {
+    // PDF
+    const {jsPDF}=window.jspdf;
+    const doc=new jsPDF({orientation:'landscape',unit:'mm',format:'a4'});
+    const azul=[27,43,75];
+    const dataHoje=new Date().toLocaleDateString('pt-BR');
+
+    doc.setFillColor(...azul);
+    doc.rect(0,0,297,28,'F');
+    doc.setTextColor(255,255,255);
+    doc.setFontSize(15);doc.setFont('helvetica','bold');
+    doc.text(empresa,14,13);
+    doc.setFontSize(8);doc.setFont('helvetica','normal');
+    doc.setTextColor(168,187,219);
+    doc.text('Apuração de ICMS — '+periodoLabel,14,20);
+    doc.setTextColor(255,255,255);
+    doc.setFontSize(10);doc.setFont('helvetica','bold');
+    doc.text('APURAÇÃO ICMS '+aliq+'%',297-14,10,{align:'right'});
+    doc.setFontSize(8);doc.setFont('helvetica','normal');
+    doc.setTextColor(168,187,219);
+    doc.text('Emitido em: '+dataHoje,297-14,17,{align:'right'});
+
+    const totalBase=f.reduce((s,d)=>s+((d.pliq||0)/60)*(d.venda||0),0);
+    const totalIcms=totalBase*(aliq/100);
+    const totalSc=f.reduce((s,d)=>s+(d.sc_emb||d.qtd||0),0);
+
+    doc.setFillColor(240,244,252);
+    doc.rect(0,28,297,14,'F');
+    doc.setFontSize(8);doc.setFont('helvetica','bold');
+    [[' Embarques',String(f.length)],[' Total sc',fmtN(totalSc,0)],[' Base Cálculo','R$'+fmt(totalBase)],['  ICMS '+aliq+'%','R$'+fmt(totalIcms)]].forEach(([label,val],i)=>{
+      const x=14+(i*68);
+      doc.setTextColor(...azul);doc.text(label,x,34);
+      doc.setTextColor(20,20,20);doc.setFont('helvetica','normal');
+      doc.text(val,x,40);
+    });
+
+    const cab=[['DATA','CONTRATO','INDÚSTRIA','NF','SC EMB.','PESO LÍQ.(KG)','R$/SC','BASE CÁLC.(R$)','ICMS '+aliq+'%(R$)']];
+    const linhas=f.map(d=>{
+      const pliq=d.pliq||0;
+      const venda=d.venda||0;
+      const baseCalc=(pliq/60)*venda;
+      const icms=baseCalc*(aliq/100);
+      return[d.embarque||'—',String(d.contrato||'—'),d.industria||d.industria_granja||'—',d.nf||'—',
+        fmtN(d.sc_emb||d.qtd||0,0),fmtN(pliq,0),fmt(venda),fmt(baseCalc),fmt(icms)];
+    });
+    linhas.push(['','','','TOTAL',fmtN(totalSc,0),fmtN(f.reduce((s,d)=>s+(d.pliq||0),0),0),'',fmt(totalBase),fmt(totalIcms)]);
+
+    doc.autoTable({
+      head:cab,body:linhas,startY:44,margin:{left:14,right:14},
+      styles:{fontSize:7.5,cellPadding:2.5,lineColor:[210,220,235],lineWidth:0.2,textColor:[30,30,30]},
+      headStyles:{fillColor:azul,textColor:[255,255,255],fontStyle:'bold',fontSize:7},
+      alternateRowStyles:{fillColor:[248,250,255]},
+      columnStyles:{
+        0:{cellWidth:22},1:{cellWidth:22},2:{cellWidth:40},3:{cellWidth:22},
+        4:{cellWidth:18,halign:'right'},5:{cellWidth:22,halign:'right'},
+        6:{cellWidth:18,halign:'right'},7:{cellWidth:28,halign:'right'},
+        8:{cellWidth:28,halign:'right',fontStyle:'bold'},
+      },
+      didParseCell:function(data){
+        if(data.row.index===linhas.length-1){
+          data.cell.styles.fontStyle='bold';
+          data.cell.styles.fillColor=[224,232,248];
+          data.cell.styles.textColor=azul;
+        }
+        if(data.column.index===8&&data.section==='body'&&data.row.index<linhas.length-1){
+          data.cell.styles.textColor=[181,69,27];
+        }
+      }
+    });
+
+    const pH=doc.internal.pageSize.height;
+    doc.setFillColor(...azul);
+    doc.rect(0,pH-10,297,10,'F');
+    doc.setFontSize(7);doc.setTextColor(180,180,200);doc.setFont('helvetica','normal');
+    doc.text(empresa+' — ICMS '+aliq+'% — '+periodoLabel+' — Emitido em '+dataHoje,14,pH-4);
+
+    doc.save('ICMS_'+empresa.replace(' ','_')+'_'+periodoLabel+'.pdf');
+    toast('PDF gerado!');
+  }
 }
 
 function exportEmb(tipo='csv'){
