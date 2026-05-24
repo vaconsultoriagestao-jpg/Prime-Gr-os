@@ -4249,11 +4249,25 @@ function renderEstoque(){
   // Saídas = embarques não cancelados
   const saidas=embs.filter(d=>!d.cancelada&&(!_empresaFiltro||d.empresa===_empresaFiltro));
 
-  // Cards: saldo por produto
+  // Cards: saldo por produto - aplicando filtro de período
   const saldoPorProd={};
   allProds.forEach(p=>{
-    const entTotal=entradas.filter(e=>e.produto===p).reduce((s,e)=>s+(e.qtd||0),0);
-    const saiTotal=saidas.filter(d=>d.produto===p).reduce((s,d)=>s+(d.sc_emb||d.qtd||0),0);
+    const entTotal=entradas.filter(e=>{
+      if(e.produto!==p)return false;
+      if(!e.data)return false;
+      const[y,m]=e.data.split('-');
+      if(ano&&y!==ano)return false;
+      if(mes&&m!==mes)return false;
+      return true;
+    }).reduce((s,e)=>s+(e.qtd||0),0);
+    const saiTotal=saidas.filter(d=>{
+      if(d.produto!==p)return false;
+      if(!d.embarque)return false;
+      const[y,m]=d.embarque.split('-');
+      if(ano&&y!==ano)return false;
+      if(mes&&m!==mes)return false;
+      return true;
+    }).reduce((s,d)=>s+(d.sc_emb||d.qtd||0),0);
     saldoPorProd[p]={ent:entTotal,sai:saiTotal,saldo:entTotal-saiTotal};
   });
 
