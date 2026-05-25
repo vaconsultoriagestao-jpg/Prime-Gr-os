@@ -4265,12 +4265,38 @@ function renderEstoque(){
   const consEl=document.getElementById('estoque-cards-consolidado');
   if(consEl){
     consEl.innerHTML=allProds.map(p=>{
-      const s=saldoConsolidado[p]||{ent:0,sai:0,saldo:0};
-      const cor=s.saldo>=0?'#1B2B4B':'var(--red)';
+      // Entradas do produto
+      const entsProd=entradas.filter(e=>e.produto===p);
+      const entQtd=entsProd.reduce((s,e)=>s+(e.qtd||0),0);
+      const entValor=entsProd.reduce((s,e)=>s+((e.qtd||0)*(e.preco||0)),0);
+      const precoMedCompra=entQtd>0?entValor/entQtd:0;
+
+      // Saídas do produto
+      const saisProd=saidas.filter(d=>d.produto===p);
+      const saiQtd=saisProd.reduce((s,d)=>s+(d.sc_emb||d.qtd||0),0);
+      const saiValor=saisProd.reduce((s,d)=>s+((d.sc_emb||d.qtd||0)*(d.venda||0)),0);
+      const precoMedVenda=saiQtd>0?saiValor/saiQtd:0;
+
+      const saldo=entQtd-saiQtd;
+      const cor=saldo>=0?'#1B2B4B':'var(--red)';
+
       return`<div class="stat-card" style="border-top:3px solid ${cor}">
-        <div class="s-label" style="font-size:11px;letter-spacing:.05em">SALDO ATUAL — ${p}</div>
-        <div style="font-size:26px;font-weight:700;color:${cor};margin:8px 0">${fmtN(s.saldo,0)} sc</div>
-        <div style="font-size:12px;color:var(--text-muted)">Entradas: ${fmtN(s.ent,0)} sc &nbsp;|&nbsp; Saídas: ${fmtN(s.sai,0)} sc</div>
+        <div class="s-label" style="font-size:11px;letter-spacing:.05em;margin-bottom:10px">ESTOQUE — ${p}</div>
+        <div style="font-size:28px;font-weight:700;color:${cor};margin-bottom:12px">${fmtN(saldo,0)} sc</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:12px">
+          <div style="background:#f0f4fc;padding:8px;border-radius:6px">
+            <div style="color:var(--text-muted);font-size:10px;font-weight:600;margin-bottom:4px">ENTRADAS</div>
+            <div style="font-weight:600">${fmtN(entQtd,0)} sc</div>
+            <div style="color:var(--text-muted)">${fmt(entValor)}</div>
+            <div style="color:var(--text-muted);font-size:10px">Preço médio: ${fmt(precoMedCompra)}/sc</div>
+          </div>
+          <div style="background:#fff5f5;padding:8px;border-radius:6px">
+            <div style="color:var(--text-muted);font-size:10px;font-weight:600;margin-bottom:4px">SAÍDAS</div>
+            <div style="font-weight:600">${fmtN(saiQtd,0)} sc</div>
+            <div style="color:var(--text-muted)">${fmt(saiValor)}</div>
+            <div style="color:var(--text-muted);font-size:10px">Preço médio: ${fmt(precoMedVenda)}/sc</div>
+          </div>
+        </div>
       </div>`;
     }).join('') || '';
   }
