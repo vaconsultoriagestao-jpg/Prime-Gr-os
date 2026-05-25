@@ -4340,6 +4340,7 @@ function renderEstoque(){
 
 function exportEstoque(tipo){
   if(!document.getElementById('tbody-estoque'))return;
+  const empresa=_empresaFiltro||'Prime Grãos';
   const mes=(document.getElementById('est-fmes')||{value:''}).value;
   const ano=(document.getElementById('est-fano')||{value:'2026'}).value;
   const periodoLabel=mes?(mes+'/'+ano):ano;
