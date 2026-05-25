@@ -1912,6 +1912,7 @@ function irPara(id,el){
 }
 
 // ===== UTILS =====
+const fmtData=d=>{if(!d)return'—';const p=String(d).split('-');return p.length===3?p[2]+'/'+p[1]+'/'+p[0]:d};
 const fmt=v=>'R$ '+Number(v||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
 const fmtN=(v,d=2)=>Number(v||0).toLocaleString('pt-BR',{minimumFractionDigits:d,maximumFractionDigits:d});
 const fmtP=v=>Number(v||0).toFixed(2)+'%';
