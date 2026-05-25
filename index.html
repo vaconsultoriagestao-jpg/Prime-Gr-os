@@ -326,7 +326,7 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
       </div>
       <span id="topbar-date" style="font-size:12px;color:var(--text-faint)"></span>
       <button class="btn btn-secondary btn-sm" onclick="fazerBackup()" title="Baixar backup completo dos dados" style="font-size:11px">💾 Backup</button>
-      <button class="btn btn-secondary btn-sm" onclick="recarregarDados()" title="Atualizar dados">↻ Atualizar</button>
+      <button class="btn btn-secondary btn-sm" id="btn-atualizar" onclick="recarregarDados()" title="Atualizar dados">↻ Atualizar</button>
     </div>
   </div>
 
@@ -1601,10 +1601,8 @@ async function salvarCfgUI(){
 }
 async function saveUsers(){
   try{
-    // Deletar e reinserir todos usuários
-    await fetch(`${SB_URL}/rest/v1/usuarios?id=gte.0`,{method:'DELETE',headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}});
     if(usuarios.length){
-      const r=await fetch(`${SB_URL}/rest/v1/usuarios`,{method:'POST',headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify(usuarios.map(u=>({id:u.id,data:u})))});
+      const r=await fetch(`${SB_URL}/rest/v1/usuarios`,{method:'POST',headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=minimal'},body:JSON.stringify(usuarios.map(u=>({id:u.id,data:u})))});
       if(!r.ok){const t=await r.text();console.error('saveUsers error:',t);}
     }
   }catch(e){console.error('saveUsers exception:',e);}
@@ -1714,7 +1712,8 @@ function fazerBackup(){
       comissionarios:coms,
       fornecedores:forn,
       configuracoes:cfg,
-      usuarios:usuarios.map(u=>({...u,senha:'***'})), // senha mascarada
+      usuarios:usuarios, // senhas incluídas no backup
+      estoque:estoqueEntradas,
       fluxo:fluxo,
       despesas:despesas
     }
@@ -1862,9 +1861,15 @@ async function trocarMinhaSenha(){
     const senhaAtual=d[0].data&&d[0].data.senha;
     if(sa!==senhaAtual){toast('Senha atual incorreta!',true);return;}
   }catch(e){toast('Erro ao verificar senha!',true);return;}
+  // Atualiza senha diretamente no banco via PATCH (sem afetar outros usuários)
+  const novoData={...usuarioLogado,senha:sn};
+  await fetch(`${SB_URL}/rest/v1/usuarios?id=eq.${usuarioLogado.id}`,{
+    method:'PATCH',
+    headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json'},
+    body:JSON.stringify({data:novoData})
+  });
   usuarios=usuarios.map(x=>x.id===usuarioLogado.id?{...x,senha:sn}:x);
   usuarioLogado={...usuarioLogado,senha:sn};
-  await saveUsers();
   document.getElementById('cfg_sa').value='';
   document.getElementById('cfg_sn').value='';
   toast('Senha alterada com sucesso!');
@@ -2450,7 +2455,7 @@ function renderCapNota(){
     ?f.map(d=>`<tr>
       <td><strong>${d.fornecedor_nota||'—'}</strong></td>
       <td>${d.contrato}</td><td>${d.nf||'—'}</td><td>${d.motorista||'—'}</td>
-      <td>${d.embarque||'—'}</td><td class="mono">${fmtN(d.sc_emb)}</td>
+      <td>${fmtData(d.embarque)}</td><td class="mono">${fmtN(d.sc_emb)}</td>
       <td class="mono">${fmtN(d.cn_sc||0)}</td>
       <td class="mono">${fmt(d.cn_val||0)}</td>
       <td><span class="badge ${d.nota_pago?'badge-green':'badge-amber'}">${d.nota_pago?'Pago':'Em aberto'}</span></td>
@@ -2492,7 +2497,7 @@ function renderSaidas(){
   `;
   document.getElementById('tbody-saidas').innerHTML=f.length
     ?f.sort((a,b)=>a.embarque>b.embarque?1:-1).map(d=>`<tr>
-      <td>${d.embarque||'—'}</td><td><strong>${d.contrato}</strong></td>
+      <td>${fmtData(d.embarque)}</td><td><strong>${d.contrato}</strong></td>
       <td><span class="badge ${d.empresa==='ZF Grãos'?'badge-blue':'badge-green'}">${d.empresa||'Prime Grãos'}</span></td>
       <td>${(cts.find(c=>c.numero==d.contrato)||{comprador:'—'}).comprador||'—'}</td>
       <td>${d.produto||'—'}</td><td>${d.nf||'—'}</td><td>${d.motorista||'—'}</td>
@@ -2545,7 +2550,7 @@ function renderCapTransp(){
       <td><strong>${d.transportadora||'—'}</strong></td>
       <td><span class="badge ${d.empresa==='ZF Grãos'?'badge-blue':'badge-green'}">${d.empresa||'Prime Grãos'}</span></td>
       <td>${d.contrato}</td><td>${d.nf||'—'}</td><td>${d.motorista||'—'}</td>
-      <td>${d.embarque||'—'}</td><td class="mono">${fmtN(d.sc_emb)}</td>
+      <td>${fmtData(d.embarque)}</td><td class="mono">${fmtN(d.sc_emb)}</td>
       <td class="mono">${fmtN(d.cte_sc||0)}</td>
       <td class="mono">${fmt(d.cte||0)}</td>
       <td><span class="badge ${d.cte_pago?'badge-green':'badge-amber'}">${d.cte_pago?'Pago':'Em aberto'}</span></td>
@@ -2670,7 +2675,7 @@ function renderFrete(){
       <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px">
         <div>
           <div style="font-size:15px;font-weight:600">${d.motorista} <span style="font-size:12px;color:var(--text-faint);font-weight:400">CPF: ${d.cpf||'—'}</span></div>
-          <div style="font-size:12px;color:var(--text-muted);margin-top:2px">Contrato ${d.contrato} · NF ${d.nf} · ${d.embarque||'—'}</div>
+          <div style="font-size:12px;color:var(--text-muted);margin-top:2px">Contrato ${d.contrato} · NF ${d.nf} · ${fmtData(d.embarque)}</div>
           ${!temDescarga?`<div style="font-size:11px;color:var(--amber);margin-top:2px">⏳ Aguardando descarga para liberar pagamento dos 20%</div>`:''}
           ${desc_total>0&&temDescarga?`<div style="font-size:11px;color:var(--red);margin-top:2px">Desconto (quebra/impureza): ${fmt(desc_total)} — abatido dos 20%</div>`:''}
         </div>
@@ -2828,7 +2833,8 @@ function renderEmbarques(){
     return true;
   });
   document.getElementById('tbody-emb').innerHTML=f.length
-    ?f.map(d=>{const sp=sprazo(d);return`<tr class="${d.cancelada?'cancelada':''}" ondblclick="abrirEdit('${d.id}')" style="cursor:pointer" title="Duplo clique para editar"><td><input type="checkbox" value="${d.id}" onchange="updateSelCount('tbody-emb')" style="accent-color:#1B2B4B" onclick="event.stopPropagation()"></td>
+    ?f.map(d=>{const sp=sprazo(d);const _rowClass=d.cancelada?'cancelada':d.status==='liquidado'?'row-liquidado':d.status==='Pago'?'row-pago':'';
+      return`<tr class="${_rowClass}" ondblclick="abrirEdit('${d.id}')" style="cursor:pointer" title="Duplo clique para editar"><td><input type="checkbox" value="${d.id}" onchange="updateSelCount('tbody-emb')" style="accent-color:#1B2B4B" onclick="event.stopPropagation()"></td>
       <td><strong>${d.contrato}</strong></td>
       <td><span class="badge ${d.empresa==='ZF Grãos'?'badge-blue':'badge-green'}">${d.empresa||'Prime Grãos'}</span></td>
       <td>${d.nf||'—'}</td>
@@ -2836,8 +2842,8 @@ function renderEmbarques(){
       <td>${d.cancelada?'<span class="badge badge-red">Cancelada</span>':'<span class="badge badge-green">Ativa</span>'}</td>
       <td>${d.produto||'—'}</td>
       <td><strong>${d.dono_carga||'—'}</strong></td>
-      <td>${d.embarque||'—'}</td><td>${d.descarga||'—'}</td>
-      <td>${d.prazo_rec||'—'}</td><td>${d.data_rec||'—'}</td>
+      <td>${fmtData(d.embarque)}</td><td>${fmtData(d.descarga)}</td>
+      <td>${d.prazo_rec||'—'}</td><td>${fmtData(d.data_rec)}</td>
       <td><span class="badge ${sp.badge}">${sp.txt}</span></td>
       <td>${d.transportadora||'—'}</td><td>${d.motorista||'—'}</td>
       <td class="mono">${d.cpf||'—'}</td><td>${d.placa||'—'}</td>
@@ -3054,7 +3060,7 @@ function renderFluxo(){
   `;
   document.getElementById('tbody-fluxo').innerHTML=f.length
     ?[...f].sort((a,b)=>b.data>a.data?1:-1).map(l=>`<tr ondblclick="editarFluxo(${l.id})" style="cursor:pointer" title="Duplo clique para editar">
-      <td>${l.data||'—'}</td>
+      <td>${fmtData(l.data)}</td>
       <td><span class="badge ${l.tipo==='entrada'?'badge-green':'badge-red'}">${l.tipo==='entrada'?'Entrada':'Saída'}</span></td>
       <td>${l.descricao||'—'}</td><td>${l.parceiro||'—'}</td>
       <td class="mono ${l.tipo==='entrada'?'pos':'neg'}">${l.tipo==='saida'?'- ':''}${fmt(l.valor||0)}</td>
@@ -3141,7 +3147,7 @@ function renderFluxo(){
   if(despEl){
     despEl.innerHTML=despFiltradas.length
       ?[...despFiltradas].sort((a,b)=>b.data>a.data?1:-1).map(l=>`<tr>
-        <td>${l.data||'—'}</td>
+        <td>${fmtData(l.data)}</td>
         <td>${l.descricao||'—'}</td>
         <td class="mono neg">${fmt(l.valor||0)}</td>
       </tr>`).join('')+`<tr style="font-weight:600;border-top:2px solid var(--border)"><td colspan="2">Total</td><td class="mono neg">${fmt(totalDespesas)}</td></tr>`
@@ -3503,7 +3509,7 @@ function renderARecInd(){
         <td><span class="badge ${d.empresa==='ZF Grãos'?'badge-blue':'badge-green'}">${d.empresa||'Prime Grãos'}</span></td>
         <td>${(ctO&&ctO.comprador)||'—'}</td>
         <td>${d.nf||'—'}</td><td>${d.motorista||'—'}</td>
-        <td>${d.descarga||'—'}</td>
+        <td>${fmtData(d.descarga)}</td>
         <td>${d.descarga?new Date(prazoData(d.descarga,ph)).toLocaleDateString('pt-BR'):'—'}</td>
         <td>${sp?`<span class="badge ${sp.cls}">${sp.txt}</span>`:'—'}</td>
         <td class="mono amber-txt">${fmt(d.total_venda||0)}</td>
@@ -3548,7 +3554,7 @@ function renderARecParceiros(){
   const _totalArecParc=f.filter(l=>l.tipo==='entrada').reduce((s,l)=>s+(l.valor||0),0)-f.filter(l=>l.tipo==='saida').reduce((s,l)=>s+(l.valor||0),0);
   document.getElementById('tbody-arec-parc').innerHTML=f.length
     ?[...f].sort((a,b)=>b.data>a.data?1:-1).map(l=>`<tr ondblclick="editarFluxo('${l.id}')" style="cursor:pointer" title="Duplo clique para editar">
-      <td>${l.data||'—'}</td>
+      <td>${fmtData(l.data)}</td>
       <td><span class="badge ${l.tipo==='entrada'?'badge-green':'badge-red'}">${l.tipo==='entrada'?'Aporte':'Devolução'}</span></td>
       <td><strong>${l.parceiro||'—'}</strong></td>
       <td>${l.descricao||'—'}</td>
@@ -3613,7 +3619,7 @@ function renderDesp(){
   const _totalDesp=f.reduce((s,d)=>s+(d.valor||0),0);
   document.getElementById('tbody-desp').innerHTML=f.length
     ?[...f].sort((a,b)=>b.data>a.data?1:-1).map(d=>`<tr ondblclick="editarDesp(${d.id})" style="cursor:pointer">
-      <td>${d.data||'—'}</td><td>${d.categoria||'—'}</td><td>${d.descricao||'—'}</td>
+      <td>${fmtData(d.data)}</td><td>${d.categoria||'—'}</td><td>${d.descricao||'—'}</td>
       <td class="mono neg">${fmt(d.valor||0)}</td>
       <td style="color:var(--text-faint);font-size:12px">${d.obs||'—'}</td>
       <td style="color:var(--text-faint);font-size:11px">${d.lancado_por||'—'}</td>
@@ -3685,7 +3691,7 @@ function renderCapParc(){
   `;
   document.getElementById('tbody-cap-parc').innerHTML=f.length
     ?[...f].sort((a,b)=>b.data>a.data?1:-1).map(l=>`<tr ondblclick="editarFluxo('${l.id}')" style="cursor:pointer" title="Duplo clique para editar">
-      <td>${l.data||'—'}</td><td><strong>${l.parceiro||'—'}</strong></td>
+      <td>${fmtData(l.data)}</td><td><strong>${l.parceiro||'—'}</strong></td>
       <td>${l.descricao||'—'}</td>
       <td class="mono neg">${fmt(l.valor||0)}</td>
       <td style="display:flex;gap:4px">
@@ -3791,7 +3797,7 @@ function exportContratos(tipo){
   tipo==='pdf'?gerarPDF('Contratos',cab,rows,'prime-graos-contratos'):gerarCSV(cab,rows,'prime-graos-contratos');
 }
 function exportPainel(tipo){
-  const ativos=embs.filter(d=>!d.cancelada);
+  const ativos=embs.filter(d=>!d.cancelada&&(!_empresaFiltro||d.empresa===_empresaFiltro));
   const ctsNums=[...new Set(ativos.map(d=>d.contrato))];
   const cab=['Contrato','Empresa','Comprador','Produto','Embarques','Total Venda','Total Compra','Lucro R$','Lucro %'];
   const rows=ctsNums.map(ct=>{
@@ -4370,7 +4376,7 @@ function renderEstoque(){
 
   document.getElementById('tbody-estoque').innerHTML=movim.length
     ?movim.map(m=>`<tr>
-      <td>${m.data||'—'}</td>
+      <td>${fmtData(m.data)}</td>
       <td><span class="badge ${m._tipo==='entrada'?'badge-green':'badge-red'}">${m._tipo==='entrada'?'Entrada':'Saída'}</span></td>
       <td>${m.produto||'—'}</td>
       <td>${m.contrato||'—'}</td>
@@ -4523,7 +4529,7 @@ function renderICMS(){
       const baseCalc=(pliq/60)*venda;
       const icms=baseCalc*(aliq/100);
       return`<tr>
-        <td>${d.embarque||'—'}</td>
+        <td>${fmtData(d.embarque)}</td>
         <td>${d.contrato||'—'}</td>
         <td>${d.industria||d.industria_granja||'—'}</td>
         <td>${d.nf||'—'}</td>
@@ -5084,7 +5090,7 @@ function gerarFechamento(){
   document.getElementById('tbody-pend').innerHTML=pendentes.length
     ?pendentes.map(d=>{const sp=sprazo(d);const pv=d.total_venda-(d.recebido||0);return`<tr ondblclick="abrirEdit('${d.id}')" style="cursor:pointer" title="Duplo clique para editar"><td><input type="checkbox" value="${d.id}" onchange="updateSelCount('tbody-frete')" style="accent-color:#1B2B4B" onclick="event.stopPropagation()"></td>
       <td><strong>${d.contrato}</strong></td><td>${d.nf||'—'}</td><td>${d.motorista||'—'}</td>
-      <td>${d.descarga||'—'}</td><td>${d.prazo_rec||'—'}</td>
+      <td>${fmtData(d.descarga)}</td><td>${d.prazo_rec||'—'}</td>
       <td><span class="badge ${sp.badge}">${sp.txt}</span></td>
       <td class="mono">${fmt(d.total_venda)}</td><td class="mono">${fmt(d.recebido||0)}</td>
       <td class="mono ${pv>0?'neg':''}">${fmt(pv)}</td></tr>`;}).join('')
@@ -5092,6 +5098,8 @@ function gerarFechamento(){
 }
 function exportFech(tipo='csv'){
   if(!_fech.length){toast('Gere o fechamento primeiro.',true);return;}
+  const _fechEmp=_fech.filter(d=>!_empresaFiltro||d.empresa===_empresaFiltro);
+  const _fechData=_fechEmp.length?_fechEmp:_fech;
   const cab=['Contrato','Empresa','Comprador','Produto','Embarques','Sc Embarcadas','Sc Entregues','Sc Faltantes','Total Venda','Total Recebido','A Receber','Saldo Vencido'];
   const rows=_fech.map(r=>[r.ct,r.empresa,r.comprador,r.produto,r.qtd,r.sc_emb.toFixed(2),r.sc_ent.toFixed(2),r.sc_faltantes.toFixed(0),r.total_venda.toFixed(2),r.recebido.toFixed(2),r.a_receber.toFixed(2),r.vencido.toFixed(2)]);
   tipo==='pdf'?gerarPDF('Fechamento por Contrato',cab,rows,'prime-graos-fechamento'):gerarCSV(cab,rows,'prime-graos-fechamento');
@@ -5099,7 +5107,12 @@ function exportFech(tipo='csv'){
 
 // ===== REFRESH =====
 async function recarregarDados(){
+  const btn=document.getElementById('btn-atualizar');
+  if(btn){btn.disabled=true;btn.innerHTML='↻ Atualizando...';}
+  showLoading('Atualizando dados...');
   await load();
+  hideLoading();
+  if(btn){btn.disabled=false;btn.innerHTML='↻ Atualizar';}
   const active=((document.querySelector('.page.active')||{}).id||'').replace('page-','');
   if(active==='painel')renderPainel();
   if(active==='embarques')renderEmbarques();
@@ -5113,6 +5126,13 @@ async function recarregarDados(){
   if(active==='cap-com')renderCapCom();
   if(active==='transportadoras')renderTransp();
   if(active==='comissionarios')renderComs();
+  if(active==='icms')renderICMS();
+  if(active==='estoque')renderEstoque();
+  if(active==='fluxo')renderFluxo();
+  if(active==='arec-industria')renderARecInd();
+  if(active==='arec-parceiros')renderARecParceiros();
+  if(active==='cap-parceiros')renderCapParc();
+  if(active==='despesas')renderDesp();
   toast('Dados atualizados!');
 }
 
