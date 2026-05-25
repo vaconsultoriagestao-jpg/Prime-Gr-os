@@ -755,7 +755,11 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
     <h1 class="section-heading">Controle de Estoque</h1>
     <p class="section-sub">Entradas manuais e saídas automáticas pelos embarques.</p>
 
-    <!-- Cards saldo atual -->
+    <!-- Cards saldo consolidado (total acumulado sem filtro) -->
+    <div id="estoque-cards-consolidado" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;margin-bottom:0.5rem"></div>
+    <p style="font-size:11px;color:var(--text-faint);margin-bottom:1rem">↑ Saldo consolidado total &nbsp;|&nbsp; ↓ Movimentação do período selecionado</p>
+
+    <!-- Cards saldo período -->
     <div id="estoque-cards" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;margin-bottom:1.25rem"></div>
 
     <!-- Formulário de entrada -->
@@ -4249,6 +4253,27 @@ function renderEstoque(){
 
   // Saídas = embarques não cancelados
   const saidas=embs.filter(d=>!d.cancelada&&(!_empresaFiltro||d.empresa===_empresaFiltro));
+
+  // Cards CONSOLIDADOS: saldo total sem filtro de período
+  const saldoConsolidado={};
+  allProds.forEach(p=>{
+    const entTotal=entradas.filter(e=>e.produto===p).reduce((s,e)=>s+(e.qtd||0),0);
+    const saiTotal=saidas.filter(d=>d.produto===p).reduce((s,d)=>s+(d.sc_emb||d.qtd||0),0);
+    saldoConsolidado[p]={ent:entTotal,sai:saiTotal,saldo:entTotal-saiTotal};
+  });
+
+  const consEl=document.getElementById('estoque-cards-consolidado');
+  if(consEl){
+    consEl.innerHTML=allProds.map(p=>{
+      const s=saldoConsolidado[p]||{ent:0,sai:0,saldo:0};
+      const cor=s.saldo>=0?'#1B2B4B':'var(--red)';
+      return`<div class="stat-card" style="border-top:3px solid ${cor}">
+        <div class="s-label" style="font-size:11px;letter-spacing:.05em">SALDO ATUAL — ${p}</div>
+        <div style="font-size:26px;font-weight:700;color:${cor};margin:8px 0">${fmtN(s.saldo,0)} sc</div>
+        <div style="font-size:12px;color:var(--text-muted)">Entradas: ${fmtN(s.ent,0)} sc &nbsp;|&nbsp; Saídas: ${fmtN(s.sai,0)} sc</div>
+      </div>`;
+    }).join('') || '';
+  }
 
   // Cards: saldo por produto - aplicando filtro de período
   const saldoPorProd={};
