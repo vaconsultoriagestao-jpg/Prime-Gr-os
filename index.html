@@ -95,6 +95,8 @@ tr:last-child td{border-bottom:none}
 tr:hover td{background:var(--gray-50)}
 tr.cancelada td{opacity:.4;text-decoration:line-through}
 tr.cancelada td:last-child{text-decoration:none;opacity:1}
+tr.row-liquidado td{background:rgba(27,43,75,0.05)}
+tr.row-pago td{background:rgba(40,167,69,0.07)}
 .mono{font-family:'DM Mono',monospace;font-size:11px}
 .pos{color:#1B2B4B;font-weight:500}.neg{color:var(--red);font-weight:500}.amber-txt{color:var(--amber);font-weight:500}
 
@@ -2898,6 +2900,14 @@ function sortTable(tbodyId, colIndex, isNumeric=false){
       const bn=parseFloat(bc.replace(/[^0-9,.-]/g,'').replace(',','.'))||0;
       return asc?an-bn:bn-an;
     }
+    // Detecta data no formato DD/MM/AAAA e converte para AAAA-MM-DD para ordenar
+    const dateRe=/^(\d{2})\/(\d{2})\/(\d{4})$/;
+    const am=ac.match(dateRe), bm=bc.match(dateRe);
+    if(am&&bm){
+      const ad=`${am[3]}-${am[2]}-${am[1]}`;
+      const bd=`${bm[3]}-${bm[2]}-${bm[1]}`;
+      return asc?ad.localeCompare(bd):bd.localeCompare(ad);
+    }
     return asc?ac.localeCompare(bc,'pt-BR'):bc.localeCompare(ac,'pt-BR');
   });
   rows.forEach(r=>tbody.appendChild(r));
@@ -3384,7 +3394,7 @@ function msToggle(id){
   const isOpen=dd.classList.toggle('open');
   if(isOpen){
     // Position using fixed coordinates to escape overflow:hidden
-    const btn=document.querySelector('#'+id+' .ms-filter-btn');
+    const btn=document.getElementById(id)?.querySelector('.ms-filter-btn');
     if(btn){
       const r=btn.getBoundingClientRect();
       dd.style.top=(r.bottom+4)+'px';
