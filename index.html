@@ -822,11 +822,12 @@ tr.cancelada td:last-child{text-decoration:none;opacity:1}
           <th onclick="sortTable('tbody-estoque',0)" style="cursor:pointer">Data ↕</th>
           <th>Tipo</th>
           <th>Produto</th>
+          <th>Contrato</th>
           <th>Fornecedor / Motorista</th>
           <th>NF / Ref.</th>
-          <th onclick="sortTable('tbody-estoque',5,true)" style="cursor:pointer">Qtd (sc) ↕</th>
-          <th onclick="sortTable('tbody-estoque',6,true)" style="cursor:pointer">Peso (kg) ↕</th>
-          <th onclick="sortTable('tbody-estoque',7,true)" style="cursor:pointer">Preço/sc ↕</th>
+          <th onclick="sortTable('tbody-estoque',6,true)" style="cursor:pointer">Qtd (sc) ↕</th>
+          <th onclick="sortTable('tbody-estoque',7,true)" style="cursor:pointer">Peso (kg) ↕</th>
+          <th onclick="sortTable('tbody-estoque',8,true)" style="cursor:pointer">Preço/sc ↕</th>
           <th>Obs</th>
           <th></th>
         </tr></thead>
@@ -4301,6 +4302,7 @@ function renderEstoque(){
     return true;
   }).map(d=>({
     id:d.id,data:d.embarque,produto:d.produto,
+    contrato:d.contrato||'—',
     fornecedor:d.motorista,ref:d.nf,
     qtd:-(d.sc_emb||d.qtd||0),
     peso:-(d.pliq||0),
@@ -4320,6 +4322,7 @@ function renderEstoque(){
       <td>${m.data||'—'}</td>
       <td><span class="badge ${m._tipo==='entrada'?'badge-green':'badge-red'}">${m._tipo==='entrada'?'Entrada':'Saída'}</span></td>
       <td>${m.produto||'—'}</td>
+      <td>${m.contrato||'—'}</td>
       <td>${m.fornecedor||'—'}</td>
       <td>${m.ref||m.nf||'—'}</td>
       <td class="mono ${m._tipo==='entrada'?'pos':'neg'}">${m._tipo==='entrada'?'+':''}${fmtN(Math.abs(m.qtd||0),2)}</td>
@@ -4328,7 +4331,7 @@ function renderEstoque(){
       <td style="color:var(--text-faint);font-size:12px">${m.obs||'—'}</td>
       <td>${m._tipo==='entrada'?`<button class="btn-edit" onclick="editarEntradaEstoque('${m.id}')">✏</button> <button class="btn btn-danger" onclick="delEntradaEstoque('${m.id}')">×</button>`:'—'}</td>
     </tr>`).join('')+`<tr data-total="1" style="font-weight:700;border-top:2px solid var(--border);background:#f8f9fa">
-      <td colspan="5">Saldo do período</td>
+      <td colspan="6">Saldo do período</td>
       <td class="mono ${totSaldo>=0?'pos':'neg'}">${fmtN(totSaldo,2)}</td>
       <td colspan="4"></td>
     </tr>`
@@ -4339,7 +4342,6 @@ function exportEstoque(tipo){
   if(!document.getElementById('tbody-estoque'))return;
   const mes=(document.getElementById('est-fmes')||{value:''}).value;
   const ano=(document.getElementById('est-fano')||{value:'2026'}).value;
-  const empresa=_empresaFiltro||'Prime Grãos';
   const periodoLabel=mes?(mes+'/'+ano):ano;
 
   const entradas=estoqueEntradas.filter(e=>(!_empresaFiltro||e.empresa===_empresaFiltro)&&msMatch('ms-est-prod',e.produto||''));
@@ -4361,14 +4363,63 @@ function exportEstoque(tipo){
   });
 
   const movim=[
-    ...entFilt.map(e=>['Entrada',e.data,e.produto,e.fornecedor||'—','—',e.qtd,e.peso||0,e.preco||0,e.obs||'—']),
-    ...saiFilt.map(d=>['Saída',d.embarque,d.produto,d.motorista||'—',d.nf||'—',-(d.sc_emb||d.qtd||0),-(d.pliq||0),d.venda||0,'Embarque'])
+    ...entFilt.map(e=>['Entrada',e.data,e.produto,e.contrato||'—',e.fornecedor||'—','—',e.qtd,e.peso||0,e.preco||0,e.obs||'—']),
+    ...saiFilt.map(d=>['Saída',d.embarque,d.produto,d.contrato||'—',d.motorista||'—',d.nf||'—',-(d.sc_emb||d.qtd||0),-(d.pliq||0),d.venda||0,'Embarque'])
   ].sort((a,b)=>a[1]>b[1]?1:-1);
 
   if(!movim.length){toast('Nenhum dado para exportar.',true);return;}
 
-  const cab=['Tipo','Data','Produto','Fornecedor/Motorista','NF/Ref','Qtd(sc)','Peso(kg)','Preço/sc','Obs'];
-  gerarCSV(cab,movim,'Estoque_'+empresa.replace(' ','_')+'_'+periodoLabel);
+  const cab=['Tipo','Data','Produto','Contrato','Fornecedor/Motorista','NF/Ref','Qtd(sc)','Peso(kg)','Preço/sc','Obs'];
+
+  if(tipo==='csv'){
+    gerarCSV(cab,movim,'Estoque_'+empresa.replace(' ','_')+'_'+periodoLabel);
+  } else {
+    const {jsPDF}=window.jspdf;
+    const doc=new jsPDF({orientation:'landscape',unit:'mm',format:'a4'});
+    const azul=[27,43,75];
+    const dataHoje=new Date().toLocaleDateString('pt-BR');
+
+    doc.setFillColor(...azul);doc.rect(0,0,297,28,'F');
+    doc.setTextColor(255,255,255);doc.setFontSize(15);doc.setFont('helvetica','bold');
+    doc.text(empresa,14,13);
+    doc.setFontSize(8);doc.setFont('helvetica','normal');doc.setTextColor(168,187,219);
+    doc.text('Controle de Estoque — '+periodoLabel,14,20);
+    doc.setTextColor(255,255,255);doc.setFontSize(10);doc.setFont('helvetica','bold');
+    doc.text('MOVIMENTAÇÃO DE ESTOQUE',297-14,10,{align:'right'});
+    doc.setFontSize(8);doc.setFont('helvetica','normal');doc.setTextColor(168,187,219);
+    doc.text('Emitido em: '+dataHoje,297-14,17,{align:'right'});
+
+    const totEnt=movim.filter(m=>m[0]==='Entrada').reduce((s,m)=>s+Math.abs(parseFloat(m[6])||0),0);
+    const totSai=movim.filter(m=>m[0]==='Saída').reduce((s,m)=>s+Math.abs(parseFloat(m[6])||0),0);
+
+    doc.setFillColor(240,244,252);doc.rect(0,28,297,14,'F');
+    doc.setFontSize(8);
+    [['Entradas',fmtN(totEnt,0)+' sc'],['Saídas',fmtN(totSai,0)+' sc'],['Saldo',fmtN(totEnt-totSai,0)+' sc']].forEach(([l,v],i)=>{
+      const x=14+(i*80);
+      doc.setFont('helvetica','bold');doc.setTextColor(...azul);doc.text(l,x,34);
+      doc.setFont('helvetica','normal');doc.setTextColor(20,20,20);doc.text(v,x,40);
+    });
+
+    doc.autoTable({
+      head:[cab],body:movim,startY:44,margin:{left:14,right:14},
+      styles:{fontSize:7,cellPadding:2,lineColor:[210,220,235],lineWidth:0.2,textColor:[30,30,30]},
+      headStyles:{fillColor:azul,textColor:[255,255,255],fontStyle:'bold',fontSize:7},
+      alternateRowStyles:{fillColor:[248,250,255]},
+      didParseCell:function(data){
+        if(data.section==='body'&&data.column.index===0){
+          data.cell.styles.textColor=data.row.raw[0]==='Entrada'?[27,120,60]:[180,30,30];
+          data.cell.styles.fontStyle='bold';
+        }
+      }
+    });
+
+    const pH=doc.internal.pageSize.height;
+    doc.setFillColor(...azul);doc.rect(0,pH-10,297,10,'F');
+    doc.setFontSize(7);doc.setTextColor(180,180,200);doc.setFont('helvetica','normal');
+    doc.text(empresa+' — Estoque — '+periodoLabel+' — '+dataHoje,14,pH-4);
+    doc.save('Estoque_'+empresa.replace(' ','_')+'_'+periodoLabel+'.pdf');
+    toast('PDF gerado!');
+  }
 }
 
 // ===== APURAÇÃO ICMS =====
