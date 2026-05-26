@@ -3352,18 +3352,8 @@ function msFilter(id, options, onchange, placeholder='Todos'){
   const container = document.getElementById(id);
   if(!container) return;
 
-  // Only recreate if options changed
+  // Always rebuild to ensure correct options for current company
   const optKey = options.join('|');
-  if(container.dataset.optKey === optKey) {
-    // Just update button label
-    const btn = container.querySelector('.ms-filter-btn');
-    if(btn){
-      const cnt = state.size;
-      btn.textContent = cnt ? cnt+' selecionado(s)' : placeholder;
-      btn.className = 'ms-filter-btn' + (cnt?' active':'');
-    }
-    return;
-  }
   container.dataset.optKey = optKey;
 
   const selected = [...state];
