@@ -3339,7 +3339,7 @@ function exportFluxo(tipo='csv'){
 
 
 // ===== MULTI-SELECT FILTER =====
-const _msState = {}; // {filterId: Set of selected values}
+let _msState = {}; // {filterId: Set of selected values}
 
 function msFilter(id, options, onchange, placeholder='Todos'){
   if(!_msState[id]) _msState[id] = new Set();
