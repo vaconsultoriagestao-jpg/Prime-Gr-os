@@ -1615,40 +1615,34 @@ async function saveForn(){
 }
 async function load(){
   showLoading('Conectando ao banco de dados...');
-  const _loadTimeout=setTimeout(()=>{hideLoading();toast('Tempo limite excedido. Verifique sua conexão.',true);},15000);
   try{
     const [re,rc,rt,rcom,rforn,rf,ru]=await Promise.all([
-      sbGet('embarques'),sbGet('contratos'),
-      fetch(`${SB_URL}/rest/v1/transportadoras?select=data&order=id`,{headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}}).then(r=>r.json()).then(d=>d.map?d.map(x=>x.data):[]),
-      fetch(`${SB_URL}/rest/v1/comissionarios?select=data&order=id`,{headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}}).then(r=>r.json()).then(d=>d.map?d.map(x=>x.data):[]),
+      sbGet('embarques').catch(()=>[]),
+      sbGet('contratos').catch(()=>[]),
+      fetch(`${SB_URL}/rest/v1/transportadoras?select=data&order=id`,{headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}}).then(r=>r.json()).then(d=>d.map?d.map(x=>x.data):[]).catch(()=>[]),
+      fetch(`${SB_URL}/rest/v1/comissionarios?select=data&order=id`,{headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}}).then(r=>r.json()).then(d=>d.map?d.map(x=>x.data):[]).catch(()=>[]),
       fetch(`${SB_URL}/rest/v1/fornecedores?select=data&order=id`,{headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}}).then(r=>r.json()).then(d=>d.map?d.map(x=>x.data):[]).catch(()=>[]),
-      sbGetCfg(),
-      fetch(`${SB_URL}/rest/v1/usuarios?select=data&order=id`,{headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}}).then(r=>r.json()).then(d=>d.map?d.map(x=>x.data):[])
+      sbGetCfg().catch(()=>null),
+      fetch(`${SB_URL}/rest/v1/usuarios?select=data&order=id`,{headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}}).then(r=>r.json()).then(d=>d.map?d.map(x=>x.data):[]).catch(()=>[])
     ]);
     embs=re||[];cts=rc||[];transp=rt||[];coms=rcom||[];forn=rforn||[];
     if(rf)cfg={...cfg,...rf};
-    // Carregar fluxo de caixa
     try{
       const rfl=await fetch(`${SB_URL}/rest/v1/fluxo?select=data&order=id`,{headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}}).then(r=>r.json()).then(d=>d.map?d.map(x=>x.data):[]);
       if(rfl&&rfl.length)fluxo=rfl;
     }catch(e){}
-    // Carregar despesas
     try{
       const rdesp=await fetch(`${SB_URL}/rest/v1/despesas?select=data&order=id`,{headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}}).then(r=>r.json()).then(d=>d.map?d.map(x=>x.data):[]);
       if(rdesp&&rdesp.length)despesas=rdesp;
     }catch(e){}
-    // Usar usuários do banco; só usar padrão se banco vazio
     if(ru&&ru.length){
       usuarios=ru;
     }else{
-      // Banco vazio — usar padrão e salvar no banco
       usuarios=_usuariosDefault;
       saveUsers();
     }
   }catch(e){console.error('Erro ao carregar:',e);}
-  // Carregar estoque
   try{await loadEstoque();}catch(e){}
-  clearTimeout(_loadTimeout);
   hideLoading();
 }
 
