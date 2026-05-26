@@ -1549,11 +1549,10 @@ async function save(){
   hideLoading();
 }
 async function saveEmb(emb){
-  // Salva APENAS o embarque individual — não apaga os outros
+  // Upsert — salva embarque individual sem apagar outros
   showLoading('Salvando embarque...');
   try{
-    await fetch(`${SB_URL}/rest/v1/embarques?id=eq.${emb.id}`,{method:'DELETE',headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}});
-    await sbPost('embarques',[{id:emb.id,data:emb}]);
+    await fetch(`${SB_URL}/rest/v1/embarques`,{method:'POST',headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=minimal'},body:JSON.stringify([{id:emb.id,data:emb}])});
   }catch(e){console.error(e);}
   hideLoading();
 }
@@ -1616,6 +1615,7 @@ async function saveForn(){
 }
 async function load(){
   showLoading('Conectando ao banco de dados...');
+  const _loadTimeout=setTimeout(()=>{hideLoading();toast('Tempo limite excedido. Verifique sua conexão.',true);},15000);
   try{
     const [re,rc,rt,rcom,rforn,rf,ru]=await Promise.all([
       sbGet('embarques'),sbGet('contratos'),
@@ -1648,6 +1648,7 @@ async function load(){
   }catch(e){console.error('Erro ao carregar:',e);}
   // Carregar estoque
   try{await loadEstoque();}catch(e){}
+  clearTimeout(_loadTimeout);
   hideLoading();
 }
 
@@ -1679,6 +1680,8 @@ async function fazerLogin(){
   const user=document.getElementById('login-user').value.trim().toLowerCase();
   const senha=document.getElementById('login-senha').value.trim();
   const empresa=document.getElementById('login-empresa').value||'Prime Grãos';
+  // Esconder erro anterior
+  document.getElementById('login-error').style.display='none';
   showLoading('Verificando...');
   await load();
   hideLoading();
@@ -1686,10 +1689,8 @@ async function fazerLogin(){
   if(u){
     usuarioLogado=u;
     _empresaFiltro=empresa;
-    // Limpar cache dos ms-filters ao trocar empresa
     document.querySelectorAll('[data-opt-key]').forEach(el=>el.removeAttribute('data-opt-key'));
     _msState={};
-    // Atualizar display da empresa
     const spanEmp=document.getElementById('filtro-empresa-global');
     if(spanEmp)spanEmp.textContent=empresa;
     localStorage.setItem(AK,JSON.stringify({id:u.id,user:u.user,empresa}));
