@@ -1686,6 +1686,9 @@ async function fazerLogin(){
   if(u){
     usuarioLogado=u;
     _empresaFiltro=empresa;
+    // Limpar cache dos ms-filters ao trocar empresa
+    document.querySelectorAll('[data-opt-key]').forEach(el=>el.removeAttribute('data-opt-key'));
+    _msState={};
     // Atualizar display da empresa
     const spanEmp=document.getElementById('filtro-empresa-global');
     if(spanEmp)spanEmp.textContent=empresa;
