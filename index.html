@@ -3386,19 +3386,23 @@ function msFilter(id, options, onchange, placeholder='Todos'){
 }
 
 function msToggle(id){
-  // Close all other dropdowns first
   document.querySelectorAll('.ms-filter-dropdown.open').forEach(d=>{
     if(d.id!=='ms-dd-'+id) d.classList.remove('open');
   });
   const dd=document.getElementById('ms-dd-'+id);
   const isOpen=dd.classList.toggle('open');
   if(isOpen){
-    // Position using fixed coordinates to escape overflow:hidden
     const btn=document.getElementById(id)?.querySelector('.ms-filter-btn');
     if(btn){
       const r=btn.getBoundingClientRect();
+      const ddW=Math.max(180, dd.offsetWidth||180);
+      let left=r.left;
+      // Garantir que não saia da tela pela direita
+      if(left+ddW>window.innerWidth-10) left=window.innerWidth-ddW-10;
+      if(left<5) left=5;
       dd.style.top=(r.bottom+4)+'px';
-      dd.style.left=r.left+'px';
+      dd.style.left=left+'px';
+      dd.style.minWidth=Math.max(r.width,180)+'px';
     }
   }
 }
