@@ -4913,10 +4913,13 @@ function gerarFechContrato(){
   // Carregar distribuição de lucro salva (usa primeiro contrato selecionado)
   _fcLucroAtual=lucro;
   const ctPrimeiro=cts.find(c=>String(c.numero)===String(sels[0]));
-  if(ctPrimeiro&&ctPrimeiro.distribuicao_socios&&ctPrimeiro.distribuicao_socios.length){
-    _fcSocios=ctPrimeiro.distribuicao_socios;
-  } else {
-    _fcSocios=[];
+  // Só carrega distribuição salva se não houver sócios já adicionados na sessão
+  if(_fcSocios.length===0){
+    if(ctPrimeiro&&ctPrimeiro.distribuicao_socios&&ctPrimeiro.distribuicao_socios.length){
+      _fcSocios=ctPrimeiro.distribuicao_socios;
+    } else {
+      _fcSocios=[];
+    }
   }
   renderSociosFc();
   const porCom={};
