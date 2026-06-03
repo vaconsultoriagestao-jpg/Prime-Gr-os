@@ -2446,6 +2446,7 @@ function renderCapNota(){
   });
   const totAberto=f.filter(d=>!d.nota_pago).reduce((s,d)=>s+(d.cn_val||0),0);
   const totPago=f.filter(d=>d.nota_pago).reduce((s,d)=>s+(d.cn_val||0),0);
+  const totTotal=totAberto+totPago;
   const cards=document.getElementById('capn-cards');
   if(cards)cards.innerHTML=`
     <div class="stat-card"><div class="s-label">Total notas</div><div class="s-value">${fmt(totTotal)}</div></div>
