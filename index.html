@@ -1894,6 +1894,20 @@ function irPara(id,el){
   if(el)el.classList.add('active');
   else{const n=document.getElementById('nav-'+id);if(n)n.classList.add('active');}
   document.getElementById('page-title').textContent=ptitles[id]||'';
+  // Renderizar página com tratamento de erro
+  const _renders={
+    'arec-industria':renderARecInd,'arec-parceiros':renderARecParceiros,
+    'cap-desp':renderDesp,'cap-parceiros':renderCapParc,'fluxo':renderFluxo,
+    'fechamento':initFech,'fech-contrato':initFechContrato,'saidas':renderSaidas,
+    'painel':renderPainel,'contratos':renderContratos,'embarques':renderEmbarques,
+    'icms':renderICMS,'frete':renderFrete,'cap-transp':renderCapTransp,
+    'cap-com':renderCapCom,'cap-nota':renderCapNota,'transportadoras':renderTransp,
+    'fornecedores':renderForn,'comissionarios':renderComs,'config':loadCfgUI,
+    'despesas':renderDesp
+  };
+  if(id==='estoque'){loadEstoque().then(renderEstoque).catch(e=>console.error(e));return;}
+  if(id==='novo'){try{updSelCts();updSelTransp();updSelForn();calcular();}catch(e){console.error(e);}return;}
+  if(_renders[id]){try{_renders[id]();}catch(e){console.error('Erro '+id,e);toast('Erro ao carregar a página.',true);}}
 }
 
 // ===== UTILS =====
