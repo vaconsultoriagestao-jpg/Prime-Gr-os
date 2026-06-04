@@ -2963,6 +2963,13 @@ function renderFluxo(){
   const aReceberEmbs=embs.filter(d=>{
     if(d.cancelada||d.recebido>0)return false;
     if(emp&&d.empresa!==emp)return false;
+    // Filtrar por período se selecionado
+    if(mes||ano){
+      const dt=d.embarque||'';
+      const[y,m]=(dt).split('-');
+      if(ano&&y!==ano)return false;
+      if(mes&&m!==mes)return false;
+    }
     // Excluir embarques de contratos com distribuição 100% paga
     const ctO=cts.find(c=>c.numero==d.contrato);
     if(ctO&&ctO.distribuicao_socios&&ctO.distribuicao_socios.length>0){
@@ -2977,7 +2984,12 @@ function renderFluxo(){
     const fp=(ctO&&ctO.tem_fundo)?(ctO.fundo_pct||5)/100:0;
     return s+(d.total_venda||0)*(1-fp);
   },0);
-  const embsFiltEmp=embs.filter(d=>!d.cancelada&&(!emp||d.empresa===emp));
+  const embsFiltEmp=embs.filter(d=>{
+    if(d.cancelada)return false;
+    if(emp&&d.empresa!==emp)return false;
+    if(mes||ano){const[y,m]=(d.embarque||'').split('-');if(ano&&y!==ano)return false;if(mes&&m!==mes)return false;}
+    return true;
+  });
   const aPagarCTE=embsFiltEmp.filter(d=>!d.cte_pago&&(d.cte||0)>0).reduce((s,d)=>s+(d.cte||0),0);
   const aPagarNota=embsFiltEmp.filter(d=>!d.nota_pago&&(d.cn_val||0)>0).reduce((s,d)=>s+(d.cn_val||0),0);
   const aPagarFrete=embsFiltEmp.filter(d=>(d.frete_total||0)>0).reduce((s,d)=>{
@@ -3001,11 +3013,22 @@ function renderFluxo(){
   if(campoB&&!campoB.matches(':focus'))campoB.value=saldoBanco||'';
 
   // Despesas escritório — filtra por empresa
-  const totalDespesas=despesas.filter(d=>!emp||d.empresa===emp).reduce((s,d)=>s+(d.valor||0),0);
+  const totalDespesas=despesas.filter(d=>{
+    if(emp&&d.empresa!==emp)return false;
+    if(mes||ano){const[y,m]=(d.data||'').split('-');if(ano&&y!==ano)return false;if(mes&&m!==mes)return false;}
+    return true;
+  }).reduce((s,d)=>s+(d.valor||0),0);
 
 
   // Parceiros (exceto Banco) — filtra por empresa
-  const fluxoParceiros=fluxo.filter(l=>!(l.parceiro&&l.parceiro.toUpperCase()==="BANCO")&&l.categoria!=="despesa"&&l.parceiro!=="Escritório"&&(!emp||l.empresa===emp));
+  const fluxoParceiros=fluxo.filter(l=>{
+    if(l.parceiro&&l.parceiro.toUpperCase()==='BANCO')return false;
+    if(l.categoria==='despesa')return false;
+    if(l.parceiro==='Escritório')return false;
+    if(emp&&l.empresa!==emp)return false;
+    if(mes||ano){const[y,m]=(l.data||'').split('-');if(ano&&y!==ano)return false;if(mes&&m!==mes)return false;}
+    return true;
+  });
   const totalAportes=fluxoParceiros.filter(l=>l.tipo==='entrada').reduce((s,l)=>s+(l.valor||0),0);
   const totalDevolucoes=fluxoParceiros.filter(l=>l.tipo==='saida').reduce((s,l)=>s+(l.valor||0),0);
   const saldoParceiros=totalAportes-totalDevolucoes;
