@@ -3508,6 +3508,7 @@ function getSelected(tbodyId){
 // ===== A RECEBER INDUSTRIAS =====
 function renderARecInd(){
   if(!document.getElementById('tbody-arec-ind'))return;
+  try{
   const emp=_empresaFiltro;
   const ctNums=[...new Set(embs.filter(d=>!d.cancelada&&(!emp||d.empresa===emp)).map(d=>String(d.contrato)))].sort();
   const compradores=[...new Set(embs.filter(d=>!d.cancelada&&(!emp||d.empresa===emp)).map(d=>d.empresa).filter(Boolean))].sort();
@@ -3524,9 +3525,11 @@ function renderARecInd(){
   const total=pendentes.reduce((s,d)=>s+(d.total_venda||0),0);
   const vencido=pendentes.filter(d=>{
     if(!d.descarga)return false;
-    const ctO=cts.find(c=>c.numero==d.contrato);
-    const ph=(ctO&&ctO.prazo)||cfg.prazo||72;
-    return new Date()>prazoData(d.descarga,ph);
+    try{
+      const ctO=cts.find(c=>c.numero==d.contrato);
+      const ph=(ctO&&ctO.prazo)||cfg.prazo||72;
+      return new Date()>prazoData(d.descarga,ph);
+    }catch(e){return false;}
   }).reduce((s,d)=>s+(d.total_venda||0),0);
 
   document.getElementById('arec-ind-cards').innerHTML=`
@@ -3537,24 +3540,28 @@ function renderARecInd(){
 
   document.getElementById('tbody-arec-ind').innerHTML=pendentes.length
     ?pendentes.map(d=>{
+      try{
       const ctO=cts.find(c=>c.numero==d.contrato);
       const ph=(ctO&&ctO.prazo)||cfg.prazo||72;
       const sp=sprazo(d);
-      const pendente=d.total_venda-(d.recebido||0);
+      const pendente=(d.total_venda||0)-(d.recebido||0);
+      let prazoStr='—';
+      try{if(d.descarga)prazoStr=new Date(prazoData(d.descarga,ph)).toLocaleDateString('pt-BR');}catch(e){}
       return`<tr ondblclick="abrirEdit(${d.id})" style="cursor:pointer">
         <td><strong>${d.contrato}</strong></td>
         <td><span class="badge ${d.empresa==='ZF Grãos'?'badge-blue':'badge-green'}">${d.empresa||'Prime Grãos'}</span></td>
         <td>${(ctO&&ctO.comprador)||'—'}</td>
         <td>${d.nf||'—'}</td><td>${d.motorista||'—'}</td>
         <td>${fmtData(d.descarga)}</td>
-        <td>${d.descarga?new Date(prazoData(d.descarga,ph)).toLocaleDateString('pt-BR'):'—'}</td>
+        <td>${prazoStr}</td>
         <td>${sp?`<span class="badge ${sp.cls}">${sp.txt}</span>`:'—'}</td>
         <td class="mono amber-txt">${fmt(d.total_venda||0)}</td>
         <td class="mono pos">${fmt(d.recebido||0)}</td>
         <td class="mono neg">${fmt(pendente)}</td>
-      </tr>`;
+      </tr>`;}catch(e){return'';}
     }).join('')
     :'<tr><td colspan="11" class="empty-state">Nenhuma nota pendente.</td></tr>';
+  }catch(e){console.error('renderARecInd erro:',e);}
 }
 function exportARecInd(tipo){
   const cab=['Contrato','Empresa','Comprador','NF','Motorista','Descarga','Total Venda','Recebido','Pendente'];
