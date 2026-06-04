@@ -1480,6 +1480,14 @@ tr.row-pago td{background:rgba(40,167,69,0.07)}
 
 <script>
 // ===== SUPABASE =====
+// Tratamento global de erros JS
+window.addEventListener('error', function(e){
+  console.error('Erro global:', e.message, 'linha:', e.lineno);
+});
+window.addEventListener('unhandledrejection', function(e){
+  console.error('Promise rejeitada:', e.reason);
+  e.preventDefault();
+});
 const SB_URL='https://xnafpqphzqhbnxaahilo.supabase.co';
 const SB_KEY='sb_publishable_Pv0EyfOvKtPYPeGTJZVVxQ_bDWBjkTN';
 const AK='prime_auth';
@@ -1754,7 +1762,6 @@ const _MENUS=[
 function temPermissao(id){
   if(!usuarioLogado)return false;
   if(usuarioLogado.perfil==='admin')return true;
-  if(id==='config')return false; // config sempre só admin
   const perms=usuarioLogado.permissoes||[];
   return perms.includes(id);
 }
@@ -1887,28 +1894,6 @@ function irPara(id,el){
   if(el)el.classList.add('active');
   else{const n=document.getElementById('nav-'+id);if(n)n.classList.add('active');}
   document.getElementById('page-title').textContent=ptitles[id]||'';
-  if(id==='arec-industria')renderARecInd();
-  if(id==='arec-parceiros')renderARecParceiros();
-  if(id==='cap-desp')renderDesp();
-  if(id==='cap-parceiros')renderCapParc();
-  if(id==='fluxo')renderFluxo();
-  if(id==='fechamento')initFech();
-  if(id==='fech-contrato')initFechContrato();
-  if(id==='saidas')renderSaidas();
-  if(id==='painel')renderPainel();
-  if(id==='contratos')renderContratos();
-  if(id==='embarques')renderEmbarques();
-  if(id==='icms')renderICMS();
-  if(id==='estoque'){loadEstoque().then(renderEstoque);}
-  if(id==='novo'){updSelCts();updSelTransp();updSelForn();calcular();}
-  if(id==='frete')renderFrete();
-  if(id==='cap-transp')renderCapTransp();
-  if(id==='cap-com')renderCapCom();
-  if(id==='cap-nota')renderCapNota();
-  if(id==='transportadoras')renderTransp();
-  if(id==='fornecedores')renderForn();
-  if(id==='comissionarios')renderComs();
-  if(id==='config')loadCfgUI();
 }
 
 // ===== UTILS =====
