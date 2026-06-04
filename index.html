@@ -2961,8 +2961,11 @@ function renderFluxo(){
   const totalSai=f.filter(l=>l.tipo==='saida').reduce((s,l)=>s+(l.valor||0),0);
   const saldo=totalEnt-totalSai;
   const aReceberEmbs=embs.filter(d=>{
-    if(d.cancelada||d.recebido>0)return false;
+    if(d.cancelada)return false;
     if(emp&&d.empresa!==emp)return false;
+    // Só incluir se ainda tem saldo pendente (total_venda > recebido)
+    const pendente=(d.total_venda||0)-(d.recebido||0);
+    if(pendente<=0)return false;
     // Filtrar por período se selecionado
     if(mes||ano){
       const dt=d.embarque||'';
@@ -2982,7 +2985,8 @@ function renderFluxo(){
   const aReceberTotal=aReceberEmbs.reduce((s,d)=>{
     const ctO=cts.find(c=>c.numero==d.contrato);
     const fp=(ctO&&ctO.tem_fundo)?(ctO.fundo_pct||5)/100:0;
-    return s+(d.total_venda||0)*(1-fp);
+    const pendente=(d.total_venda||0)-(d.recebido||0);
+    return s+pendente*(1-fp);
   },0);
   const embsFiltEmp=embs.filter(d=>{
     if(d.cancelada)return false;
@@ -3108,7 +3112,7 @@ function renderFluxo(){
   aReceberEmbs.forEach(d=>{
     if(!porCt[d.contrato])porCt[d.contrato]={ct:d.contrato,comprador:(cts.find(c=>c.numero==d.contrato)||{comprador:'—'}).comprador,total:0,pct:0};
     const ctO=cts.find(c=>c.numero==d.contrato);
-    porCt[d.contrato].total+=d.total_venda||0;
+    porCt[d.contrato].total+=Math.max(0,(d.total_venda||0)-(d.recebido||0));
     porCt[d.contrato].pct=(ctO&&ctO.tem_fundo)?(ctO.fundo_pct||5)/100:0;
   });
   document.getElementById('tbody-flx-receber').innerHTML=Object.values(porCt).length
