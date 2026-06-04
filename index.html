@@ -988,7 +988,7 @@ tr.row-pago td{background:rgba(40,167,69,0.07)}
         <option value="10">Outubro</option><option value="11">Novembro</option><option value="12">Dezembro</option>
       </select>
       <select class="filter-select" id="f-frete-ano" onchange="renderFrete()">
-        <option value="">Todos os anos</option><option value="2026" selected>2026</option><option value="2025">2025</option>
+        <option value="">Todos os anos</option><option value="2026">2026</option><option value="2025">2025</option>
       </select>
       <select class="filter-select" id="f-frete-status" onchange="renderFrete()">
         <option value="">Todos</option><option value="aberto">Com saldo em aberto</option><option value="pago">Quitados</option>
@@ -1907,7 +1907,7 @@ function irPara(id,el){
   };
   if(id==='estoque'){loadEstoque().then(renderEstoque).catch(e=>console.error(e));return;}
   if(id==='novo'){try{updSelCts();updSelTransp();updSelForn();calcular();}catch(e){console.error(e);}return;}
-  if(_renders[id]){try{_renders[id]();}catch(e){console.error('Erro '+id,e);toast('Erro ao carregar a página.',true);}}
+  if(_renders[id]){setTimeout(()=>{try{_renders[id]();}catch(e){console.error('Erro '+id,e);toast('Erro ao carregar a página.',true);}},0);}
 }
 
 // ===== UTILS =====
