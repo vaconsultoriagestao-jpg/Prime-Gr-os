@@ -3019,6 +3019,7 @@ function renderFluxo(){
   // Despesas escritório — filtra por empresa
   const totalDespesas=despesas.filter(d=>{
     if(emp&&d.empresa!==emp)return false;
+    if(d.desp_pago)return false; // só em aberto no fluxo
     if(mes||ano){const[y,m]=(d.data||'').split('-');if(ano&&y!==ano)return false;if(mes&&m!==mes)return false;}
     return true;
   }).reduce((s,d)=>s+(d.valor||0),0);
@@ -3180,7 +3181,7 @@ function renderFluxo(){
 
   // Tabela despesas escritório — filtrada por empresa
   const despEl=document.getElementById('tbody-flx-desp');
-  const despFiltradas=despesas.filter(d=>!emp||d.empresa===emp);
+  const despFiltradas=despesas.filter(d=>(!emp||d.empresa===emp)&&!d.desp_pago);
   if(despEl){
     despEl.innerHTML=despFiltradas.length
       ?[...despFiltradas].sort((a,b)=>b.data>a.data?1:-1).map(l=>`<tr>
@@ -3658,9 +3659,10 @@ function renderDesp(){
     ?[...f].sort((a,b)=>b.data>a.data?1:-1).map(d=>`<tr ondblclick="editarDesp(${d.id})" style="cursor:pointer">
       <td>${fmtData(d.data)}</td><td>${d.categoria||'—'}</td><td>${d.descricao||'—'}</td>
       <td class="mono neg">${fmt(d.valor||0)}</td>
+      <td><button class="flag-btn ${d.desp_pago?'pago':'aberto'}" onclick="toggleDespPago('${d.id}')">${d.desp_pago?'✓ Pago':'Em aberto'}</button></td>
       <td style="color:var(--text-faint);font-size:12px">${d.obs||'—'}</td>
       <td style="color:var(--text-faint);font-size:11px">${d.lancado_por||'—'}</td>
-      <td><button class="btn btn-danger" onclick="delDesp(${d.id})">×</button></td>
+      <td><button class="btn btn-danger" onclick="delDesp('${d.id}')">×</button></td>
     </tr>`).join('')+`<tr data-total="1" style="font-weight:700;border-top:2px solid var(--border);background:#f8f9fa">
       <td colspan="3">Total</td>
       <td class="mono neg">${fmt(_totalDesp)}</td><td></td><td></td><td></td>
@@ -3694,6 +3696,19 @@ function editarDesp(id){
 function limparDesp(){
   editDespId=null;
   ['desp-data','desp-valor','desp-desc','desp-obs'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+}
+async function toggleDespPago(id){
+  const d=despesas.find(x=>String(x.id)===String(id));
+  if(!d)return;
+  d.desp_pago=!d.desp_pago;
+  await fetch(`${SB_URL}/rest/v1/despesas?id=eq.${id}`,{
+    method:'PATCH',
+    headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json'},
+    body:JSON.stringify({data:d})
+  });
+  renderDesp();
+  renderFluxo();
+  toast(d.desp_pago?'Marcada como paga!':'Marcada como em aberto!');
 }
 async function delDesp(id){
   if(!usuarioLogado||usuarioLogado.perfil!=='admin'){toast('Apenas admin pode excluir!',true);return;}
