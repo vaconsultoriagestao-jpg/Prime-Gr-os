@@ -2375,7 +2375,8 @@ async function salvarEdit(){
   const fundoPctCt=(ctEd&&ctEd.fundo_pct)||5;
   const temFundo=e.tem_fundo||temFundoCt;
   e.fundo=temFundo?e.total_venda*(fundoPctCt/100):0;
-  const comsVE=(ctEd&&ctEd.comissionarios_ct)||[];
+  const comsVE=(ctEd&&ctEd.comissionarios_ct&&ctEd.comissionarios_ct.length)?ctEd.comissionarios_ct:(e.comissoes||[]);
+  if(ctEd&&ctEd.comissionarios_ct&&ctEd.comissionarios_ct.length)e.comissoes=comsVE.map(x=>({id:x.id,nome:x.nome,valor:x.valor}));
   e.com_total=comsVE.reduce((s,c)=>s+((c.valor||0)*e.sc_ent),0);
   e.lucro=e.total_venda-e.total_compra-e.frete_total-cn-ct-e.com_total-e.fundo-im-df-e.imp_desc-e.desc_quebra-ou+e.comp_desc;
   e.lucro_pct=e.total_venda>0?(e.lucro/e.total_venda)*100:0;
@@ -5119,7 +5120,7 @@ function gerarFechamento(){
     const sc_ent=its.reduce((s,d)=>s+(d.sc_ent||0),0);
     const total_venda=its.reduce((s,d)=>s+(d.total_venda||0),0);
     const recebido=its.reduce((s,d)=>s+(d.recebido||0),0);
-    const a_receber=its.filter(d=>!d.recebido||d.recebido===0).reduce((s,d)=>s+(d.total_venda||0),0);
+    const a_receber=its.reduce((s,d)=>s+Math.max(0,(d.total_venda||0)-(d.recebido||0)),0);
     const fundo_pct=(co&&co.tem_fundo)?(co.fundo_pct||5)/100:0;
     const fundo_valor=a_receber*fundo_pct;
     const a_receber_liq=a_receber-fundo_valor;
