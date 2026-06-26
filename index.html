@@ -5111,7 +5111,16 @@ function gerarFechamento(){
   if(!sel.length){document.getElementById('fech-vazio').style.display='block';document.getElementById('fech-result').style.display='none';return;}
   document.getElementById('fech-vazio').style.display='none';document.getElementById('fech-result').style.display='block';
   const hoje=new Date();
-  const ativos=embs.filter(d=>!d.cancelada&&sel.includes(String(d.contrato)));
+  const ativos=embs.filter(d=>{
+    if(d.cancelada)return false;
+    if(!sel.includes(String(d.contrato)))return false;
+    // Excluir embarques de contratos com distribuição 100% paga
+    const ctO=cts.find(c=>c.numero==d.contrato);
+    if(ctO&&ctO.distribuicao_socios&&ctO.distribuicao_socios.length>0){
+      if(ctO.distribuicao_socios.every(s=>s.pago))return false;
+    }
+    return true;
+  });
   _fech=sel.map(ct=>{
     const its=ativos.filter(d=>d.contrato==ct);
     const co=cts.find(c=>c.numero==ct);
