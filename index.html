@@ -508,6 +508,11 @@ tr.row-pago td{background:rgba(40,167,69,0.07)}
       <div class="table-header">
         <h3>Selecionar contratos</h3>
         <div style="display:flex;gap:8px;align-items:center">
+          <select class="filter-select" id="fc-filtro-socios" onchange="initFechContrato()" style="min-width:160px">
+            <option value="">Todos os sócios</option>
+            <option value="Assis e Vinicius">Assis e Vinicius</option>
+            <option value="Assis e João Vitor">Assis e João Vitor</option>
+          </select>
           <select class="filter-select" id="fc-filtro-status" onchange="initFechContrato()" style="min-width:160px">
             <option value="">Todos</option>
             <option value="pendente">Pendentes (a receber)</option>
@@ -4837,10 +4842,13 @@ function renderSociosFc(){
 function initFechContrato(){
   const box=document.getElementById('fc-ct-checks');if(!box)return;
   const statusFiltro=(document.getElementById('fc-filtro-status')||{value:''}).value;
+  const sociosFiltro=(document.getElementById('fc-filtro-socios')||{value:''}).value;
   const ctNums=[...new Set(embs.filter(d=>!d.cancelada&&(!_empresaFiltro||d.empresa===_empresaFiltro)).map(d=>d.contrato))].sort();
 
   // Filtrar contratos por status de recebimento
   const ctsFiltrados=ctNums.filter(ct=>{
+    const co=cts.find(c=>c.numero==ct);
+    if(sociosFiltro&&(!co||co.socios!==sociosFiltro))return false;
     if(!statusFiltro)return true;
     const its=embs.filter(d=>!d.cancelada&&String(d.contrato)===String(ct)&&(!_empresaFiltro||d.empresa===_empresaFiltro));
     const totalVenda=its.reduce((s,d)=>s+(d.total_venda||0),0);
