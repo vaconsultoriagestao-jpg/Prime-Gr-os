@@ -463,7 +463,12 @@ tr.row-pago td{background:rgba(40,167,69,0.07)}
     <div class="table-card">
       <div class="table-header">
         <h3>Selecionar contratos</h3>
-        <div style="display:flex;gap:8px">
+        <div style="display:flex;gap:8px;align-items:center">
+          <select class="filter-select" id="f-fech-socios" onchange="initFech()" style="font-size:12px">
+            <option value="">Todos os sócios</option>
+            <option value="Assis e Vinicius">Assis e Vinicius</option>
+            <option value="Assis e João Vitor">Assis e João Vitor</option>
+          </select>
           <button class="btn btn-secondary btn-sm" onclick="selTodos(true)">Todos</button>
           <button class="btn btn-secondary btn-sm" onclick="selTodos(false)">Limpar</button>
           <button class="btn btn-primary btn-sm" onclick="gerarFechamento()">Gerar fechamento</button>
@@ -615,6 +620,11 @@ tr.row-pago td{background:rgba(40,167,69,0.07)}
           <div class="table-filters">
             <input class="filter-input" id="f-ct-q" placeholder="Buscar..." oninput="renderContratos()" style="width:160px">
             <div id="ms-ct-prod" style="display:inline-block"></div>
+            <select class="filter-select" id="f-ct-socios" onchange="renderContratos()" style="font-size:12px">
+              <option value="">Todos os sócios</option>
+              <option value="Assis e Vinicius">Assis e Vinicius</option>
+              <option value="Assis e João Vitor">Assis e João Vitor</option>
+            </select>
           </div>
           <button class="btn btn-secondary btn-sm" onclick="exportContratos('csv')">⬇ Excel</button>
           <button class="btn btn-secondary btn-sm" onclick="exportContratos('pdf')">⬇ PDF</button>
@@ -1387,6 +1397,7 @@ tr.row-pago td{background:rgba(40,167,69,0.07)}
           <span style="font-size:10px;color:var(--text-faint)">Marque os comissionários que participam deste contrato e informe o valor R$/sc de cada um.</span>
         </div>
         <div class="fg fg-full"><label>Observações</label><input id="mc_obs" type="text"></div>
+        <div class="fg"><label>Sócios do contrato</label><select id="mc_socios"><option value="">Não definido</option><option value="Assis e Vinicius">Assis e Vinicius</option><option value="Assis e João Vitor">Assis e João Vitor</option></select></div>
       </div>
     </div>
     <div class="modal-footer">
@@ -1999,6 +2010,7 @@ function abrirModalCt(id=null){
   const c=id?cts.find(x=>x.id===id):{};
   ['numero','comprador','qtd','valor','prazo','fundo_pct','fundo_dias','vendedor','data','vencimento','obs','industria'].forEach(f=>{const el=document.getElementById('mc_'+f);if(el)el.value=c[f]??'';});
   document.getElementById('mc_empresa').value=c.empresa||'Prime Grãos';
+  document.getElementById('mc_socios').value=c.socios||'';
   document.getElementById('mc_produto').value=c.produto||'SOJA';
   document.getElementById('mc_frete').value=c.frete||'CIF';
   const tf=!!(c.tem_fundo);
@@ -2035,7 +2047,7 @@ async function salvarCt(){
   const comissionarios_ct=coms.filter(cm=>{const el=document.getElementById('mc_com_'+cm.id);return el&&el.checked;}).map(cm=>({
     id:cm.id,nome:cm.nome,valor:parseFloat((document.getElementById('mc_com_val_'+cm.id)||{value:'0'}).value)||cm.valor||0
   }));
-  const obj={id:editCt||Date.now(),numero:num,comprador:comp,empresa:document.getElementById('mc_empresa').value,produto:document.getElementById('mc_produto').value,industria:document.getElementById('mc_industria').value,qtd:parseFloat(document.getElementById('mc_qtd').value)||0,valor:parseFloat(document.getElementById('mc_valor').value)||0,prazo:parseFloat(document.getElementById('mc_prazo').value)||72,tem_fundo:document.getElementById('mc_tem_fundo').checked,fundo_pct:parseFloat(document.getElementById('mc_fundo_pct').value)||5,fundo_dias:parseFloat(document.getElementById('mc_fundo_dias').value)||75,frete:document.getElementById('mc_frete').value,vendedor:document.getElementById('mc_vendedor').value,data:document.getElementById('mc_data').value,vencimento:document.getElementById('mc_vencimento').value,obs:document.getElementById('mc_obs').value,comissionarios_ct};
+  const obj={id:editCt||Date.now(),numero:num,comprador:comp,empresa:document.getElementById('mc_empresa').value,produto:document.getElementById('mc_produto').value,industria:document.getElementById('mc_industria').value,qtd:parseFloat(document.getElementById('mc_qtd').value)||0,valor:parseFloat(document.getElementById('mc_valor').value)||0,prazo:parseFloat(document.getElementById('mc_prazo').value)||72,tem_fundo:document.getElementById('mc_tem_fundo').checked,fundo_pct:parseFloat(document.getElementById('mc_fundo_pct').value)||5,fundo_dias:parseFloat(document.getElementById('mc_fundo_dias').value)||75,frete:document.getElementById('mc_frete').value,vendedor:document.getElementById('mc_vendedor').value,data:document.getElementById('mc_data').value,vencimento:document.getElementById('mc_vencimento').value,obs:document.getElementById('mc_obs').value,socios:document.getElementById('mc_socios').value,comissionarios_ct};
   if(editCt)cts=cts.map(c=>c.id===editCt?obj:c);else cts.push(obj);
   showLoading('Salvando contrato...');
   await saveCts();
@@ -2065,6 +2077,8 @@ function renderContratos(){
     if(_empresaFiltro&&c.empresa!==_empresaFiltro)return false;
     if(q&&!(c.numero&&c.numero.toLowerCase().includes(q))&&!(c.comprador&&c.comprador.toLowerCase().includes(q)))return false;
     if(!msMatch('ms-ct-prod', c.produto))return false;
+    const socios=(document.getElementById('f-ct-socios')||{value:''}).value;
+    if(socios&&c.socios!==socios)return false;
     return true;
   }).sort((a,b)=>String(b.numero).localeCompare(String(a.numero),undefined,{numeric:true}));
   document.getElementById('tbody-cts').innerHTML=f.length
@@ -5088,7 +5102,12 @@ function exportFechContrato(tipo='csv'){
 
 function initFech(){
   const embsFilt=embs.filter(d=>!d.cancelada&&(!_empresaFiltro||d.empresa===_empresaFiltro));
-  const ns=[...new Set(embsFilt.map(d=>d.contrato))].sort();
+  const _fsoc=(document.getElementById('f-fech-socios')||{value:''}).value;
+  const ns=[...new Set(embsFilt.map(d=>d.contrato))].sort().filter(ct=>{
+    if(!_fsoc)return true;
+    const co=cts.find(c=>c.numero==ct);
+    return co&&co.socios===_fsoc;
+  });
   const box=document.getElementById('ct-checks');
   box.innerHTML=ns.length?ns.map(ct=>{const co=cts.find(c=>c.numero==ct);return`<label class="ct-check"><input type="checkbox" value="${ct}" onchange="this.closest('label').classList.toggle('on',this.checked)"> ${ct}${co?` — ${co.comprador}`:''}</label>`;}).join(''):'<span style="color:var(--text-faint);font-size:13px">Nenhum embarque ativo cadastrado.</span>';
   document.getElementById('fech-result').style.display='none';document.getElementById('fech-vazio').style.display='none';
