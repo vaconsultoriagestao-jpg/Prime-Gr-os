@@ -4770,6 +4770,7 @@ function exportEmb(tipo='csv'){
 // ===== DISTRIBUIÇÃO DE LUCRO =====
 let _fcSocios = []; // [{nome, pct, pago}]
 let _fcLucroAtual = 0;
+let _fcSelsAtual = []; // contratos selecionados na distribuição atual
 
 function addSocioFc(){
   const nome = document.getElementById('fc-socio-nome').value.trim();
@@ -4794,8 +4795,9 @@ function toggleSocioPago(id){
   salvarDistribuicaoFc();
 }
 async function salvarDistribuicaoFc(){
-  const sels=[...document.querySelectorAll('#fc-ct-checks input[type=checkbox]:checked')].map(cb=>cb.value);
+  const sels=_fcSelsAtual.length?_fcSelsAtual:[...document.querySelectorAll('#fc-ct-checks input[type=checkbox]:checked')].map(cb=>cb.value);
   if(!sels.length)return;
+  _fcSelsAtual=sels;
   // Salvar distribuicao em cada contrato selecionado
   cts=cts.map(c=>{
     if(sels.includes(String(c.numero))){
@@ -5121,6 +5123,7 @@ function initFech(){
 }
 function gerarFechamento(){
   const sel=[...document.querySelectorAll('#ct-checks input[type=checkbox]:checked')].map(cb=>cb.value);
+  _fcSelsAtual=sel; // guardar seleção para uso no toggleSocioPago
   if(!sel.length){document.getElementById('fech-vazio').style.display='block';document.getElementById('fech-result').style.display='none';return;}
   document.getElementById('fech-vazio').style.display='none';document.getElementById('fech-result').style.display='block';
   const hoje=new Date();
