@@ -1053,6 +1053,7 @@ tr.row-pago td{background:rgba(40,167,69,0.07)}
         <div style="display:flex;gap:6px">
           <div id="ms-arec-parc" style="display:inline-block"></div>
           <button class="btn btn-secondary btn-sm" onclick="exportARecParc('csv')">⬇ Excel</button>
+          <button class="btn btn-secondary btn-sm" onclick="exportARecParc('pdf')">⬇ PDF</button>
         </div>
       </div>
       <div class="tbl-wrap"><table><thead><tr>
@@ -2056,7 +2057,10 @@ async function salvarCt(){
 async function delCt(id){
   if(!usuarioLogado||usuarioLogado.perfil!=='admin'){toast('Apenas o administrador pode remover contratos!',true);return;}
   if(!confirm('Remover este contrato?'))return;
-  cts=cts.filter(c=>c.id!==id);await saveCts();renderContratos();updSelCts();toast('Contrato removido.');
+  try{
+    await fetch(`${SB_URL}/rest/v1/contratos?id=eq.${id}`,{method:'DELETE',headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}});
+  }catch(e){console.error('Erro ao deletar contrato:',e);}
+  cts=cts.filter(c=>c.id!==id);renderContratos();updSelCts();toast('Contrato removido.');
 }
 function updSociosLists(){
   const grupos=[...new Set(cts.map(c=>c.socios).filter(Boolean))].sort();
@@ -2821,6 +2825,14 @@ function renderEmbarques(){
   
   const q=(document.getElementById('f-emb-q')||{value:''}).value.toLowerCase();
   const canc=(document.getElementById('f-emb-canc')||{value:''}).value;
+  // Preservar estado dos filtros ms antes de reconstruir
+  const _msState={};
+  ['ms-emb-prod','ms-emb-ct','ms-emb-transp','ms-emb-com','ms-emb-st'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(!el)return;
+    const checked=[...el.querySelectorAll('input[type=checkbox]:checked')].map(i=>i.value);
+    if(checked.length)_msState[id]=checked;
+  });
   // Init msFilters
   const _embsFilt=embs.filter(d=>!_empresaFiltro||d.empresa===_empresaFiltro);
   const prods=[...new Set(_embsFilt.map(d=>d.produto).filter(Boolean))].sort();
@@ -2829,6 +2841,17 @@ function renderEmbarques(){
   msFilter('ms-emb-prod', prods, 'renderEmbarques', 'Produto');
   msFilter('ms-emb-ct', ctNums, 'renderEmbarques', 'Contrato');
   msFilter('ms-emb-st', status, 'renderEmbarques', 'Status');
+  // Restaurar estado dos filtros
+  Object.entries(_msState).forEach(([id,vals])=>{
+    const el=document.getElementById(id);
+    if(!el)return;
+    vals.forEach(v=>{
+      const cb=el.querySelector(`input[value="${v}"]`);
+      if(cb)cb.checked=true;
+    });
+    const btn=el.querySelector('.ms-filter-btn');
+    if(btn&&vals.length)btn.classList.add('active');
+  });
   const f=_embsFilt.filter(d=>{
     if(q&&!String(d.contrato||'').toLowerCase().includes(q)&&!String(d.nf||'').toLowerCase().includes(q)&&!String(d.motorista||'').toLowerCase().includes(q))return false;
     if(!_empresaFiltro||d.empresa===_empresaFiltro){}else return false;
@@ -3640,10 +3663,22 @@ function limparARecParceiro(){
 }
 function exportARecParc(tipo){
   const emp=_empresaFiltro;
+  const filtroParc=(document.getElementById('arec-parc-filtro')||{value:''}).value;
+  // Pegar linhas já filtradas da tabela
+  const rows=[...document.querySelectorAll('#tbody-arec-parc tr')].filter(tr=>!tr.dataset.total).map(tr=>{
+    const tds=[...tr.querySelectorAll('td')];
+    return tds.map(td=>td.innerText.trim());
+  }).filter(r=>r.length>=5);
   const cab=['Data','Tipo','Parceiro','Descrição','Valor R$'];
-  const rows=fluxo.filter(l=>(l.categoria==='parceiro'||(!l.categoria&&l.parceiro&&l.parceiro.toUpperCase()!=='BANCO'&&l.parceiro!=='Escritório'))&&(!emp||l.empresa===emp))
-    .map(l=>[l.data,l.tipo==='entrada'?'Aporte':'Devolução',l.parceiro,l.descricao,l.valor]);
-  gerarCSV(cab,rows,'arec-parceiros');
+  if(tipo==='csv'){
+    gerarCSV(cab,rows,'arec-parceiros');
+  } else {
+    const {jsPDF}=window.jspdf;
+    const doc=new jsPDF({orientation:'landscape'});
+    doc.setFontSize(14);doc.text('A Receber — Parceiros'+(filtroParc?' — '+filtroParc:''),14,15);
+    doc.autoTable({head:[cab],body:rows,startY:22,styles:{fontSize:9},headStyles:{fillColor:[27,43,75]}});
+    doc.save('arec-parceiros.pdf');toast('PDF exportado!');
+  }
 }
 
 // ===== DESPESAS =====
