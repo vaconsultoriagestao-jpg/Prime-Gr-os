@@ -3681,19 +3681,30 @@ function exportARecParc(tipo){
     doc.text(`Empresa: ${_empresaFiltro||'Todas'} | Emitido em: ${new Date().toLocaleDateString('pt-BR')}`,14,21);
     doc.setTextColor(0);
     // Calcular totais
-    const totalEnt=rows.filter(r=>r[1]==='Aporte').reduce((s,r)=>s+parseFloat((r[4]||'0').replace(/[^0-9,.-]/g,'').replace(',','.'))||0,0);
-    const totalSai=rows.filter(r=>r[1]==='Devolução').reduce((s,r)=>s+parseFloat((r[4]||'0').replace(/[^0-9,.-]/g,'').replace(',','.'))||0,0);
+    const fmtBR=v=>'R$ '+Number(v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+    const parseBR=s=>parseFloat((s||'0').replace(/\./g,'').replace(',','.'))||0;
+    const totalEnt=rows.filter(r=>r[1]==='Aporte').reduce((s,r)=>s+parseBR(r[4].replace('R$','').trim()),0);
+    const totalSai=rows.filter(r=>r[1]==='Devolução').reduce((s,r)=>s+parseBR(r[4].replace('R$','').trim()),0);
     const saldo=totalEnt-totalSai;
+    // Colorir devoluções em vermelho
+    const bodyRows=rows.map(r=>r[1]==='Devolução'
+      ?r.map((v,i)=>({content:i===4?'- '+v:v,styles:i===4?{textColor:[192,0,0]}:{}}))
+      :r);
     doc.autoTable({
       head:[cab],
-      body:rows,
+      body:bodyRows,
       startY:26,
       styles:{fontSize:9},
       headStyles:{fillColor:[27,43,75]},
-      foot:[['','','','Total Aportes','R$ '+totalEnt.toLocaleString('pt-BR',{minimumFractionDigits:2})],
-            ['','','','Total Devoluções','R$ '+totalSai.toLocaleString('pt-BR',{minimumFractionDigits:2})],
-            ['','','','SALDO','R$ '+saldo.toLocaleString('pt-BR',{minimumFractionDigits:2})]],
-      footStyles:{fillColor:[27,43,75],textColor:[255,255,255],fontStyle:'bold',fontSize:10}
+      foot:[['','','','Total Aportes',fmtBR(totalEnt)],
+            ['','','','Total Devoluções','- '+fmtBR(totalSai)],
+            ['','','','SALDO',fmtBR(saldo)]],
+      footStyles:{fillColor:[27,43,75],textColor:[255,255,255],fontStyle:'bold',fontSize:10},
+      didParseCell:(data)=>{
+        if(data.section==='foot'&&data.row.index===1&&data.column.index===4){
+          data.cell.styles.textColor=[255,100,100];
+        }
+      }
     });
     doc.save('arec-parceiros.pdf');toast('PDF exportado!');
   }
