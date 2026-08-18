@@ -3675,8 +3675,26 @@ function exportARecParc(tipo){
   } else {
     const {jsPDF}=window.jspdf;
     const doc=new jsPDF({orientation:'landscape'});
+    // Título
     doc.setFontSize(14);doc.text('A Receber — Parceiros'+(filtroParc?' — '+filtroParc:''),14,15);
-    doc.autoTable({head:[cab],body:rows,startY:22,styles:{fontSize:9},headStyles:{fillColor:[27,43,75]}});
+    doc.setFontSize(9);doc.setTextColor(120);
+    doc.text(`Empresa: ${_empresaFiltro||'Todas'} | Emitido em: ${new Date().toLocaleDateString('pt-BR')}`,14,21);
+    doc.setTextColor(0);
+    // Calcular totais
+    const totalEnt=rows.filter(r=>r[1]==='Aporte').reduce((s,r)=>s+parseFloat((r[4]||'0').replace(/[^0-9,.-]/g,'').replace(',','.'))||0,0);
+    const totalSai=rows.filter(r=>r[1]==='Devolução').reduce((s,r)=>s+parseFloat((r[4]||'0').replace(/[^0-9,.-]/g,'').replace(',','.'))||0,0);
+    const saldo=totalEnt-totalSai;
+    doc.autoTable({
+      head:[cab],
+      body:rows,
+      startY:26,
+      styles:{fontSize:9},
+      headStyles:{fillColor:[27,43,75]},
+      foot:[['','','','Total Aportes',totalEnt.toLocaleString('pt-BR',{minimumFractionDigits:2})],
+            ['','','','Total Devoluções',totalSai.toLocaleString('pt-BR',{minimumFractionDigits:2})],
+            ['','','','SALDO',saldo.toLocaleString('pt-BR',{minimumFractionDigits:2})]],
+      footStyles:{fillColor:[240,244,252],fontStyle:'bold',fontSize:9}
+    });
     doc.save('arec-parceiros.pdf');toast('PDF exportado!');
   }
 }
