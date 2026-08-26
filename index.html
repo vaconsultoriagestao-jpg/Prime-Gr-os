@@ -1508,8 +1508,13 @@ function aplicarFiltroEmpresa(){
   const spanEmp=document.getElementById('filtro-empresa-global');
   if(spanEmp)spanEmp.textContent=_empresaFiltro||'Todas';
   // Recarregar saldo banco para a empresa
-  const sb=localStorage.getItem('_saldoBanco_'+(_empresaFiltro||'Prime Grãos'));
-  _saldoBanco=parseFloat(sb)||0;
+  // Tentar carregar do Supabase primeiro, localStorage como fallback
+  const cfgKeyEmp='saldo_banco_'+(_empresaFiltro||'Prime Grãos').replace(/\s/g,'_');
+  try{
+    const sbCfg=await fetch(`${SB_URL}/rest/v1/configuracoes?id=eq.${cfgKeyEmp}&select=data`,{headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}}).then(r=>r.json());
+    if(sbCfg&&sbCfg[0]&&sbCfg[0].data&&sbCfg[0].data.value!=null){_saldoBanco=parseFloat(sbCfg[0].data.value)||0;}
+    else{const sb=localStorage.getItem('_saldoBanco_'+(_empresaFiltro||'Prime Grãos'));_saldoBanco=parseFloat(sb)||0;}
+  }catch(e){const sb=localStorage.getItem('_saldoBanco_'+(_empresaFiltro||'Prime Grãos'));_saldoBanco=parseFloat(sb)||0;}
   // Reaplicar em todas as telas abertas
   const active=((document.querySelector('.page.active')||{}).id||'').replace('page-','');
   if(active==='fluxo')renderFluxo();
@@ -2216,7 +2221,7 @@ function calcular(){
 
   // Comissões do contrato (por contrato, não por comprador)
   const comsVinc=(ctObj&&ctObj.comissionarios_ct)||[];
-  const com_total=comsVinc.reduce((s,c)=>s+((c.valor||0)*sc_ent),0);
+  const com_total=comsVinc.reduce((s,c)=>s+((c.valor||0)*sc_ent),0); // base: sc_ent (sacas entradas na indústria)
 
   const lucro=total_venda-total_compra-frete_total-cn_val-cte-com_total-fundo-imposto-desc_fin-imp_desc-desc_quebra-outros+comp_desc;
   const lucro_pct=total_venda>0?(lucro/total_venda)*100:0;
@@ -2269,6 +2274,9 @@ async function salvarEmb(){
   if(!emb_dt){toast('Informe a data de embarque!',true);return;}
   if(!pliq){toast('Informe o peso líquido!',true);return;}
   if(!compra||!venda){toast('Informe os valores de compra e venda!',true);return;}
+  // Validar NF duplicada
+  const nfDup=embs.find(d=>!d.cancelada&&d.nf===nf&&String(d.contrato)===String(ctObj?ctObj.numero:ctId));
+  if(nfDup){if(!confirm(`NF ${nf} já existe neste contrato. Deseja continuar mesmo assim?`))return;}
   // Validar data vs contrato — REMOVIDO conforme solicitado
   const c=calcular();
   const cancelada=document.getElementById('f_canc').checked;
@@ -2394,6 +2402,8 @@ async function salvarEdit(){
   e.lucro_pct=e.total_venda>0?(e.lucro/e.total_venda)*100:0;
   e.frete80=e.frete_total*0.8;e.frete20=e.frete_total*0.2;
   if(e.descarga){const ctO=cts.find(c=>c.numero==e.contrato);const pp=ctO?ctO.prazo:(cfg.prazo||72);const p=prazoData(e.descarga,pp);e.prazo_rec=p.toLocaleDateString('pt-BR');}
+  e.atualizado_em=new Date().toISOString();
+  e.atualizado_por=(usuarioLogado&&usuarioLogado.nome)||'—';
   embs[idx]=e;await saveEmb(e);fecharModalEdit();renderEmbarques();renderPainel();toast('Embarque atualizado!');
 }
 async function delEmb(id){
@@ -2439,6 +2449,7 @@ function preencherFornecedor(){
 // ===== CONTAS A PAGAR — NOTAS FISCAIS =====
 async function toggleCapNotaPago(embId){
   const idx=embs.findIndex(d=>d.id===embId);if(idx===-1)return;
+  if(!embs[idx].nota_pago&&!confirm('Confirmar pagamento da nota fiscal?'))return;
   embs[idx].nota_pago=!embs[idx].nota_pago;
   await saveEmb(embs[idx]);renderCapNota();toast('Status atualizado!');
 }
@@ -2532,6 +2543,7 @@ function exportSaidas(tipo='csv'){
 // ===== FRETE =====
 async function toggleCapTranspPago(embId){
   const idx=embs.findIndex(d=>d.id===embId);if(idx===-1)return;
+  if(!embs[idx].cte_pago&&!confirm('Confirmar pagamento do CTE?'))return;
   embs[idx].cte_pago=!embs[idx].cte_pago;
   await saveEmb(embs[idx]);renderCapTransp();toast('Status atualizado!');
 }
@@ -2577,6 +2589,7 @@ function renderCapTransp(){
 async function toggleCapComPago(embId,comId){
   const idx=embs.findIndex(d=>d.id===embId);if(idx===-1)return;
   if(!embs[idx].comissoes_pago)embs[idx].comissoes_pago={};
+  if(!embs[idx].comissoes_pago[comId]&&!confirm('Confirmar pagamento de comissão?'))return;
   embs[idx].comissoes_pago[comId]=!embs[idx].comissoes_pago[comId];
   await saveEmb(embs[idx]);renderCapCom();toast('Status atualizado!');
 }
@@ -2650,6 +2663,8 @@ function exportFrete(tipo='csv'){
 
 async function toggleFretePago(embId,parcela){
   const idx=embs.findIndex(d=>d.id===embId);if(idx===-1)return;
+  const jaPago=parcela===80?embs[idx].frete80_pago:embs[idx].frete20_pago;
+  if(!jaPago&&!confirm(`Confirmar pagamento do frete ${parcela}%?`))return;
   if(parcela===80)embs[idx].frete80_pago=!embs[idx].frete80_pago;
   else embs[idx].frete20_pago=!embs[idx].frete20_pago;
   await saveEmb(embs[idx]);renderFrete();toast('Status atualizado!');
@@ -2996,7 +3011,7 @@ function renderFluxo(){
     if(emp&&d.empresa!==emp)return false;
     // Só incluir se ainda tem saldo pendente (total_venda > recebido)
     const pendente=(d.total_venda||0)-(d.recebido||0);
-    if(pendente<=0)return false;
+    if(pendente<1)return false; // ignorar diferenças de centavos
     // Filtrar por período se selecionado
     if(mes||ano){
       const dt=d.embarque||'';
@@ -3233,8 +3248,17 @@ function renderFluxo(){
 function salvarSaldoBanco(){
   const val=parseFloat(document.getElementById('flx-saldo-banco').value)||0;
   _saldoBanco=val;
+  // Salvar no Supabase (configuracoes) E no localStorage como fallback
   const key='_saldoBanco_'+(_empresaFiltro||'Prime Grãos');
   localStorage.setItem(key, val);
+  const cfgKey='saldo_banco_'+(_empresaFiltro||'Prime Grãos').replace(/\s/g,'_');
+  try{
+    await fetch(`${SB_URL}/rest/v1/configuracoes`,{
+      method:'POST',
+      headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=minimal'},
+      body:JSON.stringify([{id:cfgKey,data:{key:cfgKey,value:val}}])
+    });
+  }catch(e){console.error('Erro ao salvar saldo banco:',e);}
   renderFluxo();
 }
 function toggleFlxParceiro(){
