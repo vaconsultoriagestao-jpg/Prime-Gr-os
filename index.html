@@ -1507,14 +1507,9 @@ function aplicarFiltroEmpresa(){
   if(nomeEl)nomeEl.textContent=_empresaFiltro||'Todas';
   const spanEmp=document.getElementById('filtro-empresa-global');
   if(spanEmp)spanEmp.textContent=_empresaFiltro||'Todas';
-  // Recarregar saldo banco para a empresa
-  // Tentar carregar do Supabase primeiro, localStorage como fallback
-  const cfgKeyEmp='saldo_banco_'+(_empresaFiltro||'Prime Grãos').replace(/\s/g,'_');
-  try{
-    const sbCfg=await fetch(`${SB_URL}/rest/v1/configuracoes?id=eq.${cfgKeyEmp}&select=data`,{headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}}).then(r=>r.json());
-    if(sbCfg&&sbCfg[0]&&sbCfg[0].data&&sbCfg[0].data.value!=null){_saldoBanco=parseFloat(sbCfg[0].data.value)||0;}
-    else{const sb=localStorage.getItem('_saldoBanco_'+(_empresaFiltro||'Prime Grãos'));_saldoBanco=parseFloat(sb)||0;}
-  }catch(e){const sb=localStorage.getItem('_saldoBanco_'+(_empresaFiltro||'Prime Grãos'));_saldoBanco=parseFloat(sb)||0;}
+  // Carregar saldo banco do localStorage
+  const sb=localStorage.getItem('_saldoBanco_'+(_empresaFiltro||'Prime Grãos'));
+  _saldoBanco=parseFloat(sb)||0;
   // Reaplicar em todas as telas abertas
   const active=((document.querySelector('.page.active')||{}).id||'').replace('page-','');
   if(active==='fluxo')renderFluxo();
