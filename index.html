@@ -2454,7 +2454,8 @@ function calcular(){
   // Valores
   const total_compra=sc_emb*compra;
   const total_venda=sc_ent*venda;
-  const comp_desc=recebido-total_venda;
+  // comp_desc só é calculado quando houve recebimento
+  const comp_desc=recebido>0?recebido-total_venda:0;
 
   // Impureza: desconto = kg_impureza * (venda/60)
   const rkg=venda/60;
@@ -2470,7 +2471,9 @@ function calcular(){
   const comsVinc=(ctObj&&ctObj.comissionarios_ct)||[];
   const com_total=comsVinc.reduce((s,c)=>s+((c.valor||0)*sc_ent),0); // base: sc_ent (sacas entradas na indústria)
 
-  const lucro=total_venda-total_compra-frete_total-cn_val-cte-com_total-fundo-imposto-desc_fin-imp_desc-desc_quebra-outros+comp_desc;
+  const lucro=recebido>0
+    ?(total_venda-total_compra-frete_total-cn_val-cte-com_total-fundo-imposto-desc_fin-imp_desc-desc_quebra-outros+comp_desc)
+    :(total_venda-total_compra-frete_total-cn_val-cte-com_total-fundo-imposto-desc_fin-imp_desc-desc_quebra-outros);
   const lucro_pct=total_venda>0?(lucro/total_venda)*100:0;
 
   const s=(id,v)=>{const el=document.getElementById(id);if(el)el.value=v;};
