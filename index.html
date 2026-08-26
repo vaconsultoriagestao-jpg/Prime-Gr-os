@@ -903,6 +903,7 @@ tr.row-pago td{background:rgba(40,167,69,0.07)}
           <select id="f_fornecedor_id" onchange="preencherFornecedor()"><option value="">— selecione —</option></select>
         </div>
         <div class="fg"><label>Motorista <span class="star">*</span></label><input id="f_motorista" type="text"></div>
+        <div class="fg"><label>CPF do motorista <span class="star">*</span></label><input id="f_cpf" type="text" placeholder="000.000.000-00" oninput="mascaraCPF(this)"></div>
         <div class="fg"><label>Placa</label><input id="f_placa" type="text" placeholder="ABC1234"></div>
       </div></div>
     </div>
@@ -1220,7 +1221,7 @@ tr.row-pago td{background:rgba(40,167,69,0.07)}
     <div class="table-card">
       <div class="table-header"><h3>Pré-cargas cadastradas</h3></div>
       <div class="tbl-wrap"><table><thead><tr>
-        <th>Placa</th><th>Motorista</th><th>Carreta</th><th>Peso líq. (kg)</th><th>Balança (kg)</th><th>Peso 1 (kg)</th><th>Peso 2 (kg)</th><th>R$/sc</th><th>Frete R$/ton</th><th>Data</th><th></th>
+        <th>Placa</th><th>Motorista</th><th>Carreta</th><th>Peso líq. (kg)</th><th>Peso 1 (kg)</th><th>Peso 2 (kg)</th><th>R$/sc</th><th>Frete R$/ton</th><th>Data</th><th></th>
       </tr></thead><tbody id="tbody-precargas"></tbody></table></div>
     </div>
   </div>
@@ -1243,7 +1244,6 @@ tr.row-pago td{background:rgba(40,167,69,0.07)}
               <option value="Rodotrem">Rodotrem (49t)</option>
             </select>
           </div>
-          <div class="fg"><label>Peso balança (kg)</label><input id="pc_balanca" type="number" value="0" oninput="calcPrecarga()"></div>
           <div class="fg"><label>Peso líquido total (kg)</label><input id="pc_pliq" type="number" value="0" oninput="calcPrecarga()"></div>
           <div class="fg"><label>Peso 1 (auto)</label><input id="pc_peso1" type="text" readonly style="background:var(--gray-50)"></div>
           <div class="fg"><label>Peso 2 (auto)</label><input id="pc_peso2" type="text" readonly style="background:var(--gray-50)"></div>
@@ -1750,7 +1750,7 @@ function abrirModalPrecarga(id){
     document.getElementById('pc_placa').value=pc.placa||'';
     document.getElementById('pc_motorista').value=pc.motorista||'';
     document.getElementById('pc_carreta').value=pc.carreta||'';
-    document.getElementById('pc_balanca').value=pc.balanca||0;
+
     document.getElementById('pc_pliq').value=pc.pliq||0;
     document.getElementById('pc_preco_soja').value=pc.preco_soja||0;
     document.getElementById('pc_frete_ton').value=pc.frete_ton||0;
@@ -1759,7 +1759,7 @@ function abrirModalPrecarga(id){
     calcPrecarga();
   } else {
     ['pc_placa','pc_motorista','pc_obs','pc_data'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
-    ['pc_balanca','pc_pliq','pc_preco_soja','pc_frete_ton'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=0;});
+    ['pc_pliq','pc_preco_soja','pc_frete_ton'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=0;});
     document.getElementById('pc_carreta').value='';
     document.getElementById('pc_peso1').value='—';
     document.getElementById('pc_peso2').value='—';
@@ -1782,7 +1782,7 @@ async function salvarPrecarga(){
   const obj={
     id:_editPrecarga||Date.now(),
     placa,motorista,carreta,
-    balanca:parseFloat(document.getElementById('pc_balanca').value)||0,
+
     pliq,peso1,peso2,
     preco_soja:parseFloat(document.getElementById('pc_preco_soja').value)||0,
     frete_ton:parseFloat(document.getElementById('pc_frete_ton').value)||0,
@@ -1828,7 +1828,6 @@ function renderPrecargas(){
     <td>${p.motorista||'—'}</td>
     <td>${p.carreta||'—'}</td>
     <td>${(p.pliq||0).toLocaleString('pt-BR')}</td>
-    <td>${(p.balanca||0).toLocaleString('pt-BR')}</td>
     <td>${(p.peso1||0).toLocaleString('pt-BR')}</td>
     <td>${(p.peso2||0).toLocaleString('pt-BR')}</td>
     <td>${p.preco_soja||'—'}</td>
@@ -1838,7 +1837,7 @@ function renderPrecargas(){
       <button class="btn-edit" onclick="abrirModalPrecarga(${p.id})">Editar</button>
       <button class="btn btn-danger btn-sm" onclick="delPrecarga(${p.id})">×</button>
     </td>
-  </tr>`).join(''):'<tr><td colspan="11" class="empty-state">Nenhuma pré-carga cadastrada.</td></tr>';
+  </tr>`).join(''):'<tr><td colspan="10" class="empty-state">Nenhuma pré-carga cadastrada.</td></tr>';
 }
 
 function updSelPrecargas(){
@@ -3824,7 +3823,7 @@ function renderARecInd(){
         <td class="mono neg">${fmt(pendente)}</td>
       </tr>`;}catch(e){return'';}
     }).join('')
-    :'<tr><td colspan="11" class="empty-state">Nenhuma nota pendente.</td></tr>';
+    :'<tr><td colspan="10" class="empty-state">Nenhuma nota pendente.</td></tr>';
   }catch(e){console.error('renderARecInd erro:',e);}
 }
 function exportARecInd(tipo){
