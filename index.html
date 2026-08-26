@@ -879,7 +879,9 @@ tr.row-pago td{background:rgba(40,167,69,0.07)}
           <div id="f_sc_progress"></div>
         </div>
         <div class="fg"><label>Empresa</label><input id="f_empresa" type="text" readonly disabled></div>
-        <div class="fg"><label>NF <span class="star">*</span></label><input id="f_nf" type="text" placeholder="ex: 900 E 901"></div>
+        <div class="fg"><label>NF1 <span class="star">*</span></label><input id="f_nf" type="text" placeholder="ex: 900"></div>
+        <div class="fg"><label>NF2</label><input id="f_nf2" type="text" placeholder="ex: 901"></div>
+        <div class="fg" id="fg_pliq2" style="display:none"><label>Peso NF2 (kg)</label><input id="f_pliq2" type="number" value="0" readonly style="background:var(--gray-50)"></div>
         <div class="fg"><label>Produto</label><input id="f_produto" type="text" readonly disabled></div>
         <div class="fg"><label>Indústria / Granja</label><input id="f_industria" type="text" readonly disabled></div>
         <div class="fg"><label>Dono da carga <span class="star">*</span></label><input id="f_dono_carga" type="text" placeholder="Nome do proprietário da carga"></div>
@@ -1223,7 +1225,7 @@ tr.row-pago td{background:rgba(40,167,69,0.07)}
     <div class="table-card">
       <div class="table-header"><h3>Pré-cargas cadastradas</h3></div>
       <div class="tbl-wrap"><table><thead><tr>
-        <th>Placa</th><th>Motorista</th><th>Carreta</th><th>Peso líq. (kg)</th><th>Peso 1 (kg)</th><th>Peso 2 (kg)</th><th>R$/sc</th><th>Frete R$/ton</th><th>Data</th><th></th>
+        <th>Placa</th><th>Motorista</th><th>Carreta</th><th>Peso líq. (kg)</th><th>NF1 (kg)</th><th>NF2 (kg)</th><th>R$/sc</th><th>Frete R$/ton</th><th>Data</th><th></th>
       </tr></thead><tbody id="tbody-precargas"></tbody></table></div>
     </div>
   </div>
@@ -1248,8 +1250,8 @@ tr.row-pago td{background:rgba(40,167,69,0.07)}
             </select>
           </div>
           <div class="fg"><label>Peso líquido total (kg)</label><input id="pc_pliq" type="number" value="0" oninput="calcPrecarga()"></div>
-          <div class="fg"><label>Peso 1 (auto)</label><input id="pc_peso1" type="text" readonly style="background:var(--gray-50)"></div>
-          <div class="fg"><label>Peso 2 (auto)</label><input id="pc_peso2" type="text" readonly style="background:var(--gray-50)"></div>
+          <div class="fg"><label>NF1 — peso (auto)</label><input id="pc_peso1" type="text" readonly style="background:var(--gray-50)"></div>
+          <div class="fg"><label>NF2 — peso (auto)</label><input id="pc_peso2" type="text" readonly style="background:var(--gray-50)"></div>
           <div class="fg"><label>Preço soja (R$/sc)</label><input id="pc_preco_soja" type="number" step="0.01" value="0"></div>
           <div class="fg"><label>Frete (R$/ton)</label><input id="pc_frete_ton" type="number" step="0.01" value="0"></div>
           <div class="fg"><label>Data</label><input id="pc_data" type="date"></div>
@@ -1716,6 +1718,23 @@ async function load(){
   hideLoading();
 }
 
+function calcularPesos(pliq, venda, compra, rs_ton, tem_fundo, ctObj){
+  const sc_emb=pliq/60;
+  const sc_ent=sc_emb;
+  const frete_total=(pliq/1000)*rs_ton;
+  const frete80=frete_total*0.8;
+  const frete20=frete_total*0.2;
+  const total_compra=sc_emb*compra;
+  const total_venda=sc_ent*venda;
+  const fp=(ctObj&&ctObj.fundo_pct)?ctObj.fundo_pct/100:0.05;
+  const fundo=tem_fundo?total_venda*fp:0;
+  const comsVinc=(ctObj&&ctObj.comissionarios_ct)||[];
+  const com_total=comsVinc.reduce((s,c)=>s+((c.valor||0)*sc_ent),0);
+  const lucro=total_venda-total_compra-frete_total-com_total-fundo;
+  const lucro_pct=total_venda>0?(lucro/total_venda)*100:0;
+  return{pliq,pdesc:0,sc_emb,sc_ent,quebra_sc:0,frete_total,frete80,frete20,frete80_pago:false,frete20_pago:false,total_compra,total_venda,comp_desc:0,fundo,com_total,imp_desc:0,desc_quebra:0,lucro,lucro_pct,rkg:venda/60};
+}
+
 // ===== PRÉ-CARGAS =====
 let precargas = [];
 
@@ -1863,6 +1882,11 @@ async function puxarPrecarga(){
   set('f_motorista',pc.motorista||'');
   set('f_cpf',pc.cpf||'');
   set('f_pliq',pc.pliq||0);
+  if(pc.peso2&&pc.peso2>0){
+    set('f_pliq',pc.peso1||pc.pliq||0);
+    const fg2=document.getElementById('fg_pliq2');if(fg2)fg2.style.display='';
+    set('f_pliq2',pc.peso2||0);
+  }
   if(pc.preco_soja)set('f_compra',pc.preco_soja);
   if(pc.frete_ton)set('f_rs_ton',pc.frete_ton);
   calcular();
@@ -2482,6 +2506,7 @@ function toggleCanc(){const cb=document.getElementById('f_canc'),tg=document.get
 async function salvarEmb(){
   const ctId=document.getElementById('f_contrato').value;
   const nf=document.getElementById('f_nf').value.trim();
+  const nf2=(document.getElementById('f_nf2')||{value:''}).value.trim();
   const mot=document.getElementById('f_motorista').value.trim();
   const cpf=document.getElementById('f_cpf').value.trim();
   const emb_dt=document.getElementById('f_embarque').value;
@@ -2491,7 +2516,7 @@ async function salvarEmb(){
   const dono_carga=document.getElementById('f_dono_carga').value.trim();
   if(!dono_carga){toast('Informe o dono da carga!',true);return;}
   if(!ctId){toast('Selecione um contrato!',true);return;}
-  if(!nf){toast('Informe a NF!',true);return;}
+  if(!nf){toast('Informe a NF1!',true);return;}
   if(!mot){toast('Informe o motorista!',true);return;}
   if(!cpf||cpf.replace(/\D/g,'').length<11){toast('Informe o CPF do motorista!',true);return;}
   if(!emb_dt){toast('Informe a data de embarque!',true);return;}
@@ -2543,11 +2568,27 @@ async function salvarEmb(){
     comissoes:comsVinc.map(x=>({id:x.id,nome:x.nome,valor:x.valor})),
     frete80,frete20,frete80_pago:false,frete20_pago:false,
     ...c};
-  embs.push(obj);await saveEmb(obj);toast('Embarque salvo!');limparForm();
+  // Grupo para unificar frete quando há NF2
+  const grupoId = nf2 ? Date.now() : null;
+  if(grupoId) obj.grupo_frete = grupoId;
+  embs.push(obj);await saveEmb(obj);
+  // Se NF2 preenchida, criar segundo embarque com peso2
+  if(nf2){
+    const pc = precargas.find ? null : null; // peso2 vem da pré-carga
+    const pliq2 = parseFloat((document.getElementById('f_pliq2')||{value:'0'}).value)||0;
+    if(pliq2>0){
+      const c2=calcularPesos(pliq2, obj.venda, obj.compra, obj.rs_ton, obj.tem_fundo, ctObj);
+      const obj2={...obj, id:Date.now()+1, nf:nf2, pliq:pliq2, grupo_frete:grupoId, ...c2};
+      embs.push(obj2);await saveEmb(obj2);
+    }
+  }
+  toast('Embarque'+(nf2?' (2 NFs)':'')+' salvo!');limparForm();
 }
 
 function limparForm(){
-  ['f_nf','f_placa','f_motorista','f_cpf','f_obs','f_embarque','f_descarga','f_data_rec','f_prazo_rec','f_dono_carga'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  ['f_nf','f_nf2','f_placa','f_motorista','f_cpf','f_obs','f_embarque','f_descarga','f_data_rec','f_prazo_rec','f_dono_carga'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  const fg2=document.getElementById('fg_pliq2');if(fg2)fg2.style.display='none';
+  const fp2=document.getElementById('f_pliq2');if(fp2)fp2.value=0;;
   ['f_pliq','f_pdesc','f_rs_ton','f_recebido','f_imposto','f_desc_fin','f_outros','f_cte_sc','f_cn_sc','f_impureza'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='0';});
   document.getElementById('f_canc').checked=false;document.getElementById('cancel-toggle').classList.remove('on');
   document.getElementById('f_tem_fundo').checked=false;document.getElementById('f_fundo_campos').style.display='none';
@@ -2884,6 +2925,16 @@ function exportFrete(tipo='csv'){
   }
 }
 
+async function toggleFreteGrupo(ids,parcela){
+  if(!confirm(`Confirmar pagamento do frete ${parcela}%?`))return;
+  for(const embId of ids){
+    const idx=embs.findIndex(d=>d.id===embId);if(idx===-1)continue;
+    if(parcela===80)embs[idx].frete80_pago=true;
+    else embs[idx].frete20_pago=true;
+    await saveEmb(embs[idx]);
+  }
+  renderFrete();toast('Frete marcado como pago!');
+}
 async function toggleFretePago(embId,parcela){
   const idx=embs.findIndex(d=>d.id===embId);if(idx===-1)return;
   const jaPago=parcela===80?embs[idx].frete80_pago:embs[idx].frete20_pago;
@@ -2915,39 +2966,57 @@ function renderFrete(){
   });
   const lista=document.getElementById('frete-lista');
   if(!f.length){lista.innerHTML='<div class="empty-state">Nenhum embarque com frete encontrado.</div>';return;}
-  lista.innerHTML=f.map(d=>{
-    const temDescarga=!!(d.descarga);
-    const desc_total=(d.desc_quebra||0);
-    // Desconto abate do saldo do 20%
-    const frete20_ajustado=Math.max(0,(d.frete20||0)-desc_total);
-    const saldo80=d.frete80_pago?0:(d.frete80||0);
-    const saldo20=d.frete20_pago?0:frete20_ajustado;
+  // Agrupar embarques com grupo_frete em comum
+  const grupos={};
+  const semGrupo=[];
+  f.forEach(d=>{
+    if(d.grupo_frete){
+      if(!grupos[d.grupo_frete])grupos[d.grupo_frete]=[];
+      grupos[d.grupo_frete].push(d);
+    } else {
+      semGrupo.push([d]);
+    }
+  });
+  const linhas=[...Object.values(grupos),...semGrupo];
+  lista.innerHTML=linhas.map(grupo=>{
+    const d=grupo[0];
+    const frete_total=grupo.reduce((s,g)=>s+(g.frete_total||0),0);
+    const frete80=grupo.reduce((s,g)=>s+(g.frete80||0),0);
+    const frete20=grupo.reduce((s,g)=>s+(g.frete20||0),0);
+    const frete80_pago=grupo.every(g=>g.frete80_pago);
+    const frete20_pago=grupo.every(g=>g.frete20_pago);
+    const nfs=grupo.map(g=>g.nf).join(' + ');
+    const temDescarga=grupo.some(g=>!!(g.descarga));
+    const desc_total=grupo.reduce((s,g)=>s+(g.desc_quebra||0),0);
+    const frete20_ajustado=Math.max(0,frete20-desc_total);
+    const saldo80=frete80_pago?0:frete80;
+    const saldo20=frete20_pago?0:frete20_ajustado;
     const saldo_total=saldo80+saldo20;
     return`<div class="frete-card">
       <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px">
         <div>
           <div style="font-size:15px;font-weight:600">${d.motorista} <span style="font-size:12px;color:var(--text-faint);font-weight:400">CPF: ${d.cpf||'—'}</span></div>
-          <div style="font-size:12px;color:var(--text-muted);margin-top:2px">Contrato ${d.contrato} · NF ${d.nf} · ${fmtData(d.embarque)}</div>
+          <div style="font-size:12px;color:var(--text-muted);margin-top:2px">Contrato ${d.contrato} · NF ${nfs} · ${fmtData(d.embarque)}</div>
           ${!temDescarga?`<div style="font-size:11px;color:var(--amber);margin-top:2px">⏳ Aguardando descarga para liberar pagamento dos 20%</div>`:''}
           ${desc_total>0&&temDescarga?`<div style="font-size:11px;color:var(--red);margin-top:2px">Desconto (quebra/impureza): ${fmt(desc_total)} — abatido dos 20%</div>`:''}
         </div>
         <div style="text-align:right">
           <div style="font-size:11px;color:var(--text-faint)">Frete total</div>
-          <div style="font-size:18px;font-weight:600">${fmt(d.frete_total)}</div>
+          <div style="font-size:18px;font-weight:600">${fmt(frete_total)}</div>
           <div style="font-size:11px;color:var(--${saldo_total>0?'amber':'green'});margin-top:2px">Saldo a pagar: ${fmt(saldo_total)}</div>
         </div>
       </div>
       <div class="frete-split">
         <div class="split-box parcela-1">
           <div class="split-label">80% — À vista</div>
-          <div class="split-value pos">${fmt(d.frete80||0)}</div>
-          <button class="flag-btn ${d.frete80_pago?'pago':'aberto'}" onclick="toggleFretePago(${d.id},80)">${d.frete80_pago?'✓ Pago':'Em aberto'}</button>
+          <div class="split-value pos">${fmt(frete80)}</div>
+          <button class="flag-btn ${frete80_pago?'pago':'aberto'}" onclick="toggleFreteGrupo(${JSON.stringify(grupo.map(g=>g.id))},80)">${frete80_pago?'✓ Pago':'Em aberto'}</button>
         </div>
         <div class="split-box parcela-2" style="${!temDescarga?'opacity:.4;pointer-events:none':''}">
           <div class="split-label">20% — Na descarga${!temDescarga?' (aguardando)':''}</div>
           <div class="split-value amber-txt">${fmt(frete20_ajustado)}</div>
-          ${desc_total>0?`<div style="font-size:10px;color:var(--red);margin-bottom:4px">Original: ${fmt(d.frete20||0)} − desc.: ${fmt(desc_total)}</div>`:''}
-          ${temDescarga?`<button class="flag-btn ${d.frete20_pago?'pago':'aberto'}" onclick="toggleFretePago(${d.id},20)">${d.frete20_pago?'✓ Pago':'Em aberto'}</button>`:`<span style="font-size:11px;color:var(--text-faint)">Bloqueado</span>`}
+          ${desc_total>0?`<div style="font-size:10px;color:var(--red);margin-bottom:4px">Original: ${fmt(frete20)} − desc.: ${fmt(desc_total)}</div>`:''}
+          ${temDescarga?`<button class="flag-btn ${frete20_pago?'pago':'aberto'}" onclick="toggleFreteGrupo(${JSON.stringify(grupo.map(g=>g.id))},20)">${frete20_pago?'✓ Pago':'Em aberto'}</button>`:`<span style="font-size:11px;color:var(--text-faint)">Bloqueado</span>`}
         </div>
       </div>
     </div>`;
