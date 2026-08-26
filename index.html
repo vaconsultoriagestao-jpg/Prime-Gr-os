@@ -2525,6 +2525,7 @@ async function salvarEmb(){
   if(!emb_dt){toast('Informe a data de embarque!',true);return;}
   if(!pliq){toast('Informe o peso líquido!',true);return;}
   if(!compra||!venda){toast('Informe os valores de compra e venda!',true);return;}
+  const ctObj=cts.find(x=>x.id===parseInt(ctId));
   // Validar NF duplicada
   const nfDup=embs.find(d=>!d.cancelada&&d.nf===nf&&String(d.contrato)===String(ctObj?ctObj.numero:ctId));
   if(nfDup){if(!confirm(`NF ${nf} já existe neste contrato. Deseja continuar mesmo assim?`))return;}
@@ -2533,7 +2534,6 @@ async function salvarEmb(){
   const cancelada=document.getElementById('f_canc').checked;
   const transpId=parseInt(document.getElementById('f_transportadora_id').value)||0;
   const transpObj=transp.find(x=>x.id===transpId);
-  const ctObj=cts.find(x=>x.id===parseInt(ctId));
   const comsVinc=(ctObj&&ctObj.comissionarios_ct)||[];
 
   // Frete split: 80% à vista, 20% na descarga
