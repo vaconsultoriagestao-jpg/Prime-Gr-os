@@ -2569,6 +2569,14 @@ async function salvarEmb(){
     comissoes:comsVinc.map(x=>({id:x.id,nome:x.nome,valor:x.valor})),
     frete80,frete20,frete80_pago:false,frete20_pago:false,
     ...c};
+  // Recalcular comp_desc e lucro APÓS montar o objeto com valores reais
+  const _rec=parseFloat(document.getElementById('f_recebido').value)||0;
+  const _imp=parseFloat(document.getElementById('f_imposto').value)||0;
+  const _df=parseFloat(document.getElementById('f_desc_fin').value)||0;
+  const _ou=parseFloat(document.getElementById('f_outros').value)||0;
+  obj.comp_desc=_rec-(obj.total_venda||0);
+  obj.lucro=(obj.total_venda||0)-(obj.total_compra||0)-(obj.frete_total||0)-(obj.cn_val||0)-(obj.cte||0)-(obj.com_total||0)-(obj.fundo||0)-_imp-_df-(obj.imp_desc||0)-(obj.desc_quebra||0)-_ou+obj.comp_desc;
+  obj.lucro_pct=(obj.total_venda||0)>0?(obj.lucro/(obj.total_venda||1))*100:0;
   // Grupo para unificar frete quando há NF2
   const grupoId = nf2 ? Date.now() : null;
   if(grupoId) obj.grupo_frete = grupoId;
