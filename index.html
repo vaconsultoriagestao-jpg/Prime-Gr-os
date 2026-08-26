@@ -1730,8 +1730,10 @@ function calcularPesos(pliq, venda, compra, rs_ton, tem_fundo, ctObj){
   const fundo=tem_fundo?total_venda*fp:0;
   const comsVinc=(ctObj&&ctObj.comissionarios_ct)||[];
   const com_total=comsVinc.reduce((s,c)=>s+((c.valor||0)*sc_ent),0);
-  const comp_desc2=0-total_venda; // recebido=0 no lançamento
-  return{pliq,pdesc:0,sc_emb,sc_ent,quebra_sc:0,frete_total,frete80,frete20,frete80_pago:false,frete20_pago:false,total_compra,total_venda,comp_desc:comp_desc2,fundo,com_total,imp_desc:0,desc_quebra:0,lucro:0,lucro_pct:0,rkg:venda/60};
+  const comp_desc2=0-total_venda;
+  const lucro2=total_venda-total_compra-frete_total-com_total-fundo+comp_desc2;
+  const lucro_pct2=total_venda>0?(lucro2/total_venda)*100:0;
+  return{pliq,pdesc:0,sc_emb,sc_ent,quebra_sc:0,frete_total,frete80,frete20,frete80_pago:false,frete20_pago:false,total_compra,total_venda,comp_desc:comp_desc2,fundo,com_total,imp_desc:0,desc_quebra:0,lucro:lucro2,lucro_pct:lucro_pct2,rkg:venda/60};
 }
 
 // ===== PRÉ-CARGAS =====
@@ -2469,9 +2471,8 @@ function calcular(){
   const comsVinc=(ctObj&&ctObj.comissionarios_ct)||[];
   const com_total=comsVinc.reduce((s,c)=>s+((c.valor||0)*sc_ent),0); // base: sc_ent (sacas entradas na indústria)
 
-  const lucro_bruto=total_venda-total_compra-frete_total-cn_val-cte-com_total-fundo-imposto-desc_fin-imp_desc-desc_quebra-outros+comp_desc;
-  const lucro=recebido>0?lucro_bruto:0;
-  const lucro_pct=recebido>0&&total_venda>0?(lucro/total_venda)*100:0;
+  const lucro=total_venda-total_compra-frete_total-cn_val-cte-com_total-fundo-imposto-desc_fin-imp_desc-desc_quebra-outros+comp_desc;
+  const lucro_pct=total_venda>0?(lucro/total_venda)*100:0;
 
   const s=(id,v)=>{const el=document.getElementById(id);if(el)el.value=v;};
   s('f_sc_emb',fmtN(sc_emb));s('f_quebra',fmtN(quebra_sc));s('f_sc_ent',fmtN(sc_ent));
@@ -2662,9 +2663,8 @@ async function salvarEdit(){
   const comsVE=(ctEd&&ctEd.comissionarios_ct&&ctEd.comissionarios_ct.length)?ctEd.comissionarios_ct:(e.comissoes||[]);
   if(ctEd&&ctEd.comissionarios_ct&&ctEd.comissionarios_ct.length)e.comissoes=comsVE.map(x=>({id:x.id,nome:x.nome,valor:x.valor}));
   e.com_total=comsVE.reduce((s,c)=>s+((c.valor||0)*e.sc_ent),0);
-  const _lucro_bruto=e.total_venda-e.total_compra-e.frete_total-cn-ct-e.com_total-e.fundo-im-df-e.imp_desc-e.desc_quebra-ou+e.comp_desc;
-  e.lucro=(e.recebido||0)>0?_lucro_bruto:0;
-  e.lucro_pct=(e.recebido||0)>0&&e.total_venda>0?(e.lucro/e.total_venda)*100:0;
+  e.lucro=e.total_venda-e.total_compra-e.frete_total-cn-ct-e.com_total-e.fundo-im-df-e.imp_desc-e.desc_quebra-ou+e.comp_desc;
+  e.lucro_pct=e.total_venda>0?(e.lucro/e.total_venda)*100:0;
   e.frete80=e.frete_total*0.8;e.frete20=e.frete_total*0.2;
   if(e.descarga){const ctO=cts.find(c=>c.numero==e.contrato);const pp=ctO?ctO.prazo:(cfg.prazo||72);const p=prazoData(e.descarga,pp);e.prazo_rec=p.toLocaleDateString('pt-BR');}
   e.atualizado_em=new Date().toISOString();
