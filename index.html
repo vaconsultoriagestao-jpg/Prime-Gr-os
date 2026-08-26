@@ -1730,9 +1730,8 @@ function calcularPesos(pliq, venda, compra, rs_ton, tem_fundo, ctObj){
   const fundo=tem_fundo?total_venda*fp:0;
   const comsVinc=(ctObj&&ctObj.comissionarios_ct)||[];
   const com_total=comsVinc.reduce((s,c)=>s+((c.valor||0)*sc_ent),0);
-  const lucro=total_venda-total_compra-frete_total-com_total-fundo;
-  const lucro_pct=total_venda>0?(lucro/total_venda)*100:0;
-  return{pliq,pdesc:0,sc_emb,sc_ent,quebra_sc:0,frete_total,frete80,frete20,frete80_pago:false,frete20_pago:false,total_compra,total_venda,comp_desc:0,fundo,com_total,imp_desc:0,desc_quebra:0,lucro,lucro_pct,rkg:venda/60};
+  const comp_desc2=0-total_venda; // recebido=0 no lançamento
+  return{pliq,pdesc:0,sc_emb,sc_ent,quebra_sc:0,frete_total,frete80,frete20,frete80_pago:false,frete20_pago:false,total_compra,total_venda,comp_desc:comp_desc2,fundo,com_total,imp_desc:0,desc_quebra:0,lucro:0,lucro_pct:0,rkg:venda/60};
 }
 
 // ===== PRÉ-CARGAS =====
