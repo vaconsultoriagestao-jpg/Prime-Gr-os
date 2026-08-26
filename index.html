@@ -3006,10 +3006,7 @@ function renderFluxo(){
     }
     // Excluir embarques de contratos com distribuição 100% paga
     const ctO=cts.find(c=>c.numero==d.contrato);
-    if(ctO&&ctO.distribuicao_socios&&ctO.distribuicao_socios.length>0){
-      const todoPago=ctO.distribuicao_socios.every(s=>s.pago);
-      if(todoPago)return false;
-    }
+    // Contratos distribuídos mantidos no fluxo para consulta
     return true;
   });
   // A receber LÍQUIDO — desconta fundo por contrato
@@ -5047,8 +5044,11 @@ function gerarFechContrato(){
   // Carregar distribuição de lucro salva (usa primeiro contrato selecionado)
   _fcLucroAtual=lucro;
   const ctPrimeiro=cts.find(c=>String(c.numero)===String(sels[0]));
-  // Só carrega distribuição salva se não houver sócios já adicionados na sessão
-  if(_fcSocios.length===0){
+  // Carregar sócios salvos do contrato
+  const _distSalva=ctPrimeiro&&ctPrimeiro.distribuicao_socios&&ctPrimeiro.distribuicao_socios.length?ctPrimeiro.distribuicao_socios:[];
+  if(_distSalva.length){
+    _fcSocios=_distSalva.map(s=>({...s}));
+  } else {
     _fcSocios=[];
   }
   renderSociosFc();
@@ -5196,9 +5196,7 @@ function gerarFechamento(){
     if(!sel.includes(String(d.contrato)))return false;
     // Excluir embarques de contratos com distribuição 100% paga
     const ctO=cts.find(c=>c.numero==d.contrato);
-    if(ctO&&ctO.distribuicao_socios&&ctO.distribuicao_socios.length>0){
-      if(ctO.distribuicao_socios.every(s=>s.pago))return false;
-    }
+    // Contratos distribuídos sempre aparecem no fechamento para consulta
     return true;
   });
   _fech=sel.map(ct=>{
