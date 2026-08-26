@@ -1236,6 +1236,7 @@ tr.row-pago td{background:rgba(40,167,69,0.07)}
         <div class="form-grid">
           <div class="fg"><label>Placa do cavalo</label><input id="pc_placa" type="text" placeholder="ABC1D23" oninput="this.value=this.value.toUpperCase()"></div>
           <div class="fg"><label>Motorista</label><input id="pc_motorista" type="text" placeholder="Nome completo"></div>
+          <div class="fg"><label>CPF do motorista</label><input id="pc_cpf" type="text" placeholder="000.000.000-00" oninput="mascaraCPF(this)"></div>
           <div class="fg"><label>Tipo de carreta</label>
             <select id="pc_carreta" onchange="calcPrecarga()">
               <option value="">— selecione —</option>
@@ -1751,6 +1752,7 @@ function abrirModalPrecarga(id){
     if(!pc)return;
     document.getElementById('pc_placa').value=pc.placa||'';
     document.getElementById('pc_motorista').value=pc.motorista||'';
+    document.getElementById('pc_cpf').value=pc.cpf||'';
     document.getElementById('pc_carreta').value=pc.carreta||'';
 
     document.getElementById('pc_pliq').value=pc.pliq||0;
@@ -1761,7 +1763,8 @@ function abrirModalPrecarga(id){
     calcPrecarga();
   } else {
     ['pc_placa','pc_motorista','pc_obs','pc_data'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
-    ['pc_pliq','pc_preco_soja','pc_frete_ton'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=0;});
+    document.getElementById('pc_cpf').value='';
+  ['pc_pliq','pc_preco_soja','pc_frete_ton'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=0;});
     document.getElementById('pc_carreta').value='';
     document.getElementById('pc_peso1').value='—';
     document.getElementById('pc_peso2').value='—';
@@ -1783,7 +1786,7 @@ async function salvarPrecarga(){
   const peso2=pliq<=limite?0:excedente-quebrados;
   const obj={
     id:_editPrecarga||Date.now(),
-    placa,motorista,carreta,
+    placa,motorista,cpf:document.getElementById('pc_cpf').value.trim(),carreta,
 
     pliq,peso1,peso2,
     preco_soja:parseFloat(document.getElementById('pc_preco_soja').value)||0,
@@ -1858,6 +1861,7 @@ async function puxarPrecarga(){
   const set=(fid,val)=>{const el=document.getElementById(fid);if(el){el.value=val;}};
   set('f_placa',pc.placa||'');
   set('f_motorista',pc.motorista||'');
+  set('f_cpf',pc.cpf||'');
   set('f_pliq',pc.pliq||0);
   if(pc.preco_soja)set('f_compra',pc.preco_soja);
   if(pc.frete_ton)set('f_rs_ton',pc.frete_ton);
