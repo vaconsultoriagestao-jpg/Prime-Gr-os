@@ -290,6 +290,9 @@ tr.row-pago td{background:rgba(40,167,69,0.07)}
     <div class="nav-item" id="nav-comissionarios" onclick="irPara('comissionarios',this)">
       <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Cadastro comissionários
     </div>
+    <div class="nav-item" id="nav-precargas" onclick="irPara('precargas',this)">
+      <svg viewBox="0 0 24 24"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>Pré-cargas
+    </div>
     <div class="nav-label">Sistema</div>
     <div class="nav-item" id="nav-config" onclick="irPara('config',this)">
       <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93l-1.41 1.41M4.93 4.93l1.41 1.41M19.07 19.07l-1.41-1.41M4.93 19.07l1.41-1.41M12 2v2M12 20v2M2 12h2M20 12h2"/></svg>Configurações
@@ -863,6 +866,13 @@ tr.row-pago td{background:rgba(40,167,69,0.07)}
     <div class="form-card">
       <div class="form-card-header"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Identificação</div>
       <div class="form-body"><div class="form-grid">
+        <div class="fg fg-full" style="background:var(--green-faint);border:1px dashed #1B2B4B;border-radius:8px;padding:10px">
+          <label style="color:#1B2B4B;font-weight:600">Pré-carga (opcional)</label>
+          <div style="display:flex;gap:8px;margin-top:6px">
+            <select id="f_precarga" onchange="puxarPrecarga()" style="flex:1"><option value="">— selecione uma pré-carga —</option></select>
+          </div>
+          <span class="hint">Selecione para preencher placa, motorista, pesos e frete automaticamente</span>
+        </div>
         <div class="fg"><label>Contrato <span class="star">*</span></label>
           <select id="f_contrato" onchange="preencherDoCt()"><option value="">— selecione —</option></select>
           <div id="f_sc_progress"></div>
@@ -893,7 +903,6 @@ tr.row-pago td{background:rgba(40,167,69,0.07)}
           <select id="f_fornecedor_id" onchange="preencherFornecedor()"><option value="">— selecione —</option></select>
         </div>
         <div class="fg"><label>Motorista <span class="star">*</span></label><input id="f_motorista" type="text"></div>
-        <div class="fg"><label>CPF do motorista <span class="star">*</span></label><input id="f_cpf" type="text" placeholder="000.000.000-00" oninput="mascaraCPF(this)"></div>
         <div class="fg"><label>Placa</label><input id="f_placa" type="text" placeholder="ABC1234"></div>
       </div></div>
     </div>
@@ -1196,6 +1205,58 @@ tr.row-pago td{background:rgba(40,167,69,0.07)}
       <div class="tbl-wrap"><table><thead><tr>
         <th>Nome</th><th>Telefone</th><th>Responsável</th><th>Obs</th><th></th>
       </tr></thead><tbody id="tbody-forn"></tbody></table></div>
+    </div>
+  </div>
+
+  <!-- PRÉ-CARGAS -->
+  <div class="page" id="page-precargas">
+    <h1 class="section-heading">Pré-Cargas</h1>
+    <p class="section-sub">Cadastre os dados do caminhão antes do embarque. Puxe as informações no Novo Embarque.</p>
+    <div style="margin-bottom:1.5rem;display:flex;gap:8px">
+      <button class="btn btn-primary" onclick="abrirModalPrecarga()">
+        <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Nova pré-carga
+      </button>
+    </div>
+    <div class="table-card">
+      <div class="table-header"><h3>Pré-cargas cadastradas</h3></div>
+      <div class="tbl-wrap"><table><thead><tr>
+        <th>Placa</th><th>Motorista</th><th>Carreta</th><th>Peso líq. (kg)</th><th>Balança (kg)</th><th>Peso 1 (kg)</th><th>Peso 2 (kg)</th><th>R$/sc</th><th>Frete R$/ton</th><th>Data</th><th></th>
+      </tr></thead><tbody id="tbody-precargas"></tbody></table></div>
+    </div>
+  </div>
+
+  <!-- Modal pré-carga -->
+  <div class="modal-overlay" id="modal-precarga" style="display:none" onclick="if(event.target===this)fecharModalPrecarga()">
+    <div class="modal" style="max-width:560px">
+      <div class="modal-header"><h3 id="modal-precarga-title">Nova pré-carga</h3><button class="modal-close" onclick="fecharModalPrecarga()">×</button></div>
+      <div class="modal-body">
+        <div class="form-grid">
+          <div class="fg"><label>Placa do cavalo</label><input id="pc_placa" type="text" placeholder="ABC1D23" oninput="this.value=this.value.toUpperCase()"></div>
+          <div class="fg"><label>Motorista</label><input id="pc_motorista" type="text" placeholder="Nome completo"></div>
+          <div class="fg"><label>Tipo de carreta</label>
+            <select id="pc_carreta" onchange="calcPrecarga()">
+              <option value="">— selecione —</option>
+              <option value="LS">LS (32t)</option>
+              <option value="4 eixo">4 eixo (39t)</option>
+              <option value="Bitrem">Bitrem (37t)</option>
+              <option value="Rodocaçamba">Rodocaçamba (48t)</option>
+              <option value="Rodotrem">Rodotrem (49t)</option>
+            </select>
+          </div>
+          <div class="fg"><label>Peso balança (kg)</label><input id="pc_balanca" type="number" value="0" oninput="calcPrecarga()"></div>
+          <div class="fg"><label>Peso líquido total (kg)</label><input id="pc_pliq" type="number" value="0" oninput="calcPrecarga()"></div>
+          <div class="fg"><label>Peso 1 (auto)</label><input id="pc_peso1" type="text" readonly style="background:var(--gray-50)"></div>
+          <div class="fg"><label>Peso 2 (auto)</label><input id="pc_peso2" type="text" readonly style="background:var(--gray-50)"></div>
+          <div class="fg"><label>Preço soja (R$/sc)</label><input id="pc_preco_soja" type="number" step="0.01" value="0"></div>
+          <div class="fg"><label>Frete (R$/ton)</label><input id="pc_frete_ton" type="number" step="0.01" value="0"></div>
+          <div class="fg"><label>Data</label><input id="pc_data" type="date"></div>
+          <div class="fg fg-full"><label>Observação</label><input id="pc_obs" type="text"></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="fecharModalPrecarga()">Cancelar</button>
+        <button class="btn btn-primary" onclick="salvarPrecarga()">Salvar</button>
+      </div>
     </div>
   </div>
 
@@ -1645,7 +1706,162 @@ async function load(){
     }
   }catch(e){console.error('Erro ao carregar:',e);}
   try{await loadEstoque();}catch(e){}
+  try{
+    const rpc=await fetch(`${SB_URL}/rest/v1/precargas?select=data&order=id`,{headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}}).then(r=>r.json()).then(d=>d.map?d.map(x=>x.data):[]);
+    if(rpc&&rpc.length)precargas=rpc;
+  }catch(e){}
   hideLoading();
+}
+
+// ===== PRÉ-CARGAS =====
+let precargas = [];
+
+const _limiteEixo = {'LS':32000,'4 eixo':39000,'Bitrem':37000,'Rodocaçamba':48000,'Rodotrem':49000};
+
+function calcPrecarga(){
+  const carreta = document.getElementById('pc_carreta').value;
+  const pliq = parseFloat(document.getElementById('pc_pliq').value)||0;
+  const limite = _limiteEixo[carreta]||0;
+  if(!limite||!pliq){
+    document.getElementById('pc_peso1').value='—';
+    document.getElementById('pc_peso2').value='—';
+    return;
+  }
+  if(pliq<=limite){
+    document.getElementById('pc_peso1').value=pliq.toLocaleString('pt-BR');
+    document.getElementById('pc_peso2').value='0';
+    return;
+  }
+  const excedente = pliq - limite;
+  const quebrados = pliq % 1000; // parte não redonda
+  const peso1 = limite + quebrados;
+  const peso2 = excedente - quebrados;
+  document.getElementById('pc_peso1').value=peso1.toLocaleString('pt-BR');
+  document.getElementById('pc_peso2').value=peso2.toLocaleString('pt-BR');
+}
+
+let _editPrecarga = null;
+function abrirModalPrecarga(id){
+  _editPrecarga = id||null;
+  document.getElementById('modal-precarga-title').textContent = id?'Editar pré-carga':'Nova pré-carga';
+  if(id){
+    const pc = precargas.find(p=>p.id===id);
+    if(!pc)return;
+    document.getElementById('pc_placa').value=pc.placa||'';
+    document.getElementById('pc_motorista').value=pc.motorista||'';
+    document.getElementById('pc_carreta').value=pc.carreta||'';
+    document.getElementById('pc_balanca').value=pc.balanca||0;
+    document.getElementById('pc_pliq').value=pc.pliq||0;
+    document.getElementById('pc_preco_soja').value=pc.preco_soja||0;
+    document.getElementById('pc_frete_ton').value=pc.frete_ton||0;
+    document.getElementById('pc_data').value=pc.data||'';
+    document.getElementById('pc_obs').value=pc.obs||'';
+    calcPrecarga();
+  } else {
+    ['pc_placa','pc_motorista','pc_obs','pc_data'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+    ['pc_balanca','pc_pliq','pc_preco_soja','pc_frete_ton'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=0;});
+    document.getElementById('pc_carreta').value='';
+    document.getElementById('pc_peso1').value='—';
+    document.getElementById('pc_peso2').value='—';
+  }
+  document.getElementById('modal-precarga').style.display='flex';
+}
+function fecharModalPrecarga(){document.getElementById('modal-precarga').style.display='none';_editPrecarga=null;}
+
+async function salvarPrecarga(){
+  const placa=document.getElementById('pc_placa').value.trim().toUpperCase();
+  const motorista=document.getElementById('pc_motorista').value.trim();
+  const carreta=document.getElementById('pc_carreta').value;
+  const pliq=parseFloat(document.getElementById('pc_pliq').value)||0;
+  if(!placa||!motorista||!carreta||!pliq){toast('Preencha placa, motorista, carreta e peso líquido!',true);return;}
+  const limite=_limiteEixo[carreta]||0;
+  const excedente=pliq-limite;
+  const quebrados=pliq%1000;
+  const peso1=pliq<=limite?pliq:limite+quebrados;
+  const peso2=pliq<=limite?0:excedente-quebrados;
+  const obj={
+    id:_editPrecarga||Date.now(),
+    placa,motorista,carreta,
+    balanca:parseFloat(document.getElementById('pc_balanca').value)||0,
+    pliq,peso1,peso2,
+    preco_soja:parseFloat(document.getElementById('pc_preco_soja').value)||0,
+    frete_ton:parseFloat(document.getElementById('pc_frete_ton').value)||0,
+    data:document.getElementById('pc_data').value,
+    obs:document.getElementById('pc_obs').value,
+    empresa:_empresaFiltro||'Prime Grãos',
+    criado_em:_editPrecarga?undefined:new Date().toISOString()
+  };
+  if(_editPrecarga){
+    const idx=precargas.findIndex(p=>p.id===_editPrecarga);
+    if(idx!==-1)precargas[idx]=obj;
+  } else {
+    precargas.push(obj);
+  }
+  await savePrecargas();
+  fecharModalPrecarga();
+  renderPrecargas();
+  updSelPrecargas();
+  toast('Pré-carga salva!');
+}
+
+async function savePrecargas(){
+  try{
+    if(precargas.length){
+      await fetch(`${SB_URL}/rest/v1/precargas`,{method:'POST',headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=minimal'},body:JSON.stringify(precargas.map(p=>({id:p.id,data:p})))});
+    }
+  }catch(e){console.error('savePrecargas:',e);}
+}
+
+async function delPrecarga(id){
+  if(!confirm('Remover esta pré-carga?'))return;
+  try{await fetch(`${SB_URL}/rest/v1/precargas?id=eq.${id}`,{method:'DELETE',headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}});}catch(e){}
+  precargas=precargas.filter(p=>p.id!==id);
+  renderPrecargas();updSelPrecargas();toast('Pré-carga removida.');
+}
+
+function renderPrecargas(){
+  const tbody=document.getElementById('tbody-precargas');
+  if(!tbody)return;
+  const lista=precargas.filter(p=>!_empresaFiltro||p.empresa===_empresaFiltro);
+  tbody.innerHTML=lista.length?lista.map(p=>`<tr>
+    <td><strong>${p.placa||'—'}</strong></td>
+    <td>${p.motorista||'—'}</td>
+    <td>${p.carreta||'—'}</td>
+    <td>${(p.pliq||0).toLocaleString('pt-BR')}</td>
+    <td>${(p.balanca||0).toLocaleString('pt-BR')}</td>
+    <td>${(p.peso1||0).toLocaleString('pt-BR')}</td>
+    <td>${(p.peso2||0).toLocaleString('pt-BR')}</td>
+    <td>${p.preco_soja||'—'}</td>
+    <td>${p.frete_ton||'—'}</td>
+    <td>${p.data?p.data.split('-').reverse().join('/'):'—'}</td>
+    <td style="display:flex;gap:4px">
+      <button class="btn-edit" onclick="abrirModalPrecarga(${p.id})">Editar</button>
+      <button class="btn btn-danger btn-sm" onclick="delPrecarga(${p.id})">×</button>
+    </td>
+  </tr>`).join(''):'<tr><td colspan="11" class="empty-state">Nenhuma pré-carga cadastrada.</td></tr>';
+}
+
+function updSelPrecargas(){
+  const sel=document.getElementById('f_precarga');
+  if(!sel)return;
+  const lista=precargas.filter(p=>!_empresaFiltro||p.empresa===_empresaFiltro);
+  sel.innerHTML='<option value="">— selecione uma pré-carga —</option>'+
+    lista.map(p=>`<option value="${p.id}">${p.placa} — ${p.motorista} — ${p.carreta} (${(p.pliq||0).toLocaleString('pt-BR')} kg)</option>`).join('');
+}
+
+function puxarPrecarga(){
+  const id=parseInt(document.getElementById('f_precarga').value);
+  if(!id)return;
+  const pc=precargas.find(p=>p.id===id);
+  if(!pc)return;
+  const set=(fid,val)=>{const el=document.getElementById(fid);if(el){el.value=val;}};
+  set('f_placa',pc.placa||'');
+  set('f_motorista',pc.motorista||'');
+  set('f_pliq',pc.pliq||0);
+  if(pc.preco_soja)set('f_compra',pc.preco_soja);
+  if(pc.frete_ton)set('f_rs_ton',pc.frete_ton);
+  calcular();
+  toast('Pré-carga carregada!');
 }
 
 // ===== AUTH =====
@@ -1875,7 +2091,7 @@ async function trocarMinhaSenha(){
 }
 
 
-const ptitles={'arec-industria':'A Receber — Indústrias','arec-parceiros':'A Receber — Parceiros','cap-desp':'Despesas','cap-parceiros':'Parceiros (Devolução)',fluxo:'Fluxo de Caixa',fechamento:'Fechamento Indústria',painel:'Painel','fech-contrato':'Fechamento por Contrato',saidas:'Saídas de produto',contratos:'Contratos',embarques:'Embarques',novo:'Novo embarque',frete:'Frete — Motoristas','cap-transp':'CTE — Transportadoras','cap-com':'Comissões a Pagar','cap-nota':'Notas Fiscais a Pagar',transportadoras:'Transportadoras',comissionarios:'Cadastro Comissionários',fornecedores:'Fornecedores de Nota',config:'Configurações'};
+const ptitles={'arec-industria':'A Receber — Indústrias','arec-parceiros':'A Receber — Parceiros','cap-desp':'Despesas','cap-parceiros':'Parceiros (Devolução)',fluxo:'Fluxo de Caixa',fechamento:'Fechamento Indústria',painel:'Painel','fech-contrato':'Fechamento por Contrato',saidas:'Saídas de produto',contratos:'Contratos',embarques:'Embarques',novo:'Novo embarque',frete:'Frete — Motoristas','cap-transp':'CTE — Transportadoras','cap-com':'Comissões a Pagar','cap-nota':'Notas Fiscais a Pagar',transportadoras:'Transportadoras',comissionarios:'Cadastro Comissionários',fornecedores:'Fornecedores de Nota',config:'Configurações',precargas:'Pré-Cargas'};
 function irPara(id,el){
   if(!usuarioLogado){return;} // não faz nada se não estiver logado
   if(id==='config'&&(!usuarioLogado||usuarioLogado.perfil!=='admin')){toast('Acesso restrito ao administrador.',true);return;}
@@ -1892,7 +2108,7 @@ function irPara(id,el){
     'cap-desp':renderDesp,'cap-parceiros':renderCapParc,'fluxo':renderFluxo,
     'fechamento':initFech,'fech-contrato':initFechContrato,'saidas':renderSaidas,
     'painel':renderPainel,'contratos':renderContratos,'embarques':renderEmbarques,
-    'icms':renderICMS,'frete':renderFrete,'cap-transp':renderCapTransp,
+    'icms':renderICMS,'frete':renderFrete,'precargas':renderPrecargas,'cap-transp':renderCapTransp,
     'cap-com':renderCapCom,'cap-nota':renderCapNota,'transportadoras':renderTransp,
     'fornecedores':renderForn,'comissionarios':renderComs,'config':loadCfgUI,
     'despesas':renderDesp
@@ -2118,6 +2334,7 @@ async function encerrarCt(id){
   toast(c.encerrado?'Contrato reaberto!':'Contrato encerrado!');
 }
 function updSelCts(){
+  updSelPrecargas();
   const sel=document.getElementById('f_contrato');if(!sel)return;
   const cur=sel.value;
   // Só mostra contratos ATIVOS (não encerrados) e filtra pela empresa global se selecionada
