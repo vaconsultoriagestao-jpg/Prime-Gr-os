@@ -2578,7 +2578,7 @@ async function salvarEmb(){
     const pliq2 = parseFloat((document.getElementById('f_pliq2')||{value:'0'}).value)||0;
     if(pliq2>0){
       const c2=calcularPesos(pliq2, obj.venda, obj.compra, obj.rs_ton, obj.tem_fundo, ctObj);
-      const obj2={...obj, id:Date.now()+1, nf:nf2, pliq:pliq2, grupo_frete:grupoId, ...c2};
+      const obj2={...obj, ...c2, id:Date.now()+1, nf:nf2, pliq:pliq2, grupo_frete:grupoId, recebido:0, comp_desc:0};
       embs.push(obj2);await saveEmb(obj2);
     }
   }
@@ -3198,7 +3198,7 @@ function renderEmbarques(){
       <td class="mono">${fmt(d.total_compra)}</td><td class="mono">${fmt(d.total_venda)}</td>
       <td class="mono">${fmt(d.frete_total)}</td>
       <td class="mono">${fmt(d.recebido)}</td>
-      <td class="mono ${(d.comp_desc||0)>=0?'pos':'neg'}">${fmt(d.comp_desc)}</td>
+      <td class="mono ${(d.comp_desc||0)>0?'pos':(d.comp_desc||0)<0&&(d.recebido||0)>0?'neg':''}">${(d.recebido||0)>0?fmt(d.comp_desc):'—'}</td>
       <td>${d.fornecedor_nota||'—'}</td>
       <td class="mono">${fmtN(d.cn_sc||0)}</td>
       <td class="mono">${fmt(d.cn_val||0)}</td>
