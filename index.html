@@ -467,7 +467,8 @@ tr.row-pago td{background:rgba(40,167,69,0.07)}
     <div class="table-card">
       <div class="table-header">
         <h3>Selecionar contratos</h3>
-        <div style="display:flex;gap:8px;align-items:center">
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <select class="filter-select" id="f-fech-industria" onchange="initFech()" style="font-size:12px"><option value="">Todas as indústrias</option></select>
           <select class="filter-select" id="f-fech-socios" onchange="initFech()" style="font-size:12px"><option value="">Todos os sócios</option></select>
           <button class="btn btn-secondary btn-sm" onclick="selTodos(true)">Todos</button>
           <button class="btn btn-secondary btn-sm" onclick="selTodos(false)">Limpar</button>
@@ -5500,14 +5501,23 @@ function exportFechContrato(tipo='csv'){
 function initFech(){
   updSociosLists();
   const embsFilt=embs.filter(d=>!d.cancelada&&(!_empresaFiltro||d.empresa===_empresaFiltro));
+  // Popular select de indústrias dinamicamente
+  const _findEl=document.getElementById('f-fech-industria');
+  if(_findEl){
+    const _inds=[...new Set(cts.filter(c=>!_empresaFiltro||c.empresa===_empresaFiltro).map(c=>c.comprador||c.industria).filter(Boolean))].sort();
+    const _curInd=_findEl.value;
+    _findEl.innerHTML='<option value="">Todas as indústrias</option>'+_inds.map(i=>`<option value="${i}"${_curInd===i?' selected':''}>${i}</option>`).join('');
+  }
+  const _find=(document.getElementById('f-fech-industria')||{value:''}).value;
   const _fsoc=(document.getElementById('f-fech-socios')||{value:''}).value;
   const ns=[...new Set(embsFilt.map(d=>d.contrato))].sort().filter(ct=>{
-    if(!_fsoc)return true;
     const co=cts.find(c=>c.numero==ct);
-    return co&&co.socios===_fsoc;
+    if(_find&&co&&(co.comprador||co.industria)!==_find)return false;
+    if(_fsoc&&(!co||co.socios!==_fsoc))return false;
+    return true;
   });
   const box=document.getElementById('ct-checks');
-  box.innerHTML=ns.length?ns.map(ct=>{const co=cts.find(c=>c.numero==ct);return`<label class="ct-check"><input type="checkbox" value="${ct}" onchange="this.closest('label').classList.toggle('on',this.checked)"> ${ct}${co?` — ${co.comprador}`:''}</label>`;}).join(''):'<span style="color:var(--text-faint);font-size:13px">Nenhum embarque ativo cadastrado.</span>';
+  box.innerHTML=ns.length?ns.map(ct=>{const co=cts.find(c=>c.numero==ct);return`<label class="ct-check"><input type="checkbox" value="${ct}" onchange="this.closest('label').classList.toggle('on',this.checked)"> ${ct}${co?` — ${co.comprador||co.industria}`:''}</label>`;}).join(''):'<span style="color:var(--text-faint);font-size:13px">Nenhum contrato encontrado.</span>';
   document.getElementById('fech-result').style.display='none';document.getElementById('fech-vazio').style.display='none';
 }
 function gerarFechamento(){
