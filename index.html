@@ -4408,18 +4408,31 @@ function relatorioIndustria(){
   const elInd=document.getElementById('rel-ind-industrias');
   const elCt=document.getElementById('rel-ind-contratos');
 
+  // Indústrias sem nenhuma marcada — ao marcar, filtra contratos
   elInd.innerHTML=[...industriasSet].sort().map(v=>`
     <label style="display:flex;align-items:center;gap:6px;background:#f5f5f5;padding:5px 10px;border-radius:6px;cursor:pointer;font-size:13px;user-select:none">
-      <input type="checkbox" value="${v}" class="rel-ind-check" checked style="accent-color:#1B2B4B"> ${v}
+      <input type="checkbox" value="${v}" class="rel-ind-check" style="accent-color:#1B2B4B" onchange="filtrarContratosRelInd()"> ${v}
     </label>`).join('') || '<span style="color:#999;font-size:13px">Nenhuma indústria encontrada</span>';
 
-  elCt.innerHTML=[...contratosSet].sort().map(v=>`
-    <label style="display:flex;align-items:center;gap:6px;background:#f5f5f5;padding:5px 10px;border-radius:6px;cursor:pointer;font-size:13px;user-select:none">
-      <input type="checkbox" value="${v}" class="rel-ct-check" checked style="accent-color:#1B2B4B"> ${v}
-    </label>`).join('') || '<span style="color:#999;font-size:13px">Nenhum contrato encontrado</span>';
+  elCt.innerHTML='<span style="color:#999;font-size:13px">Selecione uma indústria acima para ver os contratos.</span>';
 
   const modal=document.getElementById('modal-rel-industria');
   modal.style.display='flex';
+}
+
+function filtrarContratosRelInd(){
+  const indsSel=[...document.querySelectorAll('.rel-ind-check:checked')].map(cb=>cb.value);
+  const elCt=document.getElementById('rel-ind-contratos');
+  if(!indsSel.length){
+    elCt.innerHTML='<span style="color:#999;font-size:13px">Selecione uma indústria acima para ver os contratos.</span>';
+    return;
+  }
+  const embsFilt=embs.filter(d=>!d.cancelada&&(!_empresaFiltro||d.empresa===_empresaFiltro)&&indsSel.includes(d.industria||d.industria_granja));
+  const contratosSet=new Set(embsFilt.map(d=>String(d.contrato)).filter(Boolean));
+  elCt.innerHTML=[...contratosSet].sort().map(v=>`
+    <label style="display:flex;align-items:center;gap:6px;background:#f5f5f5;padding:5px 10px;border-radius:6px;cursor:pointer;font-size:13px;user-select:none">
+      <input type="checkbox" value="${v}" class="rel-ct-check" checked style="accent-color:#1B2B4B"> ${v}
+    </label>`).join('') || '<span style="color:#999;font-size:13px">Nenhum contrato encontrado.</span>';
 }
 
 function fecharRelIndustria(){
