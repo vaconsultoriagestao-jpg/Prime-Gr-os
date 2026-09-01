@@ -47,7 +47,10 @@
   .sidebar-footer b { color: var(--text-muted); font-family: 'IBM Plex Mono', monospace; }
   .main-content { flex: 1; min-width: 0; }
   .wrap { max-width: 1200px; margin: 0 auto; padding: 32px 28px 90px; }
-  .section-anchor { scroll-margin-top: 16px; }
+  .section-anchor { display: none; }
+  #kpiGrid.active-section { display: grid; }
+  .panel.section-anchor.active-section { display: block; }
+  .grid2.section-anchor.active-section { display: grid; }
   @media (max-width: 860px) {
     .shell { flex-direction: column; }
     .sidebar { width: 100%; height: auto; position: relative; border-right: none; border-bottom: 1px solid var(--border); flex-direction: row; flex-wrap: wrap; align-items: center; gap: 8px 16px; padding: 12px 16px; }
@@ -186,7 +189,7 @@
       <span>Prime Grãos</span>
     </div>
     <nav class="sidebar-nav" id="sidebarNav">
-      <a href="#kpiGrid" class="nav-link">Visão geral</a>
+      <a href="#kpiGrid" class="nav-link active">Visão geral</a>
       <a href="#apuracao" class="nav-link">Apuração ICMS</a>
       <a href="#estoque" class="nav-link">Estoque físico</a>
       <a href="#fluxo" class="nav-link">Fluxo diário</a>
@@ -195,6 +198,7 @@
       <a href="#notas" class="nav-link">Notas</a>
       <a href="#produtos" class="nav-link">Resumo por produto</a>
       <a href="#importar" class="nav-link">Importar XML</a>
+      <a href="#tecnicas" class="nav-link">Notas técnicas</a>
     </nav>
     <div class="sidebar-footer">Competência <b id="competenciaLabel">—</b><br><span id="totalNotasPill">—</span> notas no banco</div>
   </aside>
@@ -215,7 +219,7 @@
     Este painel ainda não está configurado. Abra o arquivo e preencha <code>SUPABASE_URL</code> e <code>SUPABASE_ANON_KEY</code> no início do &lt;script&gt;, com os dados do seu projeto Supabase (Project Settings → API).
   </div>
 
-  <div class="kpi-grid section-anchor" id="kpiGrid"></div>
+  <div class="kpi-grid section-anchor active-section" id="kpiGrid"></div>
 
   <div class="panel section-anchor" id="apuracao">
     <div class="panel-head">
@@ -297,7 +301,7 @@
     </div></div>
     <div class="table-scroll" style="max-height:280px;">
       <table>
-        <thead><tr><th>Produto</th><th style="text-align:right;">Qtd. entrada (sc)</th><th style="text-align:right;">Valor entrada</th><th style="text-align:right;">ICMS entrada</th><th style="text-align:right;">Qtd. saída (sc)</th><th style="text-align:right;">Valor saída</th><th style="text-align:right;">ICMS saída</th><th style="text-align:right;">Saldo (R$)</th></tr></thead>
+        <thead><tr><th>Produto</th><th style="text-align:right;">Qtd. entrada (sc)</th><th style="text-align:right;">Valor entrada</th><th style="text-align:right;">Custo médio ponderado (R$/sc)</th><th style="text-align:right;">ICMS entrada</th><th style="text-align:right;">Qtd. saída (sc)</th><th style="text-align:right;">Valor saída</th><th style="text-align:right;">ICMS saída</th><th style="text-align:right;">Saldo (R$)</th></tr></thead>
         <tbody id="prodSummaryBody"></tbody>
       </table>
     </div>
@@ -317,7 +321,7 @@
     <div class="import-log" id="importLog">Aguardando arquivos...</div>
   </div>
 
-  <div class="panel">
+  <div class="panel section-anchor" id="tecnicas">
     <div class="panel-head"><div><div class="panel-title">Notas técnicas</div></div></div>
     <div class="notes-list" id="techNotes"></div>
   </div>
@@ -394,6 +398,45 @@ function canonProduto(nome, ncm) {
   return nome || 'PRODUTO NAO IDENTIFICADO';
 }
 function isAgro(ncm) { return !!ncm && (ncm.startsWith('10') || ncm.startsWith('12')); }
+
+// Média Ponderada Móvel (CPC 16) — custo médio recalculado a cada compra,
+// saída consome pelo custo médio vigente no momento da venda.
+// Devolução de compra (CFOP 6201) reverte a entrada correspondente (mesma lógica de custo).
+function computeMediaPonderadaMovel() {
+  const porProduto = {};
+  ENTRADA.filter(r => r.situacao === 'Autorizada' && r.isAgro).forEach(r => {
+    const k = canonProduto(r.produtoCanon || r.produto, r.ncm);
+    (porProduto[k] = porProduto[k] || []).push({ data: r.data, nf: r.nf, tipo: 'entrada', devolucao: r.cfop === '6201', qtd: r.qtdKg || r.qtd, valor: r.valor, competencia: r.data.slice(0,7) });
+  });
+  SAIDA.filter(r => r.situacao === 'Autorizada').forEach(r => {
+    const k = canonProduto(r.produtoCanon || r.produto, r.ncm);
+    (porProduto[k] = porProduto[k] || []).push({ data: r.data, nf: r.nf, tipo: 'saida', devolucao: false, qtd: r.qtd, competencia: r.data.slice(0,7) });
+  });
+
+  const resultado = {};
+  for (const [produto, transacoes] of Object.entries(porProduto)) {
+    transacoes.sort((a, b) => a.data.localeCompare(b.data) || a.nf.localeCompare(b.nf));
+    let saldoQtd = 0, saldoCusto = 0;
+    const porCompetencia = {};
+    for (const t of transacoes) {
+      if (t.tipo === 'entrada' && !t.devolucao) {
+        saldoQtd += t.qtd;
+        saldoCusto += t.valor;
+      } else {
+        // saída, e também devolução de compra (remove pelo custo médio vigente no momento)
+        const custoMedioAtual = saldoQtd > 0 ? saldoCusto / saldoQtd : 0;
+        const consumido = Math.min(t.qtd, saldoQtd);
+        saldoCusto -= consumido * custoMedioAtual;
+        saldoQtd -= consumido;
+      }
+      if (saldoQtd < 0) saldoQtd = 0;
+      if (saldoCusto < 0) saldoCusto = 0;
+      porCompetencia[t.competencia] = { qtd: saldoQtd, custoMedioKg: saldoQtd > 0 ? saldoCusto / saldoQtd : 0, custoTotal: saldoCusto };
+    }
+    resultado[produto] = { porCompetencia, atual: { qtd: saldoQtd, custoMedioKg: saldoQtd > 0 ? saldoCusto / saldoQtd : 0, custoTotal: saldoCusto } };
+  }
+  return resultado;
+}
 
 async function fazerLogin() {
   const user = document.getElementById('loginUser').value.trim().toLowerCase();
@@ -555,20 +598,23 @@ function renderStock() {
   ENTRADA.filter(r => r.situacao === 'Autorizada' && r.isAgro).forEach(r => {
     const k = canonProduto(r.produtoCanon || r.produto, r.ncm);
     if (!map[k]) map[k] = { entrada: 0, saida: 0 };
-    map[k].entrada += (r.cfop === '6201' ? -(r.qtdKg||r.qtd) : (r.qtdKg||r.qtd));
+    map[k].entrada += (r.cfop === '6201' ? -1 : 1) * (r.qtdKg||r.qtd);
   });
   SAIDA.filter(r => r.situacao === 'Autorizada').forEach(r => {
     const k = canonProduto(r.produtoCanon || r.produto, r.ncm);
     if (!map[k]) map[k] = { entrada: 0, saida: 0 };
     map[k].saida += r.qtd;
   });
+  const mpm = computeMediaPonderadaMovel();
   document.getElementById('stockCards').innerHTML = Object.entries(map).map(([nome, v]) => {
     const saldo = v.entrada - v.saida;
+    const custoMedioSaca = (mpm[nome] ? mpm[nome].atual.custoMedioKg : 0) * 60;
     return `<div class="stock-card"><div class="stock-card-name">${nome}</div>
       <div class="stock-metrics">
         <div><div class="stock-metric-label">Entrada (acum.)</div><div class="stock-metric-value green">${fmtSc(v.entrada)} sc</div></div>
         <div><div class="stock-metric-label">Saída (acum.)</div><div class="stock-metric-value gold">${fmtSc(v.saida)} sc</div></div>
         <div><div class="stock-metric-label">Saldo acumulado</div><div class="stock-metric-value" style="color:${saldo>=0?COLORS.green:COLORS.rust};">${saldo>=0?'+':''}${fmtSc(saldo)} sc</div></div>
+        <div><div class="stock-metric-label">Custo médio ponderado atual</div><div class="stock-metric-value" style="color:${COLORS.blue};">${custoMedioSaca?fmtBRL(custoMedioSaca)+'/sc':'—'}</div></div>
       </div></div>`;
   }).join('');
 
@@ -692,11 +738,16 @@ function renderProdSummary() {
     if (!summary[k]) summary[k] = { qtdE:0, valorE:0, icmsE:0, qtdS:0, valorS:0, icmsS:0 };
     summary[k].qtdS += r.qtd; summary[k].valorS += r.valor; summary[k].icmsS += r.vICMS;
   });
+  const mpm = computeMediaPonderadaMovel();
   const rows = Object.entries(summary).sort((a,b)=>(b[1].valorE+b[1].valorS)-(a[1].valorE+a[1].valorS));
   document.getElementById('prodSummaryBody').innerHTML = rows.map(([nome,s]) => {
     const saldo = s.valorE - s.valorS;
+    const estado = mpm[nome] && mpm[nome].porCompetencia[currentCompetencia];
+    const custoMedioSaca = estado ? estado.custoMedioKg * 60 : 0;
     return `<tr><td style="font-weight:600;">${nome}</td>
-      <td style="text-align:right;">${s.qtdE?fmtSc(s.qtdE):'—'}</td><td class="valor-cell">${s.valorE?fmtBRL(s.valorE):'—'}</td><td class="valor-cell">${s.icmsE?fmtBRL(s.icmsE):'—'}</td>
+      <td style="text-align:right;">${s.qtdE?fmtSc(s.qtdE):'—'}</td><td class="valor-cell">${s.valorE?fmtBRL(s.valorE):'—'}</td>
+      <td class="valor-cell" style="color:${COLORS.blue};">${custoMedioSaca?fmtBRL(custoMedioSaca):'—'}</td>
+      <td class="valor-cell">${s.icmsE?fmtBRL(s.icmsE):'—'}</td>
       <td style="text-align:right;">${s.qtdS?fmtSc(s.qtdS):'—'}</td><td class="valor-cell">${s.valorS?fmtBRL(s.valorS):'—'}</td><td class="valor-cell">${s.icmsS?fmtBRL(s.icmsS):'—'}</td>
       <td class="valor-cell ${saldo>=0?'saldo-pos':'saldo-neg'}">${(saldo>=0?'+':'')+fmtBRL(saldo)}</td></tr>`;
   }).join('');
@@ -705,6 +756,8 @@ function renderProdSummary() {
 function renderTechNotes() {
   const notes = [
     'Estoque físico soma o histórico inteiro no banco (todas as competências); crédito de ICMS é por competência, com o saldo anterior herdado do fechamento salvo do mês passado.',
+    'Custo médio ponderado (CPC 16): recalculado a cada compra, e cada saída consome pelo custo médio vigente no momento da venda — não é uma média fechada do mês. Como agosto é o primeiro mês com dado no sistema, o saldo de abertura é zero; a partir daqui o cálculo já é contínuo mês a mês.',
+    'Transações no mesmo dia são ordenadas pelo número da nota, não pelo horário exato — o XML da nota não guarda o horário por item, só a data.',
     'Clique em "Fechar mês selecionado" para gravar o fechamento oficial daquela competência — isso vira o saldo anterior do mês seguinte automaticamente.',
     'Itens com NCM fora dos capítulos 10/12 (grãos e oleaginosas) são tratados como não-agrícolas e ficam fora do estoque e do resumo por produto.',
   ];
@@ -728,10 +781,15 @@ function setupUI() {
 
   const navLinks = Array.from(document.querySelectorAll('.nav-link'));
   const sections = Array.from(document.querySelectorAll('.section-anchor'));
-  function setActive(id) { navLinks.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#'+id)); }
-  const observer = new IntersectionObserver(entries => { entries.forEach(en => { if (en.isIntersecting) setActive(en.target.id); }); }, { rootMargin: '-15% 0px -70% 0px', threshold: 0 });
-  sections.forEach(s => observer.observe(s));
-  if (sections.length) setActive(sections[0].id);
+  function showSection(id) {
+    navLinks.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + id));
+    sections.forEach(s => s.classList.toggle('active-section', s.id === id));
+    window.scrollTo(0, 0);
+  }
+  navLinks.forEach(a => a.addEventListener('click', e => {
+    e.preventDefault();
+    showSection(a.getAttribute('href').slice(1));
+  }));
 
   setupImport();
 }
