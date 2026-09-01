@@ -3874,6 +3874,9 @@ function renderARecInd(){
     if(d.cancelada)return false;
     if(emp&&d.empresa!==emp)return false;
     if(!msMatch('ms-arec-ct', String(d.contrato)))return false;
+    // Excluir contratos com distribuição 100% paga
+    const ctO=cts.find(c=>c.numero==d.contrato);
+    if(ctO&&ctO.distribuicao_socios&&ctO.distribuicao_socios.length>0&&ctO.distribuicao_socios.every(s=>s.pago))return false;
     return !(d.recebido>0);
   });
 
