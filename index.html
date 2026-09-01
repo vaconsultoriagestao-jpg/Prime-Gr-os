@@ -4402,8 +4402,9 @@ function exportCapCom(tipo){
 
 function relatorioIndustria(){
   // Popular filtros do modal
-  const industriasSet=new Set(embs.filter(d=>!d.cancelada&&(!_empresaFiltro||d.empresa===_empresaFiltro)).map(d=>d.industria||d.industria_granja).filter(Boolean));
-  const contratosSet=new Set(embs.filter(d=>!d.cancelada&&(!_empresaFiltro||d.empresa===_empresaFiltro)).map(d=>String(d.contrato)).filter(Boolean));
+  const _embsRel=embs.filter(d=>!d.cancelada&&(!_empresaFiltro||d.empresa===_empresaFiltro));
+  const industriasSet=new Set(_embsRel.map(d=>(d.industria||d.industria_granja||'').trim().toUpperCase()).filter(Boolean));
+  const contratosSet=new Set(_embsRel.map(d=>String(d.contrato)).filter(Boolean));
 
   const elInd=document.getElementById('rel-ind-industrias');
   const elCt=document.getElementById('rel-ind-contratos');
@@ -4427,7 +4428,7 @@ function filtrarContratosRelInd(){
     elCt.innerHTML='<span style="color:#999;font-size:13px">Selecione uma indústria acima para ver os contratos.</span>';
     return;
   }
-  const embsFilt=embs.filter(d=>!d.cancelada&&(!_empresaFiltro||d.empresa===_empresaFiltro)&&indsSel.includes(d.industria||d.industria_granja));
+  const embsFilt=embs.filter(d=>!d.cancelada&&(!_empresaFiltro||d.empresa===_empresaFiltro)&&indsSel.includes((d.industria||d.industria_granja||'').trim().toUpperCase()));
   const contratosSet=new Set(embsFilt.map(d=>String(d.contrato)).filter(Boolean));
   elCt.innerHTML=[...contratosSet].sort().map(v=>`
     <label style="display:flex;align-items:center;gap:6px;background:#f5f5f5;padding:5px 10px;border-radius:6px;cursor:pointer;font-size:13px;user-select:none">
@@ -5555,7 +5556,9 @@ function gerarFechamento(){
     const sc_ent=its.reduce((s,d)=>s+(d.sc_ent||0),0);
     const total_venda=its.reduce((s,d)=>s+(d.total_venda||0),0);
     const recebido=its.reduce((s,d)=>s+(d.recebido||0),0);
-    const a_receber=its.reduce((s,d)=>s+Math.max(0,(d.total_venda||0)-(d.recebido||0)),0);
+    // Excluir do a_receber contratos com distribuição 100% paga
+    const _distPago=co&&co.distribuicao_socios&&co.distribuicao_socios.length>0&&co.distribuicao_socios.every(s=>s.pago);
+    const a_receber=_distPago?0:its.reduce((s,d)=>s+Math.max(0,(d.total_venda||0)-(d.recebido||0)),0);
     const fundo_pct=(co&&co.tem_fundo)?(co.fundo_pct||5)/100:0;
     const fundo_valor=a_receber*fundo_pct;
     const a_receber_liq=a_receber-fundo_valor;
