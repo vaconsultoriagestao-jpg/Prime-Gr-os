@@ -1249,6 +1249,7 @@ tr.row-pago td{background:rgba(40,167,69,0.07)}
               <option value="Bitrem">Bitrem (37t)</option>
               <option value="Rodocaçamba">Rodocaçamba (48t)</option>
               <option value="Rodotrem">Rodotrem (49t)</option>
+              <option value="4 eixo cavalo">4 eixo cavalo (36t)</option>
             </select>
           </div>
           <div class="fg"><label>Peso líquido total (kg)</label><input id="pc_pliq" type="number" value="0" oninput="calcPrecarga()"></div>
@@ -1741,7 +1742,7 @@ function calcularPesos(pliq, venda, compra, rs_ton, tem_fundo, ctObj){
 // ===== PRÉ-CARGAS =====
 let precargas = [];
 
-const _limiteEixo = {'LS':32000,'4 eixo':39000,'Bitrem':37000,'Rodocaçamba':48000,'Rodotrem':49000};
+const _limiteEixo = {'LS':32000,'4 eixo':39000,'Bitrem':37000,'Rodocaçamba':48000,'Rodotrem':49000,'4 eixo cavalo':36000};
 
 function calcPrecarga(){
   const carreta = document.getElementById('pc_carreta').value;
