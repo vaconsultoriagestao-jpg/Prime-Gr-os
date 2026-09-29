@@ -595,12 +595,12 @@ function renderApuracao() {
 
 function renderStock() {
   const map = {};
-  ENTRADA.filter(r => r.situacao === 'Autorizada' && r.isAgro).forEach(r => {
+  ENTRADA.filter(r => r.situacao === 'Autorizada' && r.isAgro && r.data.slice(0,7) <= currentCompetencia).forEach(r => {
     const k = canonProduto(r.produtoCanon || r.produto, r.ncm);
     if (!map[k]) map[k] = { entrada: 0, saida: 0 };
     map[k].entrada += (r.cfop === '6201' ? -1 : 1) * (r.qtdKg||r.qtd);
   });
-  SAIDA.filter(r => r.situacao === 'Autorizada').forEach(r => {
+  SAIDA.filter(r => r.situacao === 'Autorizada' && r.data.slice(0,7) <= currentCompetencia).forEach(r => {
     const k = canonProduto(r.produtoCanon || r.produto, r.ncm);
     if (!map[k]) map[k] = { entrada: 0, saida: 0 };
     map[k].saida += r.qtd;
@@ -608,13 +608,14 @@ function renderStock() {
   const mpm = computeMediaPonderadaMovel();
   document.getElementById('stockCards').innerHTML = Object.entries(map).map(([nome, v]) => {
     const saldo = v.entrada - v.saida;
-    const custoMedioSaca = (mpm[nome] ? mpm[nome].atual.custoMedioKg : 0) * 60;
+    const estado = mpm[nome] && mpm[nome].porCompetencia[currentCompetencia];
+    const custoMedioSaca = (estado ? estado.custoMedioKg : 0) * 60;
     return `<div class="stock-card"><div class="stock-card-name">${nome}</div>
       <div class="stock-metrics">
-        <div><div class="stock-metric-label">Entrada (acum.)</div><div class="stock-metric-value green">${fmtSc(v.entrada)} sc</div></div>
-        <div><div class="stock-metric-label">Saída (acum.)</div><div class="stock-metric-value gold">${fmtSc(v.saida)} sc</div></div>
-        <div><div class="stock-metric-label">Saldo acumulado</div><div class="stock-metric-value" style="color:${saldo>=0?COLORS.green:COLORS.rust};">${saldo>=0?'+':''}${fmtSc(saldo)} sc</div></div>
-        <div><div class="stock-metric-label">Custo médio ponderado atual</div><div class="stock-metric-value" style="color:${COLORS.blue};">${custoMedioSaca?fmtBRL(custoMedioSaca)+'/sc':'—'}</div></div>
+        <div><div class="stock-metric-label">Entrada (até ${currentCompetencia})</div><div class="stock-metric-value green">${fmtSc(v.entrada)} sc</div></div>
+        <div><div class="stock-metric-label">Saída (até ${currentCompetencia})</div><div class="stock-metric-value gold">${fmtSc(v.saida)} sc</div></div>
+        <div><div class="stock-metric-label">Saldo em ${currentCompetencia}</div><div class="stock-metric-value" style="color:${saldo>=0?COLORS.green:COLORS.rust};">${saldo>=0?'+':''}${fmtSc(saldo)} sc</div></div>
+        <div><div class="stock-metric-label">Custo médio ponderado em ${currentCompetencia}</div><div class="stock-metric-value" style="color:${COLORS.blue};">${custoMedioSaca?fmtBRL(custoMedioSaca)+'/sc':'—'}</div></div>
       </div></div>`;
   }).join('');
 
