@@ -5504,6 +5504,163 @@ function renderResumo(){
     addTotalRow(id+'-cargas',{8:'N2',9:'R',10:'R',11:'R',12:'R',13:'R',14:'R',15:'R'});
   });
 }
+function _rsPdfBase(orient){
+  const {jsPDF}=window.jspdf;const doc=new jsPDF({orientation:orient,unit:'mm',format:'a4'});
+  return doc;
+}
+function _rsPdfCab(doc,pw,titulo,sub){
+  doc.setFillColor(17,17,17);doc.rect(0,0,pw,28,'F');
+  try{doc.addImage(_LOGO_PDF,'PNG',10,3,22,22);}catch(e){}
+  doc.setTextColor(255,255,255);doc.setFontSize(15);doc.setFont('helvetica','bold');doc.text(_empresaFiltro||'MFC Grãos',36,13);
+  doc.setFontSize(8);doc.setFont('helvetica','normal');doc.setTextColor(200,200,200);doc.text(sub,36,20);
+  doc.setTextColor(255,255,255);doc.setFontSize(10);doc.setFont('helvetica','bold');doc.text(titulo,pw-14,10,{align:'right'});
+  doc.setFontSize(8);doc.setFont('helvetica','normal');doc.setTextColor(200,200,200);doc.text('Emitido em: '+new Date().toLocaleDateString('pt-BR'),pw-14,17,{align:'right'});
+  doc.setFillColor(10,130,24);doc.rect(0,28,pw,1.2,'F');
+}
+function _rsPdfRodape(doc,pw,txt){
+  const n=doc.internal.getNumberOfPages();
+  for(let i=1;i<=n;i++){doc.setPage(i);const pH=doc.internal.pageSize.height;
+    doc.setFillColor(17,17,17);doc.rect(0,pH-10,pw,10,'F');doc.setFontSize(7);doc.setTextColor(200,200,200);doc.setFont('helvetica','normal');
+    doc.text(txt,14,pH-4);doc.text('Pág. '+i+' / '+n,pw-14,pH-4,{align:'right'});}
+}
+const _rsTotStyle=function(n){return function(data){if(data.section==='body'&&data.row.index===n-1){data.cell.styles.fontStyle='bold';data.cell.styles.fillColor=[214,236,216];data.cell.styles.textColor=[17,17,17];}};};
+function exportResumo(tipo){
+  const lista=_rsListaFiltrada();
+  if(!lista.length){toast('Nenhum contrato para exportar.',true);return;}
+  const t=_rsSoma(lista);
+  const cab=['Contrato','Comprador','Cargas','Sc entregues','Venda','Soja','Frete','Comissão','Outros custos','Despesas','Gasto total','Lucro','Margem R$/sc','Lucro %','Recebido','A receber','Soja a pagar','Frete a pagar'];
+  if(tipo==='csv'){
+    const n=v=>(Number(v)||0).toFixed(2);
+    const rows=lista.map(r=>[r.numero,(r.ct&&r.ct.comprador)||'',r.cargas,n(r.sc_ent),n(r.venda),n(r.soja),n(r.frete),n(r.comissao),n(r.outros),n(r.despesas),n(r.gasto),n(r.lucro),n(r.margem),n(r.pct),n(r.recebido),n(r.aReceber),n(r.sojaPagar),n(r.fretePagar)]);
+    rows.push(['TOTAL','',t.cargas,n(t.sc_ent),n(t.venda),n(t.soja),n(t.frete),n(t.comissao),n(t.outros),n(t.despesas),n(t.gasto),n(t.lucro),n(t.margem),n(t.pct),n(t.recebido),n(t.aReceber),n(t.sojaPagar),n(t.fretePagar)]);
+    gerarCSV(cab,rows,'mfc-graos-resumo-contratos');return;
+  }
+  if(!window.jspdf||!window.jspdf.jsPDF){toast('Biblioteca PDF não carregada.',true);return;}
+  const doc=_rsPdfBase('landscape');const pw=297;
+  _rsPdfCab(doc,pw,'RESUMO POR CONTRATO','Gasto, recebido, lucro e margem por contrato');
+  doc.setFillColor(236,246,237);doc.rect(0,29.2,pw,15,'F');doc.setFontSize(8);
+  [['Venda',fmt(t.venda)],['Gasto total',fmt(t.gasto)],['Lucro',fmt(t.lucro)],['Margem',fmt(t.margem)+'/sc'],['A receber',fmt(t.aReceber)],['A pagar',fmt(t.sojaPagar+t.fretePagar)]].forEach(([l,v],i)=>{
+    const x=14+i*46;doc.setFont('helvetica','bold');doc.setTextColor(10,130,24);doc.text(l,x,35);doc.setFont('helvetica','normal');doc.setTextColor(20,20,20);doc.text(v,x,41);});
+  const body=lista.map(r=>[r.numero,(r.ct&&r.ct.comprador)||'—',String(r.cargas),fmtN(r.sc_ent),fmt(r.venda),fmt(r.soja),fmt(r.frete),fmt(r.comissao),fmt(r.outros),fmt(r.despesas),fmt(r.lucro),fmt(r.margem),fmtP(r.pct),fmt(r.aReceber),fmt(r.sojaPagar+r.fretePagar)]);
+  body.push(['TOTAL','',String(t.cargas),fmtN(t.sc_ent),fmt(t.venda),fmt(t.soja),fmt(t.frete),fmt(t.comissao),fmt(t.outros),fmt(t.despesas),fmt(t.lucro),fmt(t.margem),fmtP(t.pct),fmt(t.aReceber),fmt(t.sojaPagar+t.fretePagar)]);
+  doc.autoTable({head:[['CONTRATO','COMPRADOR','CARGAS','SC ENT.','VENDA','SOJA','FRETE','COMISSÃO','OUTROS','DESPESAS','LUCRO','R$/SC','%','A RECEBER','A PAGAR']],body,startY:47,margin:{left:8,right:8,bottom:14},
+    styles:{fontSize:6.8,cellPadding:1.7,lineColor:[205,225,207],lineWidth:0.2,textColor:[30,30,30]},headStyles:{fillColor:[17,17,17],textColor:[255,255,255],fontStyle:'bold',fontSize:6.4},
+    alternateRowStyles:{fillColor:[246,251,246]},columnStyles:Object.fromEntries([2,3,4,5,6,7,8,9,10,11,12,13,14].map(i=>[i,{halign:'right'}])),didParseCell:_rsTotStyle(body.length)});
+  _rsPdfRodape(doc,pw,(_empresaFiltro||'MFC Grãos')+' — Resumo por contrato');
+  doc.save('mfc-graos-resumo-contratos.pdf');toast('PDF gerado!');
+}
+function pdfContratoResumo(num){
+  if(!window.jspdf||!window.jspdf.jsPDF){toast('Biblioteca PDF não carregada.',true);return;}
+  const r=resumoDoContrato(num);const ct=r.ct||{};
+  const doc=_rsPdfBase('landscape');const pw=297;
+  _rsPdfCab(doc,pw,'CONTRATO '+r.numero,(ct.comprador||'—')+' · '+(ct.produto||'—')+(ct.industria?' · '+ct.industria:''));
+  doc.setFillColor(236,246,237);doc.rect(0,29.2,pw,15,'F');doc.setFontSize(8);
+  [['Venda',fmt(r.venda)],['Gasto total',fmt(r.gasto)],['Lucro',fmt(r.lucro)],['Margem',fmt(r.margem)+'/sc · '+fmtP(r.pct)],['Recebido',fmt(r.recebido)],['A receber',fmt(r.aReceber)]].forEach(([l,v],i)=>{
+    const x=14+i*46;doc.setFont('helvetica','bold');doc.setTextColor(10,130,24);doc.text(l,x,35);doc.setFont('helvetica','normal');doc.setTextColor(20,20,20);doc.text(v,x,41);});
+  const its=r.its.slice().sort((a,b)=>(a.embarque||'')>(b.embarque||'')?1:-1);
+  const body=its.map(d=>{const out=(d.cn_val||0)+(d.cte||0)+(d.fundo||0)+(d.imposto||0)+(d.desc_fin||0)+(d.imp_desc||0)+(d.desc_quebra||0)+(d.outros||0);
+    const l=(d.total_venda||0)-(d.total_compra||0)-(d.frete_total||0)-(d.com_total||0)-out;
+    return[fmtData(d.embarque),d.nf||'—',d.placa||'—',d.motorista||'—',d.fazenda||'—',d.soja_para||'—',d.frete_para||d.transportadora||'—',fmtN(d.sc_ent),fmt(d.total_compra),fmt(d.frete_total),fmt(d.com_total),fmt(out),fmt(d.total_venda),fmt(l),fmt(d.recebido)];});
+  body.push(['TOTAL',String(its.length)+' cargas','','','','','',fmtN(r.sc_ent),fmt(r.soja),fmt(r.frete),fmt(r.comissao),fmt(r.outros),fmt(r.venda),fmt(r.lucroOp),fmt(r.recebido)]);
+  doc.autoTable({head:[['EMBARQUE','NF','PLACA','MOTORISTA','FAZENDA','SOJA PAGA A','FRETE PAGO A','SC ENT.','SOJA','FRETE','COMISSÃO','OUTROS','VENDA','LUCRO','RECEBIDO']],body,startY:47,margin:{left:8,right:8,bottom:14},
+    styles:{fontSize:6.8,cellPadding:1.7,lineColor:[205,225,207],lineWidth:0.2,textColor:[30,30,30]},headStyles:{fillColor:[17,17,17],textColor:[255,255,255],fontStyle:'bold',fontSize:6.4},
+    alternateRowStyles:{fillColor:[246,251,246]},columnStyles:Object.fromEntries([7,8,9,10,11,12,13,14].map(i=>[i,{halign:'right'}])),didParseCell:_rsTotStyle(body.length)});
+  let y=doc.lastAutoTable.finalY+6;
+  if(r.desp.length){
+    const db=r.desp.map(d=>[fmtData(d.data),d.categoria||'—',d.descricao||'—',fmt(d.valor)]);db.push(['TOTAL','','',fmt(r.despesas)]);
+    doc.autoTable({head:[['DATA','CATEGORIA','DESCRIÇÃO','VALOR']],body:db,startY:y,margin:{left:8,right:150,bottom:14},
+      styles:{fontSize:7,cellPadding:1.7,lineColor:[205,225,207],lineWidth:0.2},headStyles:{fillColor:[17,17,17],textColor:[255,255,255],fontSize:6.6},columnStyles:{3:{halign:'right'}},didParseCell:_rsTotStyle(db.length)});
+    y=doc.lastAutoTable.finalY+6;
+  }
+  const linhas=[['Venda',r.venda],['(-) Soja',r.soja],['(-) Frete',r.frete],['(-) Comissão',r.comissao],['(-) Outros custos dos embarques',r.outros],['(-) Despesas do contrato',r.despesas],['= LUCRO',r.lucro]];
+  if(y>165){doc.addPage();y=20;}
+  doc.setFontSize(9);linhas.forEach(([l,v],i)=>{const yy=y+i*5.5;doc.setFont('helvetica',i===linhas.length-1?'bold':'normal');doc.setTextColor(17,17,17);doc.text(l,pw-110,yy);doc.text(fmt(v),pw-14,yy,{align:'right'});});
+  doc.setFont('helvetica','normal');doc.setTextColor(90,90,90);doc.text('Margem: '+fmt(r.margem)+'/sc ('+fmtN(r.sc_ent)+' sc entregues) · '+fmtP(r.pct)+' sobre a venda',pw-14,y+linhas.length*5.5+2,{align:'right'});
+  _rsPdfRodape(doc,pw,(_empresaFiltro||'MFC Grãos')+' — Contrato '+r.numero);
+  doc.save('mfc-graos-contrato-'+r.numero+'.pdf');toast('PDF gerado!');
+}
+function _rsDesp(lista){return lista.reduce((a,r)=>a.concat(r.desp.map(d=>({...d,_ct:r.numero}))),[]);}
+function csvUnificadoResumo(){
+  const lista=_rsListaFiltrada();if(lista.length<2){toast('Selecione ao menos 2 contratos.',true);return;}
+  const n=v=>(Number(v)||0).toFixed(2);
+  const cab=['Contrato','Embarque','Descarga','NF','Placa','Motorista','Fazenda','Soja paga a','Frete pago a','Sc entregues','Soja','Frete','Comissão','Outros custos','Venda','Lucro','Recebido'];
+  const its=_rsCargasUnif(lista);
+  const rows=its.map(d=>{const o=_rsOutrosEmb(d);return[_rsRotulo(d._ct),d.embarque,d.descarga||'',d.nf,d.placa||'',d.motorista||'',d.fazenda||'',d.soja_para||'',d.frete_para||d.transportadora||'',n(d.sc_ent),n(d.total_compra),n(d.frete_total),n(d.com_total),n(o),n(d.total_venda),n((d.total_venda||0)-(d.total_compra||0)-(d.frete_total||0)-(d.com_total||0)-o),n(d.recebido)];});
+  const t=_rsSoma(lista);
+  rows.push(['TOTAL CARGAS','','','','','','','','',n(t.sc_ent),n(t.soja),n(t.frete),n(t.comissao),n(t.outros),n(t.venda),n(t.lucroOp),n(t.recebido)]);
+  rows.push(['(−) DESPESAS DOS CONTRATOS','','','','','','','','','','','','','','',n(-t.despesas),'']);
+  rows.push(['= LUCRO UNIFICADO','','','','','','','','','','','','','','',n(t.lucro),'']);
+  gerarCSV(cab,rows,'mfc-graos-fechamento-unificado');
+}
+function pdfUnificadoResumo(){
+  if(!window.jspdf||!window.jspdf.jsPDF){toast('Biblioteca PDF não carregada.',true);return;}
+  const lista=_rsListaFiltrada();if(lista.length<2){toast('Selecione ao menos 2 contratos.',true);return;}
+  const t=_rsSoma(lista);
+  const doc=_rsPdfBase('landscape');const pw=297;
+  _rsPdfCab(doc,pw,'FECHAMENTO UNIFICADO',lista.map(r=>_rsRotulo(r.numero)).join(' · ').slice(0,150));
+  doc.setFillColor(236,246,237);doc.rect(0,29.2,pw,15,'F');doc.setFontSize(8);
+  [['Contratos',String(lista.length)],['Venda',fmt(t.venda)],['Gasto total',fmt(t.gasto)],['Lucro',fmt(t.lucro)],['Margem',fmt(t.margem)+'/sc · '+fmtP(t.pct)],['A receber',fmt(t.aReceber)]].forEach(([l,v],i)=>{
+    const x=14+i*46;doc.setFont('helvetica','bold');doc.setTextColor(10,130,24);doc.text(l,x,35);doc.setFont('helvetica','normal');doc.setTextColor(20,20,20);doc.text(v,x,41);});
+  const b1=lista.map(r=>[_rsRotulo(r.numero),String(r.cargas),fmtN(r.sc_ent),fmt(r.venda),fmt(r.soja),fmt(r.frete),fmt(r.comissao),fmt(r.outros),fmt(r.despesas),fmt(r.lucro),fmt(r.margem),fmtP(r.pct)]);
+  b1.push(['TOTAL',String(t.cargas),fmtN(t.sc_ent),fmt(t.venda),fmt(t.soja),fmt(t.frete),fmt(t.comissao),fmt(t.outros),fmt(t.despesas),fmt(t.lucro),fmt(t.margem),fmtP(t.pct)]);
+  const st={styles:{fontSize:6.8,cellPadding:1.7,lineColor:[205,225,207],lineWidth:0.2,textColor:[30,30,30]},headStyles:{fillColor:[17,17,17],textColor:[255,255,255],fontStyle:'bold',fontSize:6.4},alternateRowStyles:{fillColor:[246,251,246]},margin:{left:8,right:8,bottom:14}};
+  doc.autoTable({...st,head:[['CONTRATO','CARGAS','SC ENT.','VENDA','SOJA','FRETE','COMISSÃO','OUTROS','DESPESAS','LUCRO','R$/SC','%']],body:b1,startY:47,
+    columnStyles:Object.fromEntries([1,2,3,4,5,6,7,8,9,10,11].map(i=>[i,{halign:'right'}])),didParseCell:_rsTotStyle(b1.length)});
+  const its=_rsCargasUnif(lista);
+  const b2=its.map(d=>{const o=_rsOutrosEmb(d);return[_rsRotulo(d._ct),fmtData(d.embarque),d.nf||'—',d.placa||'—',d.motorista||'—',d.fazenda||'—',d.soja_para||'—',d.frete_para||d.transportadora||'—',fmtN(d.sc_ent),fmt(d.total_compra),fmt(d.frete_total),fmt(d.com_total),fmt(o),fmt(d.total_venda),fmt((d.total_venda||0)-(d.total_compra||0)-(d.frete_total||0)-(d.com_total||0)-o)];});
+  b2.push(['TOTAL',String(its.length)+' cargas','','','','','','',fmtN(t.sc_ent),fmt(t.soja),fmt(t.frete),fmt(t.comissao),fmt(t.outros),fmt(t.venda),fmt(t.lucroOp)]);
+  doc.autoTable({...st,head:[['CONTRATO','EMBARQUE','NF','PLACA','MOTORISTA','FAZENDA','SOJA PAGA A','FRETE PAGO A','SC ENT.','SOJA','FRETE','COMISSÃO','OUTROS','VENDA','LUCRO']],body:b2,startY:doc.lastAutoTable.finalY+6,
+    columnStyles:Object.fromEntries([8,9,10,11,12,13,14].map(i=>[i,{halign:'right'}])),didParseCell:_rsTotStyle(b2.length)});
+  const dp=_rsDesp(lista);let y=doc.lastAutoTable.finalY+6;
+  if(dp.length){
+    const b3=dp.map(d=>[_rsRotulo(d._ct),fmtData(d.data),d.categoria||'—',d.descricao||'—',fmt(d.valor)]);b3.push(['TOTAL','','','',fmt(t.despesas)]);
+    doc.autoTable({...st,head:[['CONTRATO','DATA','CATEGORIA','DESCRIÇÃO','VALOR']],body:b3,startY:y,margin:{left:8,right:120,bottom:14},columnStyles:{4:{halign:'right'}},didParseCell:_rsTotStyle(b3.length)});
+    y=doc.lastAutoTable.finalY+6;
+  }
+  if(y>160){doc.addPage();y=20;}
+  const linhas=[['Venda',t.venda],['(-) Soja',t.soja],['(-) Frete',t.frete],['(-) Comissão',t.comissao],['(-) Outros custos dos embarques',t.outros],['(-) Despesas dos contratos',t.despesas],['= LUCRO UNIFICADO',t.lucro]];
+  doc.setFontSize(9);linhas.forEach(([l,v],i)=>{const yy=y+i*5.5;doc.setFont('helvetica',i===linhas.length-1?'bold':'normal');doc.setTextColor(17,17,17);doc.text(l,pw-110,yy);doc.text(fmt(v),pw-14,yy,{align:'right'});});
+  doc.setFont('helvetica','normal');doc.setTextColor(90,90,90);doc.text('Margem: '+fmt(t.margem)+'/sc ('+fmtN(t.sc_ent)+' sc entregues) · '+fmtP(t.pct)+' sobre a venda',pw-14,y+linhas.length*5.5+2,{align:'right'});
+  _rsPdfRodape(doc,pw,(_empresaFiltro||'MFC Grãos')+' — Fechamento unificado de '+lista.length+' contratos');
+  doc.save('mfc-graos-fechamento-unificado.pdf');toast('PDF gerado!');
+}
+function _rsRenderUnificado(lista,t){
+  const box=document.getElementById('rs-unificado');if(!box)return;
+  if(lista.length<2){box.innerHTML='';return;}
+  const sel=_msState['ms-rs-ct']&&_msState['ms-rs-ct'].size;
+  const nomes=lista.map(r=>_rsRotulo(r.numero));
+  const L=(lbl,v,b)=>`<span ${b?'style="font-weight:700;border-top:1px solid var(--border);padding-top:4px"':''}>${lbl}</span><span class="mono ${b?(v>=0?'pos':'neg'):''}" ${b?'style="font-weight:700;border-top:1px solid var(--border);padding-top:4px"':''}>${fmt(v)}</span>`;
+  box.innerHTML=`<div class="table-card" style="margin:0;border:2px solid #0A8218">
+    <div style="display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;align-items:flex-start;padding:1rem 1.25rem .5rem">
+      <div style="min-width:240px;flex:1">
+        <div style="font-size:16px;font-weight:700">Fechamento unificado — ${lista.length} contratos ${sel?'selecionados':'(todos os exibidos)'}</div>
+        <div style="font-size:12px;color:var(--text-muted);margin-top:4px">${nomes.join(' · ')}</div>
+        <div style="font-size:11px;color:var(--text-muted);margin-top:6px">${t.cargas} cargas · ${fmtN(t.sc_emb,0)} sc embarcadas · ${fmtN(t.sc_ent)} sc entregues</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em">Lucro unificado</div>
+        <div class="mono ${t.lucro>=0?'pos':'neg'}" style="font-size:24px;font-weight:700">${fmt(t.lucro)}</div>
+        <div style="font-size:12px;color:var(--text-muted)"><strong>${fmt(t.margem)}/sc</strong> · ${fmtP(t.pct)}</div>
+      </div>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:24px;padding:.25rem 1.25rem 1rem">
+      <div style="display:grid;grid-template-columns:1fr auto;gap:2px 18px;font-size:13px;min-width:300px">
+        ${L('Venda',t.venda)}${L('(−) Soja',t.soja)}${L('(−) Frete',t.frete)}${L('(−) Comissão',t.comissao)}${L('(−) Outros custos dos embarques',t.outros)}${L('(−) Despesas dos contratos',t.despesas)}${L('= Lucro',t.lucro,true)}
+      </div>
+      <div style="display:grid;grid-template-columns:1fr auto;gap:2px 18px;font-size:13px;min-width:260px">
+        ${L('Gasto total',t.gasto)}${L('Recebido',t.recebido)}${L('A receber',t.aReceber)}${L('Soja a pagar',t.sojaPagar)}${L('Frete a pagar',t.fretePagar)}
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;padding:0 1.25rem 1rem">
+      <button class="btn btn-primary btn-sm" onclick="pdfUnificadoResumo()">📄 PDF do fechamento unificado</button>
+      <button class="btn btn-secondary btn-sm" onclick="csvUnificadoResumo()">⬇ Excel das cargas</button>
+    </div>
+  </div>`;
+}
+function _rsCargasUnif(lista){
+  return lista.reduce((a,r)=>a.concat(r.its.map(d=>({...d,_ct:r.numero}))),[]).sort((a,b)=>String(a._ct).localeCompare(String(b._ct),undefined,{numeric:true})||((a.embarque||'')>(b.embarque||'')?1:-1));
+}
+function _rsOutrosEmb(d){return (d.cn_val||0)+(d.cte||0)+(d.fundo||0)+(d.imposto||0)+(d.desc_fin||0)+(d.imp_desc||0)+(d.desc_quebra||0)+(d.outros||0);}
 function _rsDetalhe(r,id){
   const its=r.its.slice().sort((a,b)=>(a.embarque||'')>(b.embarque||'')?1:-1);
   return`<div style="border-top:1px solid var(--border);padding:1rem 1.25rem">
