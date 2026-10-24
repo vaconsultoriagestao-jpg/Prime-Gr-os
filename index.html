@@ -498,85 +498,36 @@ tr.row-pago td{background:rgba(40,167,69,0.07)}
     <div id="fech-vazio" style="display:none;color:var(--text-faint);font-size:13px;padding:1rem 0">Selecione ao menos um contrato e clique em "Gerar fechamento".</div>
   </div>
 
-  <!-- FECHAMENTO POR CONTRATO -->
+  <!-- RESUMO POR CONTRATO -->
   <div class="page active" id="page-fech-contrato">
-    <h1 class="section-heading">Fechamento por Contrato</h1>
-    <p class="section-sub">Selecione um ou mais contratos para gerar o fechamento consolidado.</p>
-    <div class="table-card" style="margin-bottom:1rem">
-      <div class="table-header">
-        <h3>Selecionar contratos</h3>
-        <div style="display:flex;gap:8px;align-items:center">
-          <select class="filter-select" id="fc-filtro-socios" onchange="initFechContrato()" style="min-width:160px"><option value="">Todos os sócios</option></select>
-          <select class="filter-select" id="fc-filtro-status" onchange="initFechContrato()" style="min-width:160px">
-            <option value="">Todos</option>
-            <option value="pendente">Pendentes (a receber)</option>
-            <option value="recebido">Recebidos (100%)</option>
-            <option value="distribuido">Distribuídos</option>
-            <option value="nao_distribuido">Não distribuídos</option>
+    <h1 class="section-heading">Resumo por Contrato</h1>
+    <p class="section-sub">Quanto foi gasto, recebido e ganho em cada contrato. Lucro = venda − soja − frete − comissão − demais custos do embarque − despesas do contrato. Margem por saco sobre as sacas entregues.</p>
+
+    <div class="table-card" style="margin-bottom:1rem;overflow:visible">
+      <div class="form-body" style="overflow:visible">
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+          <div id="ms-rs-ct" style="display:inline-block"></div>
+          <input class="filter-input" id="rs-q" placeholder="Buscar contrato, comprador..." oninput="renderResumo()" style="width:200px">
+          <select class="filter-input" id="rs-sit" onchange="renderResumo()">
+            <option value="">Todos os contratos</option>
+            <option value="ativo" selected>Ativos</option>
+            <option value="encerrado">Encerrados</option>
           </select>
-          <button class="btn btn-secondary btn-sm" onclick="selTodosFc(true)">Todos</button>
-          <button class="btn btn-secondary btn-sm" onclick="selTodosFc(false)">Limpar</button>
-          <button class="btn btn-primary btn-sm" onclick="gerarFechContrato()">Gerar fechamento</button>
-          <button class="btn btn-secondary btn-sm" onclick="exportFechContrato('csv')">⬇ Excel</button>
-          <button class="btn btn-secondary btn-sm" onclick="exportFechContrato('pdf')">⬇ PDF</button>
-        </div>
-      </div>
-      <div id="fc-ct-checks" style="display:flex;flex-wrap:wrap;gap:8px;padding:.75rem 0"></div>
-    </div>
-    <div id="fc-result" style="display:none">
-      <!-- Cards financeiros -->
-      <div class="stats-grid" id="fc-cards" style="margin-bottom:1.25rem"></div>
-      <!-- Cargas do contrato -->
-      <div id="fc-cargas-area" style="margin-bottom:1.25rem"></div>
-      <!-- Resumo financeiro -->
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.25rem">
-        <!-- Custos por comissionário -->
-        <div class="table-card">
-          <div class="form-card-header">Comissões por comissionário</div>
-          <div class="tbl-wrap"><table><thead><tr>
-            <th>Comissionário</th><th>Sc emb.</th><th>R$/sc</th><th>Total</th><th>Status</th>
-          </tr></thead><tbody id="fc-tbody-com"></tbody></table></div>
-        </div>
-        <!-- Custos por transportadora -->
-        <div class="table-card">
-          <div class="form-card-header">CTE por transportadora</div>
-          <div class="tbl-wrap"><table><thead><tr>
-            <th>Transportadora</th><th>Embarques</th><th>Total CTE</th><th>Pago</th><th>Em aberto</th>
-          </tr></thead><tbody id="fc-tbody-transp"></tbody></table></div>
-        </div>
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.25rem">
-        <!-- Custos por fornecedor NF -->
-        <div class="table-card">
-          <div class="form-card-header">Notas fiscais por fornecedor</div>
-          <div class="tbl-wrap"><table><thead><tr>
-            <th>Fornecedor</th><th>Embarques</th><th>Total NF</th><th>Pago</th><th>Em aberto</th>
-          </tr></thead><tbody id="fc-tbody-nf"></tbody></table></div>
-        </div>
-      </div>
-
-      <!-- Fretes por motorista -->
-      <div class="table-card" style="margin-bottom:1.25rem">
-        <div class="form-card-header">Fretes por motorista</div>
-        <div class="tbl-wrap"><table><thead><tr>
-          <th>Motorista</th><th>CPF</th><th>Total frete</th><th>Pago 80%</th><th>Saldo 20%</th>
-        </tr></thead><tbody id="fc-tbody-frete"></tbody></table></div>
-      </div>
-
-      <!-- DISTRIBUIÇÃO DE LUCRO -->
-      <div class="table-card" style="margin-bottom:1.25rem">
-        <div class="form-card-header" style="color:#1B2B4B">💰 Distribuição de Lucro por Sócio</div>
-        <div class="form-body">
-          <div style="display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap;margin-bottom:1rem">
-            <div class="fg" style="flex:2;min-width:150px"><label>Nome do sócio</label><input id="fc-socio-nome" type="text" placeholder="Ex: João Silva"></div>
-            <div class="fg" style="flex:1;min-width:100px"><label>Percentual %</label><input id="fc-socio-pct" type="number" step="0.01" min="0" max="100" placeholder="Ex: 40"></div>
-            <button class="btn btn-primary btn-sm" onclick="addSocioFc()" style="margin-bottom:2px">+ Adicionar</button>
-          </div>
-          <div id="fc-socios-lista"></div>
+          <select class="filter-input" id="rs-ordem" onchange="renderResumo()">
+            <option value="numero">Ordenar por nº do contrato</option>
+            <option value="lucro">Ordenar por lucro</option>
+            <option value="margem">Ordenar por margem R$/sc</option>
+            <option value="pendente">Ordenar por pendências</option>
+          </select>
+          <span style="flex:1"></span>
+          <button class="btn btn-secondary btn-sm" onclick="exportResumo('csv')">⬇ Excel</button>
+          <button class="btn btn-secondary btn-sm" onclick="exportResumo('pdf')">⬇ PDF</button>
         </div>
       </div>
     </div>
-    <div id="fc-vazio" style="color:var(--text-faint);font-size:13px;padding:1rem 0">Selecione um contrato para gerar o fechamento.</div>
+    <div class="stats-grid" id="rs-cards"></div>
+    <div id="rs-unificado" style="margin-bottom:1rem"></div>
+    <div id="rs-lista" style="display:grid;gap:1rem"></div>
   </div>
   <div class="page" id="page-painel">
     <h1 class="section-heading">Painel geral</h1>
@@ -5431,177 +5382,8 @@ function selTodos(sel){
     cb.closest('label').classList.toggle('on',sel);
   });
 }
-function selTodosFc(sel){
-  document.querySelectorAll('#fc-ct-checks input[type=checkbox]').forEach(cb=>{
-    cb.checked=sel;
-    cb.closest('label').classList.toggle('on',sel);
-  });
-}
-function gerarFechContrato(){
-  const sels=[...document.querySelectorAll('#fc-ct-checks input[type=checkbox]:checked')].map(cb=>cb.value);
-  if(!sels.length){document.getElementById('fc-result').style.display='none';document.getElementById('fc-vazio').style.display='block';return;}
-  document.getElementById('fc-result').style.display='block';
-  document.getElementById('fc-vazio').style.display='none';
-  const its=embs.filter(d=>!d.cancelada&&sels.map(String).includes(String(d.contrato))&&(!_empresaFiltro||d.empresa===_empresaFiltro));
-  // Para múltiplos contratos, pega o primeiro ctObj para referência
-  const ctObj=sels.length===1?cts.find(c=>c.numero==sels[0]):null;
-  // Totais
-  const total_venda=its.reduce((s,d)=>s+(d.total_venda||0),0);
-  const total_compra=its.reduce((s,d)=>s+(d.total_compra||0),0);
-  const frete_total=its.reduce((s,d)=>s+(d.frete_total||0),0);
-  // Comissão recalculada com comissionários ATUAIS do contrato
-  const com_total=its.reduce((s,d)=>{
-    const ctO=cts.find(c=>c.numero==d.contrato);
-    const cl=(ctO&&ctO.comissionarios_ct&&ctO.comissionarios_ct.length)?ctO.comissionarios_ct:(d.comissoes||[]);
-    return s+cl.reduce((cs,c)=>cs+((c.valor||0)*(d.sc_emb||0)),0);
-  },0);
-  const cte_total=its.reduce((s,d)=>s+(d.cte||0),0);
-  const nf_total=its.reduce((s,d)=>s+(d.cn_val||0),0);
-  const fundo_total=its.reduce((s,d)=>s+(d.fundo||0),0);
-  const desc_total=its.reduce((s,d)=>s+(d.desc_quebra||0),0);
-  const lucro=its.reduce((s,d)=>s+(d.lucro||0),0);
-  const lucro_pct=total_venda>0?lucro/total_venda*100:0;
-  const sc_emb=its.reduce((s,d)=>s+(d.sc_emb||0),0);
-  const sc_falt=sels.reduce((s,ct)=>{const co=cts.find(c=>c.numero==ct);return s+Math.max(0,((co&&co.qtd)||0)-its.filter(d=>d.contrato==ct).reduce((ss,d)=>ss+(d.sc_emb||0),0));},0);
-
-  // A receber líquido (com desconto de fundo)
-  const a_receber_total=its.filter(d=>!d.recebido||d.recebido===0).reduce((s,d)=>s+(d.total_venda||0),0);
-  // Calcular fundo por contrato
-  const fundo_desc_rec=sels.reduce((s,ct)=>{
-    const co=cts.find(c=>c.numero==ct);
-    const fp=(co&&co.tem_fundo)?(co.fundo_pct||5)/100:0;
-    const ar=its.filter(d=>d.contrato==ct&&(!d.recebido||d.recebido===0)).reduce((ss,d)=>ss+(d.total_venda||0),0);
-    return s+ar*fp;
-  },0);
-  const a_receber_liq=a_receber_total-fundo_desc_rec;
-  const totalQtd=sels.reduce((s,ct)=>{const co=cts.find(c=>c.numero==ct);return s+((co&&co.qtd)||0);},0);
-
-  // Lucro Parcial — só embarques com recebimento confirmado
-  const itsRecebidos=its.filter(d=>d.recebido>0);
-  const lucro_parcial=itsRecebidos.reduce((s,d)=>s+(d.lucro||0),0);
-  const total_venda_recebido=itsRecebidos.reduce((s,d)=>s+(d.total_venda||0),0);
-  const lucro_parcial_pct=total_venda_recebido>0?lucro_parcial/total_venda_recebido*100:0;
-  const qtd_recebidos=itsRecebidos.length;
-  const qtd_total=its.length;
-  const pct_recebidos=qtd_total>0?Math.round(qtd_recebidos/qtd_total*100):0;
-
-  // Cards
-  document.getElementById('fc-cards').innerHTML=`
-    <div style="width:100%;grid-column:1/-1;padding-bottom:4px">
-      <p style="font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;margin:0">💰 Lucro Parcial — embarques recebidos</p>
-    </div>
-    <div class="stat-card ${lucro_parcial>=0?'green':'red'}" style="border:2px solid ${lucro_parcial>=0?'#1B2B4B':'var(--red)'}">
-      <div class="s-label" style="font-weight:600">Lucro parcial R$</div>
-      <div class="s-value">${fmt(lucro_parcial)}</div>
-      <div class="s-sub">${fmtP(lucro_parcial_pct)} sobre recebido</div>
-    </div>
-    <div class="stat-card">
-      <div class="s-label">Total recebido</div>
-      <div class="s-value">${fmt(total_venda_recebido)}</div>
-      <div class="s-sub">base do cálculo</div>
-    </div>
-    <div class="stat-card">
-      <div class="s-label">Embarques recebidos</div>
-      <div class="s-value">${qtd_recebidos} / ${qtd_total}</div>
-      <div style="margin-top:8px;height:6px;background:var(--gray-100);border-radius:4px"><div style="width:${pct_recebidos}%;height:100%;background:#1B2B4B;border-radius:4px;transition:width .3s"></div></div>
-    </div>
-    <div style="width:100%;grid-column:1/-1;padding:8px 0 4px">
-      <p style="font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;margin:0">📊 Resultado total do contrato</p>
-    </div>
-    <div class="stat-card ${lucro>=0?'green':'red'}"><div class="s-label">Lucro total R$</div><div class="s-value">${fmt(lucro)}</div><div class="s-sub">${fmtP(lucro_pct)}</div></div>
-    <div class="stat-card"><div class="s-label">Total venda</div><div class="s-value">${fmt(total_venda)}</div></div>
-    <div class="stat-card"><div class="s-label">Total compra</div><div class="s-value">${fmt(total_compra)}</div></div>
-    <div class="stat-card ${a_receber_total>0?'amber':'green'}"><div class="s-label">A receber (bruto)</div><div class="s-value">${fmt(a_receber_total)}</div></div>
-    <div class="stat-card ${fundo_desc_rec>0?'amber':''}"><div class="s-label">Desc. fundo</div><div class="s-value">${fmt(fundo_desc_rec)}</div></div>
-    <div class="stat-card ${a_receber_liq>0?'amber':'green'}"><div class="s-label">A receber (líquido)</div><div class="s-value">${fmt(a_receber_liq)}</div></div>
-    <div class="stat-card"><div class="s-label">Frete total</div><div class="s-value">${fmt(frete_total)}</div></div>
-    <div class="stat-card"><div class="s-label">Comissões</div><div class="s-value">${fmt(com_total)}</div></div>
-    <div class="stat-card"><div class="s-label">CTE total</div><div class="s-value">${fmt(cte_total)}</div></div>
-    <div class="stat-card"><div class="s-label">Notas fiscais</div><div class="s-value">${fmt(nf_total)}</div></div>
-    <div class="stat-card ${fundo_total>0?'amber':''}"><div class="s-label">Fundo (embarques)</div><div class="s-value">${fmt(fundo_total)}</div></div>
-    <div class="stat-card ${desc_total>0?'red':''}"><div class="s-label">Descontos quebra</div><div class="s-value">${fmt(desc_total)}</div></div>
-    <div class="stat-card ${sc_falt>0?'amber':'green'}"><div class="s-label">Sc faltantes</div><div class="s-value">${fmtN(sc_falt,0)}</div><div class="s-sub">de ${fmtN(totalQtd,0)} sc</div></div>
-  `;
-
-  // Carregar distribuição de lucro salva (usa primeiro contrato selecionado)
-  _fcLucroAtual=lucro;
-  const ctPrimeiro=cts.find(c=>String(c.numero)===String(sels[0]));
-  // Carregar sócios salvos do contrato
-  const _distSalva=ctPrimeiro&&ctPrimeiro.distribuicao_socios&&ctPrimeiro.distribuicao_socios.length?ctPrimeiro.distribuicao_socios:[];
-  if(_distSalva.length){
-    _fcSocios=_distSalva.map(s=>({...s}));
-  } else {
-    _fcSocios=[];
-  }
-  renderSociosFc();
-  const porCom={};
-  its.forEach(d=>{
-    const ctO=cts.find(c=>c.numero==d.contrato);
-    const comsList=(ctO&&ctO.comissionarios_ct&&ctO.comissionarios_ct.length)?ctO.comissionarios_ct:(d.comissoes||[]);
-    comsList.forEach(c=>{
-      if(!porCom[c.nome])porCom[c.nome]={nome:c.nome,sc:0,valor_sc:c.valor,total:0,pago:0,aberto:0};
-      porCom[c.nome].sc+=d.sc_emb||0;
-      const t=(c.valor||0)*(d.sc_emb||0);
-      porCom[c.nome].total+=t;
-      // Busca flag pago por id ou por nome
-      const comOriginal=(d.comissoes||[]).find(x=>(x.nome&&x.nome.toUpperCase())===(c.nome&&c.nome.toUpperCase()));
-      const pg=comOriginal&&!!(d.comissoes_pago&&d.comissoes_pago[comOriginal.id]);
-      if(pg)porCom[c.nome].pago+=t;else porCom[c.nome].aberto+=t;
-    });
-  });
-  document.getElementById('fc-tbody-com').innerHTML=Object.values(porCom).length
-    ?Object.values(porCom).map(c=>`<tr><td><strong>${c.nome}</strong></td><td class="mono">${fmtN(c.sc)}</td><td class="mono">${fmt(c.valor_sc)}</td><td class="mono">${fmt(c.total)}</td><td><span class="badge ${c.aberto>0?'badge-amber':'badge-green'}">${c.aberto>0?fmt(c.aberto)+' aberto':'Quitado'}</span></td></tr>`).join('')
-    :'<tr><td colspan="5" class="empty-state">Nenhuma comissão.</td></tr>';
-
-  // CTE por transportadora
-  const porTransp={};
-  its.filter(d=>d.transportadora&&(d.cte||0)>0).forEach(d=>{
-    const t=d.transportadora;
-    if(!porTransp[t])porTransp[t]={nome:t,qtd:0,total:0,pago:0,aberto:0};
-    porTransp[t].qtd++;porTransp[t].total+=d.cte||0;
-    if(d.cte_pago)porTransp[t].pago+=d.cte||0;else porTransp[t].aberto+=d.cte||0;
-  });
-  document.getElementById('fc-tbody-transp').innerHTML=Object.values(porTransp).length
-    ?Object.values(porTransp).map(t=>`<tr><td><strong>${t.nome}</strong></td><td>${t.qtd}</td><td class="mono">${fmt(t.total)}</td><td class="mono pos">${fmt(t.pago)}</td><td class="mono ${t.aberto>0?'amber-txt':''}">${fmt(t.aberto)}</td></tr>`).join('')
-    :'<tr><td colspan="5" class="empty-state">Nenhum CTE.</td></tr>';
-
-  // NF por fornecedor
-  const porNF={};
-  its.filter(d=>d.fornecedor_nota&&(d.cn_val||0)>0).forEach(d=>{
-    const f=d.fornecedor_nota;
-    if(!porNF[f])porNF[f]={nome:f,qtd:0,total:0,pago:0,aberto:0};
-    porNF[f].qtd++;porNF[f].total+=d.cn_val||0;
-    if(d.nota_pago)porNF[f].pago+=d.cn_val||0;else porNF[f].aberto+=d.cn_val||0;
-  });
-  document.getElementById('fc-tbody-nf').innerHTML=Object.values(porNF).length
-    ?Object.values(porNF).map(f=>`<tr><td><strong>${f.nome}</strong></td><td>${f.qtd}</td><td class="mono">${fmt(f.total)}</td><td class="mono pos">${fmt(f.pago)}</td><td class="mono ${f.aberto>0?'amber-txt':''}">${fmt(f.aberto)}</td></tr>`).join('')
-    :'<tr><td colspan="5" class="empty-state">Nenhuma NF.</td></tr>';
-
-  // Frete por motorista
-  const porMot={};
-  its.filter(d=>(d.frete_total||0)>0).forEach(d=>{
-    const k=d.cpf||d.motorista;
-    if(!porMot[k])porMot[k]={nome:d.motorista,cpf:d.cpf,total:0,pago80:0,saldo20:0};
-    porMot[k].total+=d.frete_total||0;
-    if(d.frete80_pago)porMot[k].pago80+=d.frete80||0;
-    const desc=(d.desc_quebra||0); // impureza não desconta do motorista
-    const f20=Math.max(0,(d.frete20||0)-desc);
-    if(!d.frete20_pago)porMot[k].saldo20+=f20;
-  });
-    document.getElementById('fc-tbody-frete').innerHTML=Object.values(porMot).length
-    ?Object.values(porMot).map(m=>`<tr><td><strong>${m.nome}</strong></td><td class="mono">${m.cpf||'—'}</td><td class="mono">${fmt(m.total)}</td><td class="mono pos">${fmt(m.pago80)}</td><td class="mono ${m.saldo20>0?'amber-txt':''}">${fmt(m.saldo20)}</td></tr>`).join('')
-    :'<tr><td colspan="5" class="empty-state">Nenhum frete.</td></tr>';
-  // Tabela de cargas expansível
-  _fcRenderCargas(sels,its);
-}
-
-// ===== RESUMO POR CONTRATO — funções auxiliares =====
-function _fcDespesas(){return (typeof despesas!=='undefined'?despesas:[]).filter(d=>!_empresaFiltro||!d.empresa||d.empresa===_empresaFiltro);}
-function _fcFretePend(d){
-  const f80=d.frete80_pago?0:(d.frete80||0);
-  const f20=d.frete20_pago?0:Math.max(0,(d.frete20||0)-(d.desc_quebra||0));
-  return f80+f20;
-}
+// selTodosFc removido — substituído pelo Resumo por Contrato
+// gerarFechContrato, _fcRenderCargas, exportFechContrato removidos — substituídos pelas funções rs*
 function addTotalRow(tbodyId,cols,opt){
   opt=opt||{};
   const tb=document.getElementById(tbodyId);if(!tb)return;
@@ -5626,11 +5408,172 @@ function addTotalRow(tbodyId,cols,opt){
   tr.setAttribute('style','font-weight:700;border-top:2px solid var(--border);background:var(--green-faint)');
   tr.innerHTML=html;tb.appendChild(tr);
 }
+let _rsAbertos=new Set();
+function toggleRsCargas(num){if(_rsAbertos.has(num))_rsAbertos.delete(num);else _rsAbertos.add(num);renderResumo();}
+function resumoDoContrato(numero){
+  const num=String(numero);
+  const its=embs.filter(d=>!d.cancelada&&String(d.contrato)===num&&(!_empresaFiltro||d.empresa===_empresaFiltro));
+  const ct=cts.find(c=>String(c.numero)===num)||null;
+  const desp=_rsDespesas().filter(d=>String(d.contrato||'')===num);
+  const s=k=>its.reduce((t,d)=>t+(Number(d[k])||0),0);
+  const r={numero:num,ct,its,desp,
+    cargas:its.length,sc_emb:s('sc_emb'),sc_ent:s('sc_ent'),
+    venda:s('total_venda'),soja:s('total_compra'),frete:s('frete_total'),comissao:s('com_total'),
+    outros:its.reduce((t,d)=>t+(d.cn_val||0)+(d.cte||0)+(d.fundo||0)+(d.imposto||0)+(d.desc_fin||0)+(d.imp_desc||0)+(d.desc_quebra||0)+(d.outros||0),0),
+    despesas:desp.reduce((t,d)=>t+(Number(d.valor)||0),0),
+    recebido:s('recebido'),
+    aReceber:its.reduce((t,d)=>t+Math.max(0,(d.total_venda||0)-(d.recebido||0)),0),
+    sojaPagar:its.filter(d=>d.soja_pago!=='Sim').reduce((t,d)=>t+(d.total_compra||0),0),
+    fretePagar:its.reduce((t,d)=>t+_rsFretePend(d),0)
+  };
+  r.gasto=r.soja+r.frete+r.comissao+r.outros+r.despesas;
+  r.lucroOp=r.venda-r.soja-r.frete-r.comissao-r.outros;
+  r.lucro=r.lucroOp-r.despesas;
+  r.margem=r.sc_ent>0?r.lucro/r.sc_ent:0;
+  r.pct=r.venda>0?r.lucro/r.venda*100:0;
+  r.qtd=ct?(Number(ct.qtd)||0):0;
+  r.encerrado=!!(ct&&ct.encerrado);
+  return r;
+}
+function _rsRotulo(numero){
+  const ct=cts.find(c=>String(c.numero)===String(numero));
+  const nome=(ct&&(ct.industria||ct.comprador))||(embs.find(d=>String(d.contrato)===String(numero))||{}).industria||'';
+  return (nome?String(nome).trim().toUpperCase()+' - ':'')+numero;
+}
+function _rsListaFiltrada(){
+  const q=(document.getElementById('rs-q')||{value:''}).value.trim().toLowerCase();
+  const sit=(document.getElementById('rs-sit')||{value:''}).value;
+  const ordem=(document.getElementById('rs-ordem')||{value:'numero'}).value;
+  const nums=new Set([
+    ...cts.filter(c=>!_empresaFiltro||!c.empresa||c.empresa===_empresaFiltro).map(c=>String(c.numero)),
+    ...embs.filter(d=>!d.cancelada&&(!_empresaFiltro||d.empresa===_empresaFiltro)).map(d=>String(d.contrato))
+  ].filter(v=>v&&v!=='undefined'));
+  msFilter('ms-rs-ct',[...nums].map(_rsRotulo).sort((a,b)=>a.localeCompare(b,undefined,{numeric:true})),'renderResumo','Contrato');
+  let lista=[...nums].map(resumoDoContrato).filter(r=>{
+    if(!msMatch('ms-rs-ct',_rsRotulo(r.numero)))return false;
+    if(sit==='ativo'&&r.encerrado&&!(_msState['ms-rs-ct']&&_msState['ms-rs-ct'].size))return false;
+    if(sit==='encerrado'&&!r.encerrado)return false;
+    if(q&&!r.numero.toLowerCase().includes(q)&&!String((r.ct&&r.ct.comprador)||'').toLowerCase().includes(q)&&!String((r.ct&&r.ct.industria)||'').toLowerCase().includes(q))return false;
+    return true;
+  });
+  const cmpNum=(a,b)=>String(b.numero).localeCompare(String(a.numero),undefined,{numeric:true});
+  if(ordem==='lucro')lista.sort((a,b)=>b.lucro-a.lucro||cmpNum(a,b));
+  else if(ordem==='margem')lista.sort((a,b)=>b.margem-a.margem||cmpNum(a,b));
+  else if(ordem==='pendente')lista.sort((a,b)=>(b.aReceber+b.sojaPagar+b.fretePagar)-(a.aReceber+a.sojaPagar+a.fretePagar)||cmpNum(a,b));
+  else lista.sort(cmpNum);
+  return lista;
+}
+function _rsSoma(lista){
+  const k=['cargas','sc_emb','sc_ent','venda','soja','frete','comissao','outros','despesas','gasto','lucroOp','lucro','recebido','aReceber','sojaPagar','fretePagar'];
+  const t={};k.forEach(x=>t[x]=lista.reduce((s,r)=>s+(r[x]||0),0));
+  t.margem=t.sc_ent>0?t.lucro/t.sc_ent:0;t.pct=t.venda>0?t.lucro/t.venda*100:0;
+  return t;
+}
+function _rsMini(lbl,val,cls,sub){
+  return`<div style="background:var(--gray-50);border-radius:8px;padding:8px 10px;min-width:0">
+    <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.04em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${lbl}</div>
+    <div class="mono ${cls||''}" style="font-size:13px;font-weight:600;margin-top:2px">${val}</div>${sub?`<div style="font-size:10px;color:var(--text-faint)">${sub}</div>`:''}</div>`;
+}
+function renderResumo(){
+  const el=document.getElementById('rs-lista');if(!el)return;
+  const lista=_rsListaFiltrada();
+  const t=_rsSoma(lista);
+  const despGerais=_rsDespesas().filter(d=>!d.contrato&&!d.contrato_cor).reduce((s,d)=>s+(Number(d.valor)||0),0);
+  document.getElementById('rs-cards').innerHTML=`
+    <div class="stat-card"><div class="s-label">Contratos</div><div class="s-value">${lista.length}</div><div class="s-sub">${t.cargas} cargas · ${fmtN(t.sc_ent)} sc entregues</div></div>
+    <div class="stat-card"><div class="s-label">Venda</div><div class="s-value">${fmt(t.venda)}</div></div>
+    <div class="stat-card"><div class="s-label">Gasto total</div><div class="s-value">${fmt(t.gasto)}</div><div class="s-sub">soja, frete, comissão, custos e despesas</div></div>
+    <div class="stat-card ${t.lucro>=0?'green':'red'}" style="border:2px solid ${t.lucro>=0?'#1B2B4B':'var(--red)'}"><div class="s-label" style="font-weight:700">Lucro dos contratos</div><div class="s-value">${fmt(t.lucro)}</div><div class="s-sub">${fmt(t.margem)}/sc · ${fmtP(t.pct)}</div></div>
+    <div class="stat-card"><div class="s-label">Despesas gerais</div><div class="s-value">${fmt(despGerais)}</div><div class="s-sub">sem contrato · lucro após: ${fmt(t.lucro-despGerais)}</div></div>
+    <div class="stat-card amber"><div class="s-label">A receber</div><div class="s-value">${fmt(t.aReceber)}</div><div class="s-sub">recebido ${fmt(t.recebido)}</div></div>
+    <div class="stat-card red"><div class="s-label">A pagar</div><div class="s-value">${fmt(t.sojaPagar+t.fretePagar)}</div><div class="s-sub">soja ${fmt(t.sojaPagar)} · frete ${fmt(t.fretePagar)}</div></div>`;
+  _rsRenderUnificado(lista,t);
+  if(!lista.length){el.innerHTML='<div class="table-card"><div class="empty-state" style="padding:2rem">Nenhum contrato para os filtros atuais.</div></div>';return;}
+  el.innerHTML=lista.map(r=>{
+    const ct=r.ct||{};
+    const pctEmb=r.qtd>0?Math.min(100,r.sc_emb/r.qtd*100):0;
+    const aberto=_rsAbertos.has(r.numero);
+    const id='rs-'+r.numero.replace(/[^a-zA-Z0-9]/g,'_');
+    return`<div class="table-card" style="margin:0">
+      <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:flex-start;justify-content:space-between;padding:1rem 1.25rem .5rem">
+        <div style="min-width:220px">
+          <div style="font-size:16px;font-weight:700">${_rsRotulo(r.numero)} ${r.encerrado?'<span class="badge badge-gray">Encerrado</span>':'<span class="badge badge-green">Ativo</span>'}</div>
+          <div style="font-size:12px;color:var(--text-muted);margin-top:2px">${ct.comprador||'—'} · ${ct.produto||'—'}${ct.industria?' · '+ct.industria:''}${ct.valor?' · venda '+fmt(ct.valor)+'/sc':''}</div>
+          <div style="margin-top:8px;font-size:11px;color:var(--text-muted)">${r.cargas} carga(s) · ${fmtN(r.sc_emb,0)} sc embarcadas${r.qtd?' de '+fmtN(r.qtd,0)+' ('+fmtN(pctEmb,0)+'%)':''}</div>
+          ${r.qtd?`<div style="margin-top:4px;height:6px;width:240px;max-width:100%;background:var(--gray-100);border-radius:4px"><div style="width:${pctEmb}%;height:100%;background:#1B2B4B;border-radius:4px"></div></div>`:''}
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em">Lucro do contrato</div>
+          <div class="mono ${r.lucro>=0?'pos':'neg'}" style="font-size:22px;font-weight:700">${fmt(r.lucro)}</div>
+          <div style="font-size:12px;color:var(--text-muted)"><strong>${fmt(r.margem)}/sc</strong> · ${fmtP(r.pct)}</div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:8px;padding:.25rem 1.25rem 1rem">
+        ${_rsMini('Sc embarcadas',fmtN(r.sc_emb,0),'',fmtN(r.sc_ent,0)+' sc entregues')}
+        ${_rsMini('Venda',fmt(r.venda))}
+        ${_rsMini('Soja',fmt(r.soja))}
+        ${_rsMini('Frete',fmt(r.frete))}
+        ${_rsMini('Comissão',fmt(r.comissao))}
+        ${_rsMini('Outros custos',fmt(r.outros),'','nota, CTE, descontos')}
+        ${_rsMini('Despesas',fmt(r.despesas),'',r.desp.length+' lanç.')}
+        ${_rsMini('Gasto total',fmt(r.gasto))}
+        ${_rsMini('Recebido',fmt(r.recebido),'pos')}
+        ${_rsMini('A receber',fmt(r.aReceber),r.aReceber>0.009?'amber-txt':'')}
+        ${_rsMini('Soja a pagar',fmt(r.sojaPagar),r.sojaPagar>0.009?'neg':'')}
+        ${_rsMini('Frete a pagar',fmt(r.fretePagar),r.fretePagar>0.009?'neg':'')}
+      </div>
+      <div style="display:flex;gap:8px;padding:0 1.25rem 1rem">
+        <button class="btn btn-secondary btn-sm" onclick="toggleRsCargas('${r.numero}')">${aberto?'▲ Fechar cargas':'📂 Ver cargas e despesas'}</button>
+        <button class="btn btn-secondary btn-sm" onclick="pdfContratoResumo('${r.numero}')">📄 PDF do contrato</button>
+      </div>
+      ${aberto?_rsDetalhe(r,id):''}
+    </div>`;
+  }).join('');
+  lista.filter(r=>_rsAbertos.has(r.numero)).forEach(r=>{
+    const id='rs-'+r.numero.replace(/[^a-zA-Z0-9]/g,'_');
+    addTotalRow(id+'-cargas',{8:'N2',9:'R',10:'R',11:'R',12:'R',13:'R',14:'R',15:'R'});
+  });
+}
+function _rsDetalhe(r,id){
+  const its=r.its.slice().sort((a,b)=>(a.embarque||'')>(b.embarque||'')?1:-1);
+  return`<div style="border-top:1px solid var(--border);padding:1rem 1.25rem">
+    <div style="font-size:12px;font-weight:700;margin-bottom:6px">Cargas do contrato ${r.numero}</div>
+    <div class="tbl-wrap"><table><thead><tr>
+      <th>Embarque</th><th>Descarga</th><th>NF</th><th>Placa</th><th>Motorista</th><th>Fazenda</th><th>Soja paga a</th><th>Frete pago a</th>
+      <th>Sc entregues</th><th>Soja</th><th>Frete</th><th>Comissão</th><th>Outros custos</th><th>Venda</th><th>Lucro</th><th>Recebido</th><th>Situação</th>
+    </tr></thead><tbody id="${id}-cargas">${its.length?its.map(d=>{
+      const out=(d.cn_val||0)+(d.cte||0)+(d.fundo||0)+(d.imposto||0)+(d.desc_fin||0)+(d.imp_desc||0)+(d.desc_quebra||0)+(d.outros||0);
+      const lucro=(d.total_venda||0)-(d.total_compra||0)-(d.frete_total||0)-(d.com_total||0)-out;
+      const fp=_rsFretePend(d);
+      const pend=[];if(d.soja_pago!=='Sim')pend.push('soja');if(fp>0.009)pend.push('frete');if((d.total_venda||0)-(d.recebido||0)>0.009)pend.push('receber');
+      return`<tr ondblclick="abrirEdit('${d.id}')" style="cursor:pointer" title="Duplo clique para editar">
+        <td>${fmtData(d.embarque)}</td><td>${fmtData(d.descarga)}</td><td>${d.nf||'—'}</td><td class="mono">${d.placa||'—'}</td><td>${d.motorista||'—'}</td>
+        <td>${d.fazenda||'—'}</td><td>${d.soja_para||d.dono_carga||'—'}</td><td>${d.frete_para||d.transportadora||'—'}</td>
+        <td class="mono">${fmtN(d.sc_ent)}</td><td class="mono">${fmt(d.total_compra)}</td><td class="mono">${fmt(d.frete_total)}</td><td class="mono">${fmt(d.com_total)}</td>
+        <td class="mono">${fmt(out)}</td><td class="mono">${fmt(d.total_venda)}</td><td class="mono ${lucro>=0?'pos':'neg'}">${fmt(lucro)}</td><td class="mono">${fmt(d.recebido)}</td>
+        <td>${pend.length?pend.map(p=>`<span class="badge badge-amber" style="margin-right:2px">${p==='receber'?'a receber':p+' a pagar'}</span>`).join(''):'<span class="badge badge-green">Quitado</span>'}</td>
+      </tr>`;}).join(''):'<tr><td colspan="17" class="empty-state">Nenhuma carga neste contrato.</td></tr>'}</tbody></table></div>
+    <div style="font-size:12px;font-weight:700;margin:14px 0 6px">Despesas do contrato ${r.numero}</div>
+    <div class="tbl-wrap"><table><thead><tr><th>Data</th><th>Categoria</th><th>Descrição</th><th>Valor</th></tr></thead><tbody>
+      ${r.desp.length?r.desp.slice().sort((a,b)=>(a.data||'')>(b.data||'')?1:-1).map(d=>`<tr><td>${fmtData(d.data)}</td><td>${d.categoria||'—'}</td><td>${d.descricao||'—'}</td><td class="mono neg">${fmt(d.valor)}</td></tr>`).join('')
+        +`<tr data-total="1" style="font-weight:700;border-top:2px solid var(--border);background:var(--green-faint)"><td colspan="3">TOTAL <span style="font-weight:400;color:var(--text-muted);font-size:11px">(${r.desp.length})</span></td><td class="mono neg">${fmt(r.despesas)}</td></tr>`
+        :'<tr><td colspan="4" class="empty-state">Nenhuma despesa vinculada. Lance em Despesas escolhendo este contrato.</td></tr>'}
+    </tbody></table></div>
+    <div style="margin-top:12px;display:grid;grid-template-columns:1fr auto;gap:2px 16px;max-width:420px;margin-left:auto;font-size:13px">
+      <span>Venda</span><span class="mono">${fmt(r.venda)}</span>
+      <span>(−) Soja</span><span class="mono">${fmt(r.soja)}</span>
+      <span>(−) Frete</span><span class="mono">${fmt(r.frete)}</span>
+      <span>(−) Comissão</span><span class="mono">${fmt(r.comissao)}</span>
+      <span>(−) Outros custos dos embarques</span><span class="mono">${fmt(r.outros)}</span>
+      <span>(−) Despesas do contrato</span><span class="mono">${fmt(r.despesas)}</span>
+      <strong style="border-top:1px solid var(--border);padding-top:4px">= Lucro</strong><strong class="mono ${r.lucro>=0?'pos':'neg'}" style="border-top:1px solid var(--border);padding-top:4px">${fmt(r.lucro)}</strong>
+      <span style="color:var(--text-muted)">Margem por saco (${fmtN(r.sc_ent)} sc)</span><span class="mono">${fmt(r.margem)}/sc</span>
+    </div>
+  </div>`;
+}
 
-let _fcAbertos=new Set();
-function toggleFcCargas(ct){if(_fcAbertos.has(ct))_fcAbertos.delete(ct);else _fcAbertos.add(ct);gerarFechContrato();}
-
-function _fcRenderCargas(sels,its){
+function _fcRenderCargas_REMOVIDA(sels,its){
+  // removida — substituída por _rsDetalhe dentro de renderResumo
   const area=document.getElementById('fc-cargas-area');if(!area)return;
   const blocos=sels.map(ct=>{
     const co=cts.find(c=>String(c.numero)===String(ct));
