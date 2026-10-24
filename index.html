@@ -5338,43 +5338,7 @@ function renderSociosFc(){
 
 
 function initFechContrato(){
-  const box=document.getElementById('fc-ct-checks');if(!box)return;
-  const statusFiltro=(document.getElementById('fc-filtro-status')||{value:''}).value;
-  const sociosFiltro=(document.getElementById('fc-filtro-socios')||{value:''}).value;
-  const ctNums=[...new Set(embs.filter(d=>!d.cancelada&&(!_empresaFiltro||d.empresa===_empresaFiltro)).map(d=>d.contrato))].sort();
-
-  // Filtrar contratos por status de recebimento
-  const ctsFiltrados=ctNums.filter(ct=>{
-    const co=cts.find(c=>c.numero==ct);
-    if(sociosFiltro&&(!co||co.socios!==sociosFiltro))return false;
-    if(!statusFiltro)return true;
-    const its=embs.filter(d=>!d.cancelada&&String(d.contrato)===String(ct)&&(!_empresaFiltro||d.empresa===_empresaFiltro));
-    const totalVenda=its.reduce((s,d)=>s+(d.total_venda||0),0);
-    const totalRecebido=its.reduce((s,d)=>s+(d.recebido||0),0);
-    const todosComDataRec=its.length>0&&its.every(d=>d.data_rec&&(d.recebido||0)>0);
-    const recebido100=todosComDataRec||(totalVenda>0&&totalRecebido>=totalVenda*0.99);
-    if(statusFiltro==='recebido')return recebido100;
-    if(statusFiltro==='pendente')return !recebido100;
-    if(statusFiltro==='distribuido')return !!(co&&co.distribuicao_socios&&co.distribuicao_socios.length>0);
-    if(statusFiltro==='nao_distribuido')return !(co&&co.distribuicao_socios&&co.distribuicao_socios.length>0);
-    return true;
-  });
-
-  box.innerHTML=ctsFiltrados.length?ctsFiltrados.map(ct=>{
-    const co=cts.find(c=>c.numero==ct);
-    const its=embs.filter(d=>!d.cancelada&&String(d.contrato)===String(ct)&&(!_empresaFiltro||d.empresa===_empresaFiltro));
-    const totalVenda=its.reduce((s,d)=>s+(d.total_venda||0),0);
-    const totalRecebido=its.reduce((s,d)=>s+(d.recebido||0),0);
-    const todosComDataRec=its.length>0&&its.every(d=>d.data_rec&&(d.recebido||0)>0);
-    const recebido100=todosComDataRec||(totalVenda>0&&totalRecebido>=totalVenda*0.99);
-    const distribuido=co&&co.distribuicao_socios&&co.distribuicao_socios.length>0;
-    const badgeRec=recebido100?'<span style="font-size:9px;background:#d1fae5;color:#065f46;padding:1px 5px;border-radius:4px;margin-left:4px">✓ Recebido</span>':'<span style="font-size:9px;background:#fef3c7;color:#92400e;padding:1px 5px;border-radius:4px;margin-left:4px">Pendente</span>';
-    const badgeDist=distribuido?'<span style="font-size:9px;background:#e0e7ff;color:#3730a3;padding:1px 5px;border-radius:4px;margin-left:4px">✓ Distribuído</span>':'<span style="font-size:9px;background:#f3f4f6;color:#6b7280;padding:1px 5px;border-radius:4px;margin-left:4px">Não distribuído</span>';
-    return`<label class="ct-check"><input type="checkbox" value="${ct}" onchange="this.closest('label').classList.toggle('on',this.checked)"> ${ct}${co?` — ${co.comprador}`:''}${badgeRec}${badgeDist}</label>`;
-  }).join(''):'<span style="color:var(--text-faint);font-size:13px">Nenhum contrato encontrado.</span>';
-
-  document.getElementById('fc-result').style.display='none';
-  document.getElementById('fc-vazio').style.display='none';
+  renderResumo();
 }
 function selTodos(sel){
   document.querySelectorAll('#ct-checks input[type=checkbox]').forEach(cb=>{
