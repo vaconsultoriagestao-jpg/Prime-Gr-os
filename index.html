@@ -5404,6 +5404,12 @@ function _rsRotulo(numero){
   const nome=(ct&&(ct.industria||ct.comprador))||(embs.find(d=>String(d.contrato)===String(numero))||{}).industria||'';
   return (nome?String(nome).trim().toUpperCase()+' - ':'')+numero;
 }
+function _rsDespesas(){return (typeof despesas!=='undefined'?despesas:[]).filter(d=>!_empresaFiltro||!d.empresa||d.empresa===_empresaFiltro);}
+function _rsFretePend(d){
+  const f80=d.frete80_pago?0:(d.frete80||0);
+  const f20=d.frete20_pago?0:Math.max(0,(d.frete20||0)-(d.desc_quebra||0));
+  return f80+f20;
+}
 function _rsListaFiltrada(){
   const q=(document.getElementById('rs-q')||{value:''}).value.trim().toLowerCase();
   const sit=(document.getElementById('rs-sit')||{value:''}).value;
