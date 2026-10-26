@@ -528,6 +528,29 @@ tr.row-pago td{background:rgba(40,167,69,0.07)}
     <div class="stats-grid" id="rs-cards"></div>
     <div id="rs-unificado" style="margin-bottom:1rem"></div>
     <div id="rs-lista" style="display:grid;gap:1rem"></div>
+
+    <!-- CHECKBOXES DE CONTRATOS PARA DISTRIBUIÇÃO -->
+    <div id="fc-dist-section" style="margin-top:1.5rem;display:none">
+      <div class="table-card" style="margin-bottom:1rem">
+        <div class="form-card-header" style="color:#1B2B4B">📋 Contratos para distribuição de lucro</div>
+        <div class="form-body">
+          <div id="fc-ct-checks" style="display:flex;flex-wrap:wrap;gap:8px;padding:.5rem 0"></div>
+        </div>
+      </div>
+
+      <!-- DISTRIBUIÇÃO DE LUCRO -->
+      <div class="table-card" style="margin-bottom:1.25rem">
+        <div class="form-card-header" style="color:#0A8218">💰 Distribuição de Lucro por Sócio</div>
+        <div class="form-body">
+          <div style="display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap;margin-bottom:1rem">
+            <div class="fg" style="flex:2;min-width:150px"><label>Nome do sócio</label><input id="fc-socio-nome" type="text" placeholder="Ex: João Silva"></div>
+            <div class="fg" style="flex:1;min-width:100px"><label>Percentual %</label><input id="fc-socio-pct" type="number" step="0.01" min="0" max="100" placeholder="Ex: 40"></div>
+            <button class="btn btn-primary btn-sm" onclick="addSocioFc()" style="margin-bottom:2px">+ Adicionar</button>
+          </div>
+          <div id="fc-socios-lista"></div>
+        </div>
+      </div>
+    </div>
   </div>
   <div class="page" id="page-painel">
     <h1 class="section-heading">Painel geral</h1>
@@ -5383,15 +5406,16 @@ function resumoDoContrato(numero){
   const r={numero:num,ct,its,desp,
     cargas:its.length,sc_emb:s('sc_emb'),sc_ent:s('sc_ent'),
     venda:s('total_venda'),soja:s('total_compra'),frete:s('frete_total'),comissao:s('com_total'),
-    outros:its.reduce((t,d)=>t+(d.cn_val||0)+(d.cte||0)+(d.fundo||0)+(d.imposto||0)+(d.desc_fin||0)+(d.imp_desc||0)+(d.desc_quebra||0)+(d.outros||0),0),
+    cn_val:s('cn_val'),cte:s('cte'),fundo:s('fundo'),
+    outros:its.reduce((t,d)=>t+(d.imposto||0)+(d.desc_fin||0)+(d.imp_desc||0)+(d.desc_quebra||0)+(d.outros||0),0),
     despesas:desp.reduce((t,d)=>t+(Number(d.valor)||0),0),
     recebido:s('recebido'),
     aReceber:its.reduce((t,d)=>t+Math.max(0,(d.total_venda||0)-(d.recebido||0)),0),
     sojaPagar:its.filter(d=>d.soja_pago!=='Sim').reduce((t,d)=>t+(d.total_compra||0),0),
     fretePagar:its.reduce((t,d)=>t+_rsFretePend(d),0)
   };
-  r.gasto=r.soja+r.frete+r.comissao+r.outros+r.despesas;
-  r.lucroOp=r.venda-r.soja-r.frete-r.comissao-r.outros;
+  r.gasto=r.soja+r.frete+r.comissao+r.cn_val+r.cte+r.fundo+r.outros+r.despesas;
+  r.lucroOp=r.venda-r.soja-r.frete-r.comissao-r.cn_val-r.cte-r.fundo-r.outros;
   r.lucro=r.lucroOp-r.despesas;
   r.margem=r.sc_ent>0?r.lucro/r.sc_ent:0;
   r.pct=r.venda>0?r.lucro/r.venda*100:0;
@@ -5434,7 +5458,7 @@ function _rsListaFiltrada(){
   return lista;
 }
 function _rsSoma(lista){
-  const k=['cargas','sc_emb','sc_ent','venda','soja','frete','comissao','outros','despesas','gasto','lucroOp','lucro','recebido','aReceber','sojaPagar','fretePagar'];
+  const k=['cargas','sc_emb','sc_ent','venda','soja','frete','comissao','cn_val','cte','fundo','outros','despesas','gasto','lucroOp','lucro','recebido','aReceber','sojaPagar','fretePagar'];
   const t={};k.forEach(x=>t[x]=lista.reduce((s,r)=>s+(r[x]||0),0));
   t.margem=t.sc_ent>0?t.lucro/t.sc_ent:0;t.pct=t.venda>0?t.lucro/t.venda*100:0;
   return t;
@@ -5503,6 +5527,44 @@ function renderResumo(){
     const id='rs-'+r.numero.replace(/[^a-zA-Z0-9]/g,'_');
     addTotalRow(id+'-cargas',{8:'N2',9:'R',10:'R',11:'R',12:'R',13:'R',14:'R',15:'R'});
   });
+  // Popula checkboxes de contratos para distribuição de lucro
+  const fcSec=document.getElementById('fc-dist-section');
+  const fcBox=document.getElementById('fc-ct-checks');
+  if(fcBox){
+    if(!lista.length){if(fcSec)fcSec.style.display='none';}
+    else{
+      if(fcSec)fcSec.style.display='block';
+      fcBox.innerHTML=lista.map(r=>{
+        const co=r.ct||{};
+        const its=embs.filter(d=>!d.cancelada&&String(d.contrato)===String(r.numero)&&(!_empresaFiltro||d.empresa===_empresaFiltro));
+        const totalVenda=its.reduce((s,d)=>s+(d.total_venda||0),0);
+        const totalRecebido=its.reduce((s,d)=>s+(d.recebido||0),0);
+        const todosComDataRec=its.length>0&&its.every(d=>d.data_rec&&(d.recebido||0)>0);
+        const recebido100=todosComDataRec||(totalVenda>0&&totalRecebido>=totalVenda*0.99);
+        const distribuido=co&&co.distribuicao_socios&&co.distribuicao_socios.length>0;
+        const badgeRec=recebido100?'<span style="font-size:9px;background:#d1fae5;color:#065f46;padding:1px 5px;border-radius:4px;margin-left:4px">✓ Recebido</span>':'<span style="font-size:9px;background:#fef3c7;color:#92400e;padding:1px 5px;border-radius:4px;margin-left:4px">Pendente</span>';
+        const badgeDist=distribuido?'<span style="font-size:9px;background:#e0e7ff;color:#3730a3;padding:1px 5px;border-radius:4px;margin-left:4px">✓ Distribuído</span>':'<span style="font-size:9px;background:#f3f4f6;color:#6b7280;padding:1px 5px;border-radius:4px;margin-left:4px">Não distribuído</span>';
+        return`<label class="ct-check"><input type="checkbox" value="${r.numero}" onchange="onFcCtCheck(this)"> ${r.numero}${co.comprador?` — ${co.comprador}`:''}${badgeRec}${badgeDist}</label>`;
+      }).join('');
+    }
+  }
+}
+function onFcCtCheck(cb){
+  cb.closest('label').classList.toggle('on',cb.checked);
+  // Atualiza lucro atual com soma dos contratos selecionados
+  const sels=[...document.querySelectorAll('#fc-ct-checks input[type=checkbox]:checked')].map(c=>c.value);
+  _fcSelsAtual=sels;
+  if(!sels.length){_fcLucroAtual=0;renderSociosFc();return;}
+  const lista=_rsListaFiltrada();
+  _fcLucroAtual=lista.filter(r=>sels.includes(String(r.numero))).reduce((s,r)=>s+r.lucro,0);
+  // Carrega distribuição do primeiro contrato selecionado se sócios ainda não definidos
+  if(_fcSocios.length===0){
+    const co=cts.find(c=>String(c.numero)===String(sels[0]));
+    if(co&&co.distribuicao_socios&&co.distribuicao_socios.length){
+      _fcSocios=[...co.distribuicao_socios];
+    }
+  }
+  renderSociosFc();
 }
 function _rsPdfBase(orient){
   const {jsPDF}=window.jspdf;const doc=new jsPDF({orientation:orient,unit:'mm',format:'a4'});
@@ -5572,7 +5634,7 @@ function pdfContratoResumo(num){
       styles:{fontSize:7,cellPadding:1.7,lineColor:[205,225,207],lineWidth:0.2},headStyles:{fillColor:[17,17,17],textColor:[255,255,255],fontSize:6.6},columnStyles:{3:{halign:'right'}},didParseCell:_rsTotStyle(db.length)});
     y=doc.lastAutoTable.finalY+6;
   }
-  const linhas=[['Venda',r.venda],['(-) Soja',r.soja],['(-) Frete',r.frete],['(-) Comissão',r.comissao],['(-) Outros custos dos embarques',r.outros],['(-) Despesas do contrato',r.despesas],['= LUCRO',r.lucro]];
+  const linhas=[['Venda',r.venda],['(-) Soja',r.soja],['(-) Frete',r.frete],['(-) Comissão',r.comissao],['(-) Custo de nota',r.cn_val],['(-) CTE',r.cte],['(-) Fundo',r.fundo],['(-) Outros custos dos embarques',r.outros],['(-) Despesas do contrato',r.despesas],['= LUCRO',r.lucro]];
   if(y>165){doc.addPage();y=20;}
   doc.setFontSize(9);linhas.forEach(([l,v],i)=>{const yy=y+i*5.5;doc.setFont('helvetica',i===linhas.length-1?'bold':'normal');doc.setTextColor(17,17,17);doc.text(l,pw-110,yy);doc.text(fmt(v),pw-14,yy,{align:'right'});});
   doc.setFont('helvetica','normal');doc.setTextColor(90,90,90);doc.text('Margem: '+fmt(r.margem)+'/sc ('+fmtN(r.sc_ent)+' sc entregues) · '+fmtP(r.pct)+' sobre a venda',pw-14,y+linhas.length*5.5+2,{align:'right'});
@@ -5618,7 +5680,7 @@ function pdfUnificadoResumo(){
     y=doc.lastAutoTable.finalY+6;
   }
   if(y>160){doc.addPage();y=20;}
-  const linhas=[['Venda',t.venda],['(-) Soja',t.soja],['(-) Frete',t.frete],['(-) Comissão',t.comissao],['(-) Outros custos dos embarques',t.outros],['(-) Despesas dos contratos',t.despesas],['= LUCRO UNIFICADO',t.lucro]];
+  const linhas=[['Venda',t.venda],['(-) Soja',t.soja],['(-) Frete',t.frete],['(-) Comissão',t.comissao],['(-) Custo de nota',t.cn_val],['(-) CTE',t.cte],['(-) Fundo',t.fundo],['(-) Outros custos dos embarques',t.outros],['(-) Despesas dos contratos',t.despesas],['= LUCRO UNIFICADO',t.lucro]];
   doc.setFontSize(9);linhas.forEach(([l,v],i)=>{const yy=y+i*5.5;doc.setFont('helvetica',i===linhas.length-1?'bold':'normal');doc.setTextColor(17,17,17);doc.text(l,pw-110,yy);doc.text(fmt(v),pw-14,yy,{align:'right'});});
   doc.setFont('helvetica','normal');doc.setTextColor(90,90,90);doc.text('Margem: '+fmt(t.margem)+'/sc ('+fmtN(t.sc_ent)+' sc entregues) · '+fmtP(t.pct)+' sobre a venda',pw-14,y+linhas.length*5.5+2,{align:'right'});
   _rsPdfRodape(doc,pw,(_empresaFiltro||'MFC Grãos')+' — Fechamento unificado de '+lista.length+' contratos');
@@ -5645,7 +5707,7 @@ function _rsRenderUnificado(lista,t){
     </div>
     <div style="display:flex;flex-wrap:wrap;gap:24px;padding:.25rem 1.25rem 1rem">
       <div style="display:grid;grid-template-columns:1fr auto;gap:2px 18px;font-size:13px;min-width:300px">
-        ${L('Venda',t.venda)}${L('(−) Soja',t.soja)}${L('(−) Frete',t.frete)}${L('(−) Comissão',t.comissao)}${L('(−) Outros custos dos embarques',t.outros)}${L('(−) Despesas dos contratos',t.despesas)}${L('= Lucro',t.lucro,true)}
+        ${L('Venda',t.venda)}${L('(−) Soja',t.soja)}${L('(−) Frete',t.frete)}${L('(−) Comissão',t.comissao)}${L('(−) Custo de nota',t.cn_val)}${L('(−) CTE',t.cte)}${L('(−) Fundo',t.fundo)}${L('(−) Outros custos dos embarques',t.outros)}${L('(−) Despesas dos contratos',t.despesas)}${L('= Lucro',t.lucro,true)}
       </div>
       <div style="display:grid;grid-template-columns:1fr auto;gap:2px 18px;font-size:13px;min-width:260px">
         ${L('Gasto total',t.gasto)}${L('Recebido',t.recebido)}${L('A receber',t.aReceber)}${L('Soja a pagar',t.sojaPagar)}${L('Frete a pagar',t.fretePagar)}
@@ -5691,6 +5753,9 @@ function _rsDetalhe(r,id){
       <span>(−) Soja</span><span class="mono">${fmt(r.soja)}</span>
       <span>(−) Frete</span><span class="mono">${fmt(r.frete)}</span>
       <span>(−) Comissão</span><span class="mono">${fmt(r.comissao)}</span>
+      <span>(−) Custo de nota</span><span class="mono">${fmt(r.cn_val)}</span>
+      <span>(−) CTE</span><span class="mono">${fmt(r.cte)}</span>
+      <span>(−) Fundo</span><span class="mono">${fmt(r.fundo)}</span>
       <span>(−) Outros custos dos embarques</span><span class="mono">${fmt(r.outros)}</span>
       <span>(−) Despesas do contrato</span><span class="mono">${fmt(r.despesas)}</span>
       <strong style="border-top:1px solid var(--border);padding-top:4px">= Lucro</strong><strong class="mono ${r.lucro>=0?'pos':'neg'}" style="border-top:1px solid var(--border);padding-top:4px">${fmt(r.lucro)}</strong>
@@ -5711,10 +5776,13 @@ function _fcRenderCargas_REMOVIDA(sels,its){
     const total_soja=cargas.reduce((s,d)=>s+(d.total_compra||0),0);
     const total_frete=cargas.reduce((s,d)=>s+(d.frete_total||0),0);
     const total_com=cargas.reduce((s,d)=>s+(d.com_total||0),0);
-    const total_outros=cargas.reduce((s,d)=>s+(d.cn_val||0)+(d.cte||0)+(d.fundo||0)+(d.desc_quebra||0)+(d.outros||0),0);
+    const total_cn_val=cargas.reduce((s,d)=>s+(d.cn_val||0),0);
+    const total_cte=cargas.reduce((s,d)=>s+(d.cte||0),0);
+    const total_fundo=cargas.reduce((s,d)=>s+(d.fundo||0),0);
+    const total_outros=cargas.reduce((s,d)=>s+(d.desc_quebra||0)+(d.outros||0),0);
     const total_rec=cargas.reduce((s,d)=>s+(d.recebido||0),0);
     const total_despesas=desp.reduce((s,d)=>s+(Number(d.valor)||0),0);
-    const lucro=total_venda-total_soja-total_frete-total_com-total_outros-total_despesas;
+    const lucro=total_venda-total_soja-total_frete-total_com-total_cn_val-total_cte-total_fundo-total_outros-total_despesas;
     const margem=sc_ent>0?lucro/sc_ent:0;
     const aberto=_fcAbertos.has(String(ct));
     const tbId='fc-tb-'+String(ct).replace(/\W/g,'_');
@@ -5755,6 +5823,9 @@ function _fcRenderCargas_REMOVIDA(sels,its){
           <span>(−) Soja</span><span class="mono">${fmt(total_soja)}</span>
           <span>(−) Frete</span><span class="mono">${fmt(total_frete)}</span>
           <span>(−) Comissão</span><span class="mono">${fmt(total_com)}</span>
+          <span>(−) Custo de nota</span><span class="mono">${fmt(total_cn_val)}</span>
+          <span>(−) CTE</span><span class="mono">${fmt(total_cte)}</span>
+          <span>(−) Fundo</span><span class="mono">${fmt(total_fundo)}</span>
           <span>(−) Outros custos dos embarques</span><span class="mono">${fmt(total_outros)}</span>
           <span>(−) Despesas do contrato</span><span class="mono">${fmt(total_despesas)}</span>
           <strong style="border-top:1px solid var(--border);padding-top:4px">= Lucro</strong><strong class="mono ${lucro>=0?'pos':'neg'}" style="border-top:1px solid var(--border);padding-top:4px">${fmt(lucro)}</strong>
