@@ -528,9 +528,23 @@ tr.row-pago td{background:rgba(40,167,69,0.07)}
     <!-- CHECKBOXES DE CONTRATOS PARA DISTRIBUIÇÃO -->
     <div id="fc-dist-section" style="margin-bottom:1rem;display:none">
       <div class="table-card" style="margin-bottom:1rem">
-        <div class="form-card-header" style="color:#1B2B4B">📋 Contratos para distribuição de lucro</div>
-        <div class="form-body">
-          <div id="fc-ct-checks" style="display:flex;flex-wrap:wrap;gap:8px;padding:.5rem 0"></div>
+        <div class="table-header">
+          <div class="form-card-header" style="color:#1B2B4B;margin:0">📋 Contratos para distribuição de lucro</div>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            <select class="filter-input" id="fc-filtro-socios" onchange="renderResumo()" style="min-width:160px"><option value="">Todos os sócios</option></select>
+            <select class="filter-input" id="fc-filtro-status" onchange="renderResumo()" style="min-width:180px">
+              <option value="">Todos os status</option>
+              <option value="pendente">Pendentes (a receber)</option>
+              <option value="recebido">Recebidos (100%)</option>
+              <option value="distribuido">Distribuídos</option>
+              <option value="nao_distribuido">Não distribuídos</option>
+            </select>
+            <button class="btn btn-secondary btn-sm" onclick="selTodosFc(true)">Todos</button>
+            <button class="btn btn-secondary btn-sm" onclick="selTodosFc(false)">Limpar</button>
+          </div>
+        </div>
+        <div class="form-body" style="padding-top:.5rem">
+          <div id="fc-ct-checks" style="display:flex;flex-wrap:wrap;gap:8px;padding:.25rem 0"></div>
         </div>
       </div>
 
@@ -5534,9 +5548,36 @@ function renderResumo(){
     if(!lista.length){if(fcSec)fcSec.style.display='none';}
     else{
       if(fcSec)fcSec.style.display='block';
-      fcBox.innerHTML=lista.map(r=>{
-        const co=r.ct||{};
-        const its=embs.filter(d=>!d.cancelada&&String(d.contrato)===String(r.numero)&&(!_empresaFiltro||d.empresa===_empresaFiltro));
+      const fcFiltroSocios=(document.getElementById('fc-filtro-socios')||{value:''}).value;
+      const fcFiltroStatus=(document.getElementById('fc-filtro-status')||{value:''}).value;
+      // Pega todos contratos (não apenas os filtrados da tela) para a lista de checkboxes
+      const todosCtNums=[...new Set(embs.filter(d=>!d.cancelada&&(!_empresaFiltro||d.empresa===_empresaFiltro)).map(d=>String(d.contrato)))].sort();
+      const ctsFiltrados=todosCtNums.filter(ct=>{
+        const co=cts.find(c=>String(c.numero)===ct)||{};
+        if(fcFiltroSocios&&co.socios!==fcFiltroSocios)return false;
+        if(!fcFiltroStatus)return true;
+        const its=embs.filter(d=>!d.cancelada&&String(d.contrato)===ct&&(!_empresaFiltro||d.empresa===_empresaFiltro));
+        const totalVenda=its.reduce((s,d)=>s+(d.total_venda||0),0);
+        const totalRecebido=its.reduce((s,d)=>s+(d.recebido||0),0);
+        const todosComDataRec=its.length>0&&its.every(d=>d.data_rec&&(d.recebido||0)>0);
+        const rec100=todosComDataRec||(totalVenda>0&&totalRecebido>=totalVenda*0.99);
+        const dist=co&&co.distribuicao_socios&&co.distribuicao_socios.length>0;
+        if(fcFiltroStatus==='recebido')return rec100;
+        if(fcFiltroStatus==='pendente')return !rec100;
+        if(fcFiltroStatus==='distribuido')return dist;
+        if(fcFiltroStatus==='nao_distribuido')return !dist;
+        return true;
+      });
+      // Preenche opções do filtro de sócios
+      const selSoc=document.getElementById('fc-filtro-socios');
+      if(selSoc){
+        const socsUniq=[...new Set(cts.filter(c=>c.socios).map(c=>c.socios))].sort();
+        const curVal=selSoc.value;
+        selSoc.innerHTML='<option value="">Todos os sócios</option>'+socsUniq.map(s=>`<option value="${s}"${s===curVal?' selected':''}>${s}</option>`).join('');
+      }
+      fcBox.innerHTML=ctsFiltrados.length?ctsFiltrados.map(ct=>{
+        const co=cts.find(c=>String(c.numero)===ct)||{};
+        const its=embs.filter(d=>!d.cancelada&&String(d.contrato)===ct&&(!_empresaFiltro||d.empresa===_empresaFiltro));
         const totalVenda=its.reduce((s,d)=>s+(d.total_venda||0),0);
         const totalRecebido=its.reduce((s,d)=>s+(d.recebido||0),0);
         const todosComDataRec=its.length>0&&its.every(d=>d.data_rec&&(d.recebido||0)>0);
@@ -5544,19 +5585,28 @@ function renderResumo(){
         const distribuido=co&&co.distribuicao_socios&&co.distribuicao_socios.length>0;
         const badgeRec=recebido100?'<span style="font-size:9px;background:#d1fae5;color:#065f46;padding:1px 5px;border-radius:4px;margin-left:4px">✓ Recebido</span>':'<span style="font-size:9px;background:#fef3c7;color:#92400e;padding:1px 5px;border-radius:4px;margin-left:4px">Pendente</span>';
         const badgeDist=distribuido?'<span style="font-size:9px;background:#e0e7ff;color:#3730a3;padding:1px 5px;border-radius:4px;margin-left:4px">✓ Distribuído</span>':'<span style="font-size:9px;background:#f3f4f6;color:#6b7280;padding:1px 5px;border-radius:4px;margin-left:4px">Não distribuído</span>';
-        return`<label class="ct-check"><input type="checkbox" value="${r.numero}" onchange="onFcCtCheck(this)"> ${r.numero}${co.comprador?` — ${co.comprador}`:''}${badgeRec}${badgeDist}</label>`;
-      }).join('');
+        return`<label class="ct-check"><input type="checkbox" value="${ct}" onchange="onFcCtCheck(this)"> ${ct}${co.comprador?` — ${co.comprador}`:''}${badgeRec}${badgeDist}</label>`;
+      }).join(''):'<span style="color:var(--text-faint);font-size:13px">Nenhum contrato encontrado.</span>';
     }
   }
 }
+function selTodosFc(sel){
+  document.querySelectorAll('#fc-ct-checks input[type=checkbox]').forEach(cb=>{
+    cb.checked=sel;cb.closest('label').classList.toggle('on',sel);
+  });
+  // Recalcula lucro após selecionar/limpar todos
+  const sels=[...document.querySelectorAll('#fc-ct-checks input[type=checkbox]:checked')].map(c=>c.value);
+  _fcSelsAtual=sels;
+  _fcLucroAtual=sels.reduce((s,ct)=>s+(resumoDoContrato(ct).lucro||0),0);
+  renderSociosFc();
+}
 function onFcCtCheck(cb){
   cb.closest('label').classList.toggle('on',cb.checked);
-  // Atualiza lucro atual com soma dos contratos selecionados
   const sels=[...document.querySelectorAll('#fc-ct-checks input[type=checkbox]:checked')].map(c=>c.value);
   _fcSelsAtual=sels;
   if(!sels.length){_fcLucroAtual=0;renderSociosFc();return;}
-  const lista=_rsListaFiltrada();
-  _fcLucroAtual=lista.filter(r=>sels.includes(String(r.numero))).reduce((s,r)=>s+r.lucro,0);
+  // Calcula lucro somando todos os contratos selecionados (independente dos filtros da tela)
+  _fcLucroAtual=sels.reduce((s,ct)=>s+(resumoDoContrato(ct).lucro||0),0);
   // Carrega distribuição do primeiro contrato selecionado se sócios ainda não definidos
   if(_fcSocios.length===0){
     const co=cts.find(c=>String(c.numero)===String(sels[0]));
