@@ -541,6 +541,7 @@ tr.row-pago td{background:rgba(40,167,69,0.07)}
           <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
             <button class="btn btn-secondary btn-sm" onclick="selTodosFc(true)">Todos</button>
             <button class="btn btn-secondary btn-sm" onclick="selTodosFc(false)">Limpar</button>
+            <button class="btn btn-primary btn-sm" onclick="gerarFechamentoFc()">Gerar fechamento</button>
           </div>
         </div>
         <div class="form-body" style="padding-top:.5rem">
@@ -5395,6 +5396,8 @@ let _fcSocios = []; // [{nome, pct, pago}]
 let _fcLucroAtual = 0;
 let _fcSelsAtual = []; // contratos selecionados na distribuição atual
 let _fcMarcados = new Set(); // checkboxes marcados (sobrevivem ao redesenho da tela)
+let _fcGerados = null; // contratos do "Gerar fechamento" (null = mostra todos os filtrados)
+let _rsBaseAtual = []; // contratos filtrados antes de aplicar o "Gerar fechamento"
 
 function addSocioFc(){
   const nome = document.getElementById('fc-socio-nome').value.trim();
@@ -5564,6 +5567,12 @@ function _rsListaFiltrada(){
   else if(ordem==='margem')lista.sort((a,b)=>b.margem-a.margem||cmpNum(a,b));
   else if(ordem==='pendente')lista.sort((a,b)=>(b.aReceber+b.sojaPagar+b.fretePagar)-(a.aReceber+a.sojaPagar+a.fretePagar)||cmpNum(a,b));
   else lista.sort(cmpNum);
+  _rsBaseAtual=lista;
+  if(_fcGerados){
+    const gerados=lista.filter(r=>_fcGerados.has(String(r.numero)));
+    if(gerados.length)return gerados;
+    _fcGerados=null; // filtro mudou e nenhum gerado ficou na tela
+  }
   return lista;
 }
 function _rsSoma(lista){
@@ -5660,7 +5669,7 @@ function renderResumo(){
     const dist=!!(co&&co.distribuicao_socios&&co.distribuicao_socios.length>0);
     return {rec100,dist};
   };
-  const listaParaDist=lista.filter(r=>{
+  const listaParaDist=_rsBaseAtual.filter(r=>{
     if(!fcFiltroStatus)return true;
     const {rec100,dist}=fcStatusDe(r);
     if(fcFiltroStatus==='recebido')return rec100;
@@ -5706,6 +5715,13 @@ function selTodosFc(sel){
   _fcSelsAtual=sels;
   _fcLucroAtual=sels.reduce((s,ct)=>s+(resumoDoContrato(ct).lucro||0),0);
   renderSociosFc();
+  if(!sel&&_fcGerados){_fcGerados=null;renderResumo();}
+}
+function gerarFechamentoFc(){
+  const sels=[...document.querySelectorAll('#fc-ct-checks input[type=checkbox]:checked')].map(c=>c.value);
+  if(!sels.length){toast('Selecione ao menos um contrato!',true);return;}
+  _fcGerados=new Set(sels);
+  renderResumo();
 }
 function onFcCtCheck(cb){
   cb.closest('label').classList.toggle('on',cb.checked);
@@ -5847,7 +5863,7 @@ function pdfUnificadoResumo(){
 function _rsRenderUnificado(lista,t){
   const box=document.getElementById('rs-unificado');if(!box)return;
   if(lista.length<2){box.innerHTML='';return;}
-  const sel=_msState['ms-rs-ct']&&_msState['ms-rs-ct'].size;
+  const sel=(_msState['ms-rs-ct']&&_msState['ms-rs-ct'].size)||_fcGerados;
   const nomes=lista.map(r=>_rsRotulo(r.numero));
   const L=(lbl,v,b)=>`<span ${b?'style="font-weight:700;border-top:1px solid var(--border);padding-top:4px"':''}>${lbl}</span><span class="mono ${b?(v>=0?'pos':'neg'):''}" ${b?'style="font-weight:700;border-top:1px solid var(--border);padding-top:4px"':''}>${fmt(v)}</span>`;
   box.innerHTML=`<div class="table-card" style="margin:0;border:2px solid #0A8218">
