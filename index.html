@@ -535,6 +535,18 @@ tr.row-pago td{background:rgba(40,167,69,0.07)}
     </div>
     <!-- DISTRIBUIÇÃO DE LUCRO -->
     <div id="fc-dist-section" style="margin-bottom:1rem;display:none">
+      <div class="table-card" style="margin-bottom:1rem">
+        <div class="table-header" style="background:var(--gray-50);padding:.55rem 1.25rem">
+          <div class="form-card-header" style="color:#1B2B4B;margin:0;padding:0;border:0;background:none">📋 Contratos para distribuição de lucro</div>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            <button class="btn btn-secondary btn-sm" onclick="selTodosFc(true)">Todos</button>
+            <button class="btn btn-secondary btn-sm" onclick="selTodosFc(false)">Limpar</button>
+          </div>
+        </div>
+        <div class="form-body" style="padding-top:.5rem">
+          <div id="fc-ct-checks" style="display:flex;flex-wrap:wrap;gap:8px;padding:.25rem 0"></div>
+        </div>
+      </div>
       <div class="table-card" style="margin-bottom:1.25rem">
         <div class="form-card-header" style="color:#0A8218">💰 Distribuição de Lucro por Sócio</div>
         <div class="form-body">
@@ -5382,6 +5394,7 @@ function exportEmb(tipo='csv'){
 let _fcSocios = []; // [{nome, pct, pago}]
 let _fcLucroAtual = 0;
 let _fcSelsAtual = []; // contratos selecionados na distribuição atual
+let _fcMarcados = new Set(); // checkboxes marcados (sobrevivem ao redesenho da tela)
 
 function addSocioFc(){
   const nome = document.getElementById('fc-socio-nome').value.trim();
@@ -5407,7 +5420,7 @@ function toggleSocioPago(id){
 }
 async function salvarDistribuicaoFc(){
   const sels=_fcSelsAtual.length?_fcSelsAtual:[...document.querySelectorAll('#fc-ct-checks input[type=checkbox]:checked')].map(cb=>cb.value);
-  if(!sels.length)return;
+  if(!sels.length){toast('Marque ao menos um contrato!',true);return;}
   _fcSelsAtual=sels;
   // Salvar distribuicao em cada contrato selecionado
   cts=cts.map(c=>{
@@ -5532,6 +5545,7 @@ function _rsListaFiltrada(){
   const q=(document.getElementById('rs-q')||{value:''}).value.trim().toLowerCase();
   const sit=(document.getElementById('rs-sit')||{value:''}).value;
   const ordem=(document.getElementById('rs-ordem')||{value:'numero'}).value;
+  const socioFiltro=(document.getElementById('fc-filtro-socios')||{value:''}).value;
   const nums=new Set([
     ...cts.filter(c=>!_empresaFiltro||!c.empresa||c.empresa===_empresaFiltro).map(c=>String(c.numero)),
     ...embs.filter(d=>!d.cancelada&&(!_empresaFiltro||d.empresa===_empresaFiltro)).map(d=>String(d.contrato))
@@ -5541,6 +5555,7 @@ function _rsListaFiltrada(){
     if(!msMatch('ms-rs-ct',_rsRotulo(r.numero)))return false;
     if(sit==='ativo'&&r.encerrado&&!(_msState['ms-rs-ct']&&_msState['ms-rs-ct'].size))return false;
     if(sit==='encerrado'&&!r.encerrado)return false;
+    if(socioFiltro&&String((r.ct&&r.ct.socios)||'')!==socioFiltro)return false;
     if(q&&!r.numero.toLowerCase().includes(q)&&!String((r.ct&&r.ct.comprador)||'').toLowerCase().includes(q)&&!String((r.ct&&r.ct.industria)||'').toLowerCase().includes(q))return false;
     return true;
   });
@@ -5576,7 +5591,11 @@ function renderResumo(){
     <div class="stat-card amber"><div class="s-label">A receber</div><div class="s-value">${fmt(t.aReceber)}</div><div class="s-sub">recebido ${fmt(t.recebido)}</div></div>
     <div class="stat-card red"><div class="s-label">A pagar</div><div class="s-value">${fmt(t.sojaPagar+t.fretePagar)}</div><div class="s-sub">soja ${fmt(t.sojaPagar)} · frete ${fmt(t.fretePagar)}</div></div>`;
   _rsRenderUnificado(lista,t);
-  if(!lista.length){el.innerHTML='<div class="table-card"><div class="empty-state" style="padding:2rem">Nenhum contrato para os filtros atuais.</div></div>';return;}
+  if(!lista.length){
+    el.innerHTML='<div class="table-card"><div class="empty-state" style="padding:2rem">Nenhum contrato para os filtros atuais.</div></div>';
+    const secVazia=document.getElementById('fc-dist-section');if(secVazia)secVazia.style.display='none';
+    return;
+  }
   el.innerHTML=lista.map(r=>{
     const ct=r.ct||{};
     const pctEmb=r.qtd>0?Math.min(100,r.sc_emb/r.qtd*100):0;
@@ -5631,15 +5650,19 @@ function renderResumo(){
   // Distribuição de lucro: usa contratos da lista filtrada + filtro de status dist
   const fcSec=document.getElementById('fc-dist-section');
   const fcFiltroStatus=(document.getElementById('fc-filtro-status')||{value:''}).value;
-  const listaParaDist=lista.filter(r=>{
-    if(!fcFiltroStatus)return true;
+  const fcStatusDe=r=>{
     const co=r.ct||{};
     const its=embs.filter(d=>!d.cancelada&&String(d.contrato)===String(r.numero)&&(!_empresaFiltro||d.empresa===_empresaFiltro));
     const totalVenda=its.reduce((s,d)=>s+(d.total_venda||0),0);
     const totalRecebido=its.reduce((s,d)=>s+(d.recebido||0),0);
     const todosComDataRec=its.length>0&&its.every(d=>d.data_rec&&(d.recebido||0)>0);
     const rec100=todosComDataRec||(totalVenda>0&&totalRecebido>=totalVenda*0.99);
-    const dist=co&&co.distribuicao_socios&&co.distribuicao_socios.length>0;
+    const dist=!!(co&&co.distribuicao_socios&&co.distribuicao_socios.length>0);
+    return {rec100,dist};
+  };
+  const listaParaDist=lista.filter(r=>{
+    if(!fcFiltroStatus)return true;
+    const {rec100,dist}=fcStatusDe(r);
     if(fcFiltroStatus==='recebido')return rec100;
     if(fcFiltroStatus==='pendente')return !rec100;
     if(fcFiltroStatus==='distribuido')return dist;
@@ -5649,13 +5672,26 @@ function renderResumo(){
   if(!listaParaDist.length){if(fcSec)fcSec.style.display='none';}
   else{
     if(fcSec)fcSec.style.display='block';
-    // Lucro total dos contratos filtrados
-    _fcLucroAtual=listaParaDist.reduce((s,r)=>s+r.lucro,0);
-    _fcSelsAtual=listaParaDist.map(r=>String(r.numero));
-    // Carrega distribuição salva se sócios ainda não definidos
-    if(_fcSocios.length===0&&listaParaDist.length===1){
-      const co=listaParaDist[0].ct||{};
-      if(co.distribuicao_socios&&co.distribuicao_socios.length) _fcSocios=[...co.distribuicao_socios];
+    // Checkboxes: só os contratos que passaram nos filtros da tela (sócio, status, situação, busca)
+    const fcBox=document.getElementById('fc-ct-checks');
+    if(fcBox){
+      fcBox.innerHTML=listaParaDist.map(r=>{
+        const co=r.ct||{};
+        const {rec100,dist}=fcStatusDe(r);
+        const marcado=_fcMarcados.has(String(r.numero));
+        const badgeRec=rec100?'<span style="font-size:9px;background:#d1fae5;color:#065f46;padding:1px 5px;border-radius:4px;margin-left:4px">✓ Recebido</span>':'<span style="font-size:9px;background:#fef3c7;color:#92400e;padding:1px 5px;border-radius:4px;margin-left:4px">Pendente</span>';
+        const badgeDist=dist?'<span style="font-size:9px;background:#e0e7ff;color:#3730a3;padding:1px 5px;border-radius:4px;margin-left:4px">✓ Distribuído</span>':'<span style="font-size:9px;background:#f3f4f6;color:#6b7280;padding:1px 5px;border-radius:4px;margin-left:4px">Não distribuído</span>';
+        return`<label class="ct-check${marcado?' on':''}"><input type="checkbox" value="${r.numero}"${marcado?' checked':''} onchange="onFcCtCheck(this)"> ${r.numero}${co.comprador?` — ${co.comprador}`:''}${badgeRec}${badgeDist}</label>`;
+      }).join('');
+    }
+    // Lucro só dos contratos marcados que continuam visíveis
+    const fcMarcadosVis=listaParaDist.filter(r=>_fcMarcados.has(String(r.numero)));
+    _fcLucroAtual=fcMarcadosVis.reduce((s,r)=>s+r.lucro,0);
+    _fcSelsAtual=fcMarcadosVis.map(r=>String(r.numero));
+    // Carrega distribuição salva do primeiro marcado se sócios ainda não definidos
+    if(_fcSocios.length===0){
+      const coSalvo=fcMarcadosVis.map(r=>r.ct||{}).find(c=>c.distribuicao_socios&&c.distribuicao_socios.length);
+      if(coSalvo) _fcSocios=[...coSalvo.distribuicao_socios];
     }
     renderSociosFc();
   }
@@ -5663,6 +5699,7 @@ function renderResumo(){
 function selTodosFc(sel){
   document.querySelectorAll('#fc-ct-checks input[type=checkbox]').forEach(cb=>{
     cb.checked=sel;cb.closest('label').classList.toggle('on',sel);
+    if(sel)_fcMarcados.add(cb.value);else _fcMarcados.delete(cb.value);
   });
   // Recalcula lucro após selecionar/limpar todos
   const sels=[...document.querySelectorAll('#fc-ct-checks input[type=checkbox]:checked')].map(c=>c.value);
@@ -5672,6 +5709,7 @@ function selTodosFc(sel){
 }
 function onFcCtCheck(cb){
   cb.closest('label').classList.toggle('on',cb.checked);
+  if(cb.checked)_fcMarcados.add(cb.value);else _fcMarcados.delete(cb.value);
   const sels=[...document.querySelectorAll('#fc-ct-checks input[type=checkbox]:checked')].map(c=>c.value);
   _fcSelsAtual=sels;
   if(!sels.length){_fcLucroAtual=0;renderSociosFc();return;}
