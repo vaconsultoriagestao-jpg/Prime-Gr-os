@@ -3381,7 +3381,7 @@ function renderEmbarques(){
     if(canc==='1'&&!d.cancelada)return false;
     return true;
   });
-  f.sort((a,b)=>(b.embarque||'')>(a.embarque||'')?1:(b.embarque||'')<(a.embarque||'')?-1:0);
+  f.sort((a,b)=>{const na=parseInt((String(a.nf||'0')).replace(/\D.*$/,''))||0;const nb=parseInt((String(b.nf||'0')).replace(/\D.*$/,''))||0;return nb-na;});
   document.getElementById('tbody-emb').innerHTML=f.length
     ?f.map(d=>{const sp=sprazo(d);const _rowClass=d.cancelada?'cancelada':d.status==='liquidado'?'row-liquidado':d.status==='Pago'?'row-pago':'';
       return`<tr class="${_rowClass}" ondblclick="abrirEdit('${d.id}')" style="cursor:pointer" title="Duplo clique para editar"><td><input type="checkbox" value="${d.id}" onchange="updateSelCount('tbody-emb')" style="accent-color:#1B2B4B" onclick="event.stopPropagation()"></td>
