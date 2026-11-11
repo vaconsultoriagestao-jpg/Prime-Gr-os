@@ -2584,7 +2584,8 @@ async function salvarEmb(){
   const compra=parseFloat(document.getElementById('f_compra').value)||0;
   const venda=parseFloat(document.getElementById('f_venda').value)||0;
   const dono_carga=document.getElementById('f_dono_carga').value.trim();
-  if(!dono_carga){toast('Informe o dono da carga!',true);return;}
+  const isCompCheck=document.getElementById('f_complementar').checked;
+  if(!dono_carga&&!isCompCheck){toast('Informe o dono da carga!',true);return;}
   if(!ctId){toast('Selecione um contrato!',true);return;}
   if(!nf){toast('Informe a NF1!',true);return;}
   const isComp=document.getElementById('f_complementar').checked;
