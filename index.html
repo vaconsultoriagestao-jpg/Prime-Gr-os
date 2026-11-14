@@ -1299,8 +1299,8 @@ tr.row-pago td{background:rgba(40,167,69,0.07)}
     <div class="table-card">
       <div class="table-header"><h3>CTE por embarque</h3><div style="display:flex;gap:6px"><button class="btn btn-secondary btn-sm" onclick="exportCapTransp('csv')">⬇ Excel</button><button class="btn btn-secondary btn-sm" onclick="exportCapTransp('pdf')">⬇ PDF</button></div></div>
       <div class="tbl-wrap"><table><thead><tr>
-        <th onclick="sortTable('tbody-capt',0)" style="cursor:pointer">Transportadora ↕</th><th onclick="sortTable('tbody-capt',1)" style="cursor:pointer">Contrato ↕</th><th>NF</th><th>Motorista</th>
-        <th onclick="sortTable('tbody-capt',4)" style="cursor:pointer">Embarque ↕</th><th>Sc emb.</th><th>CTE R$/sc</th><th onclick="sortTable('tbody-capt',7,true)" style="cursor:pointer">CTE Total ↕</th><th>Status</th><th></th>
+        <th></th><th onclick="sortTable('tbody-capt',1)" style="cursor:pointer">Transportadora ↕</th><th>Empresa</th><th onclick="sortTable('tbody-capt',3)" style="cursor:pointer">Contrato ↕</th><th>NF</th><th>Motorista</th>
+        <th onclick="sortTable('tbody-capt',6)" style="cursor:pointer">Embarque ↕</th><th>Sc emb.</th><th>CTE R$/sc</th><th onclick="sortTable('tbody-capt',9,true)" style="cursor:pointer">CTE Total ↕</th><th>Status</th><th></th>
       </tr></thead><tbody id="tbody-capt"></tbody></table></div>
     </div>
   </div>
@@ -1754,7 +1754,7 @@ async function load(){
   hideLoading();
 }
 
-function calcularPesos(pliq, venda, compra, rs_ton, tem_fundo, ctObj){
+function calcularPesos(pliq, venda, compra, rs_ton, tem_fundo, ctObj, cn_sc=0, cte_sc=0){
   const sc_emb=pliq/60;
   const sc_ent=sc_emb;
   const frete_total=(pliq/1000)*rs_ton;
@@ -1766,10 +1766,12 @@ function calcularPesos(pliq, venda, compra, rs_ton, tem_fundo, ctObj){
   const fundo=tem_fundo?total_venda*fp:0;
   const comsVinc=(ctObj&&ctObj.comissionarios_ct)||[];
   const com_total=comsVinc.reduce((s,c)=>s+((c.valor||0)*sc_ent),0);
+  const cn_val=cn_sc*sc_emb;
+  const cte=cte_sc*sc_emb;
   const comp_desc2=0-total_venda;
-  const lucro2=total_venda-total_compra-frete_total-com_total-fundo+comp_desc2;
+  const lucro2=total_venda-total_compra-frete_total-com_total-fundo-cn_val-cte+comp_desc2;
   const lucro_pct2=total_venda>0?(lucro2/total_venda)*100:0;
-  return{pliq,pdesc:0,sc_emb,sc_ent,quebra_sc:0,frete_total,frete80,frete20,frete80_pago:false,frete20_pago:false,total_compra,total_venda,comp_desc:comp_desc2,fundo,com_total,imp_desc:0,desc_quebra:0,lucro:lucro2,lucro_pct:lucro_pct2,rkg:venda/60};
+  return{pliq,pdesc:0,sc_emb,sc_ent,quebra_sc:0,frete_total,frete80,frete20,frete80_pago:false,frete20_pago:false,total_compra,total_venda,comp_desc:comp_desc2,fundo,com_total,cn_val,cte,imp_desc:0,desc_quebra:0,lucro:lucro2,lucro_pct:lucro_pct2,rkg:venda/60};
 }
 
 // ===== PRÉ-CARGAS =====
@@ -2681,7 +2683,7 @@ async function salvarEmb(){
     const pc = precargas.find ? null : null; // peso2 vem da pré-carga
     const pliq2 = parseFloat((document.getElementById('f_pliq2')||{value:'0'}).value)||0;
     if(pliq2>0){
-      const c2=calcularPesos(pliq2, obj.venda, obj.compra, obj.rs_ton, obj.tem_fundo, ctObj);
+      const c2=calcularPesos(pliq2, obj.venda, obj.compra, obj.rs_ton, obj.tem_fundo, ctObj, obj.cn_sc, obj.cte_sc);
       const obj2={...obj, ...c2, id:Date.now()+1, nf:nf2, pliq:pliq2, grupo_frete:grupoId, recebido:0, comp_desc:0};
       embs.push(obj2);await saveEmb(obj2);
     }
@@ -3056,7 +3058,7 @@ function renderCapTransp(){
       <td><span class="badge ${d.cte_pago?'badge-green':'badge-amber'}">${d.cte_pago?'Pago':'Em aberto'}</span></td>
       <td><button class="flag-btn ${d.cte_pago?'pago':'aberto'}" onclick="toggleCapTranspPago(${d.id})">${d.cte_pago?'✓ Pago':'Marcar pago'}</button></td>
     </tr>`).join('')
-    :'<tr><td colspan="10" class="empty-state">Nenhum CTE encontrado.</td></tr>';
+    :'<tr><td colspan="12" class="empty-state">Nenhum CTE encontrado.</td></tr>';
 }
 
 // ===== CONTAS A PAGAR — COMISSIONÁRIOS =====
