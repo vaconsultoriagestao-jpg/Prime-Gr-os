@@ -5859,20 +5859,20 @@ function pdfUnificadoResumo(){
 }
 function _rsRenderUnificado(lista,t){
   const box=document.getElementById('rs-unificado');if(!box)return;
-  // Filtra pelos checkboxes selecionados, se houver
+  // Fechamento unificado só aparece se 2+ contratos estão marcados nos pills
   const selChecks=[...document.querySelectorAll('#fc-ct-checks input[type=checkbox]:checked')].map(c=>c.value);
-  if(selChecks.length>0){
-    lista=lista.filter(r=>selChecks.includes(String(r.numero)));
-    t=_rsSoma(lista);
-  }
+  if(selChecks.length<2){box.innerHTML='';return;}
+  lista=lista.filter(r=>selChecks.includes(String(r.numero)));
+  // Se algum selecionado não está na lista filtrada, busca direto
+  selChecks.forEach(num=>{if(!lista.find(r=>String(r.numero)===num))lista.push(resumoDoContrato(num));});
+  t=_rsSoma(lista);
   if(lista.length<2){box.innerHTML='';return;}
-  const sel=selChecks.length>0?true:(_msState['ms-rs-ct']&&_msState['ms-rs-ct'].size);
   const nomes=lista.map(r=>_rsRotulo(r.numero));
   const L=(lbl,v,b)=>`<span ${b?'style="font-weight:700;border-top:1px solid var(--border);padding-top:4px"':''}>${lbl}</span><span class="mono ${b?(v>=0?'pos':'neg'):''}" ${b?'style="font-weight:700;border-top:1px solid var(--border);padding-top:4px"':''}>${fmt(v)}</span>`;
   box.innerHTML=`<div class="table-card" style="margin:0;border:2px solid #0A8218">
     <div style="display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;align-items:flex-start;padding:1rem 1.25rem .5rem">
       <div style="min-width:240px;flex:1">
-        <div style="font-size:16px;font-weight:700">Fechamento unificado — ${lista.length} contratos ${sel?'selecionados':'(todos os exibidos)'}</div>
+        <div style="font-size:16px;font-weight:700">Fechamento unificado — ${lista.length} contratos selecionados</div>
         <div style="font-size:12px;color:var(--text-muted);margin-top:4px">${nomes.join(' · ')}</div>
         <div style="font-size:11px;color:var(--text-muted);margin-top:6px">${t.cargas} cargas · ${fmtN(t.sc_emb,0)} sc embarcadas · ${fmtN(t.sc_ent)} sc entregues</div>
       </div>
