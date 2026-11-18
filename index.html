@@ -5589,8 +5589,8 @@ function renderResumo(){
       const badgeDist=isDist
         ?'<span style="font-size:10px;padding:1px 5px;border-radius:4px;background:#d1fae5;color:#065f46;font-weight:600">✓ Distribuído</span>'
         :'<span style="font-size:10px;padding:1px 5px;border-radius:4px;background:#f1f5f9;color:#64748b;font-weight:600">Não distribuído</span>';
-      return`<label style="display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border:1.5px solid ${checked?'#1B2B4B':'var(--gray-200)'};border-radius:8px;cursor:pointer;background:${checked?'#f0f4ff':'var(--white)'};white-space:nowrap;user-select:none" class="${checked?'on':''}">
-        <input type="checkbox" value="${r.numero}" ${checked?'checked':''} onchange="onFcCtCheck(this)" style="accent-color:#1B2B4B;cursor:pointer">
+      return`<label style="display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border:1.5px solid ${checked?'#1B2B4B':'var(--gray-200)'};border-radius:8px;cursor:pointer;background:${checked?'#f0f4ff':'var(--white)'};white-space:nowrap;user-select:none">
+        <input type="checkbox" value="${r.numero}" ${checked?'checked':''} onclick="onFcCtCheck(this)" style="accent-color:#1B2B4B;cursor:pointer">
         <span style="font-weight:700;font-size:13px;color:#1B2B4B">${r.numero}</span>
         <span style="font-size:12px;color:var(--text-muted);max-width:140px;overflow:hidden;text-overflow:ellipsis">${(r.ct||{}).comprador||'—'}</span>
         ${badgeRec}${badgeDist}
@@ -5692,11 +5692,12 @@ function renderResumo(){
     renderSociosFc();
   }
 }
-function selTodosFc(sel){
+function selTodosFc(el){
+  const sel=el.checked;
   document.querySelectorAll('#fc-ct-checks input[type=checkbox]').forEach(cb=>{
     cb.checked=sel;
     const lbl=cb.closest('label');
-    if(lbl){lbl.classList.toggle('on',sel);lbl.style.borderColor=sel?'#1B2B4B':'var(--gray-200)';lbl.style.background=sel?'#f0f4ff':'var(--white)';}
+    if(lbl){lbl.style.borderColor=sel?'#1B2B4B':'var(--gray-200)';lbl.style.background=sel?'#f0f4ff':'var(--white)';}
   });
   // Recalcula lucro após selecionar/limpar todos
   const sels=[...document.querySelectorAll('#fc-ct-checks input[type=checkbox]:checked')].map(c=>c.value);
@@ -5706,22 +5707,21 @@ function selTodosFc(sel){
   _rsAtualizarUnificado();
 }
 function onFcCtCheck(cb){
-  const lbl=cb.closest('label');
-  if(lbl){lbl.style.borderColor=cb.checked?'#1B2B4B':'var(--gray-200)';lbl.style.background=cb.checked?'#f0f4ff':'var(--white)';}
-  const sels=[...document.querySelectorAll('#fc-ct-checks input[type=checkbox]:checked')].map(c=>c.value);
-  _fcSelsAtual=sels;
-  if(!sels.length){_fcLucroAtual=0;renderSociosFc();_rsAtualizarUnificado();return;}
-  // Calcula lucro somando todos os contratos selecionados (independente dos filtros da tela)
-  _fcLucroAtual=sels.reduce((s,ct)=>s+(resumoDoContrato(ct).lucro||0),0);
-  // Carrega distribuição do primeiro contrato selecionado se sócios ainda não definidos
-  if(_fcSocios.length===0){
-    const co=cts.find(c=>String(c.numero)===String(sels[0]));
-    if(co&&co.distribuicao_socios&&co.distribuicao_socios.length){
-      _fcSocios=[...co.distribuicao_socios];
+  // setTimeout: onclick dispara antes do browser atualizar cb.checked
+  setTimeout(()=>{
+    const lbl=cb.closest('label');
+    if(lbl){lbl.style.borderColor=cb.checked?'#1B2B4B':'var(--gray-200)';lbl.style.background=cb.checked?'#f0f4ff':'var(--white)';}
+    const sels=[...document.querySelectorAll('#fc-ct-checks input[type=checkbox]:checked')].map(c=>c.value);
+    _fcSelsAtual=sels;
+    if(!sels.length){_fcLucroAtual=0;renderSociosFc();_rsAtualizarUnificado();return;}
+    _fcLucroAtual=sels.reduce((s,ct)=>s+(resumoDoContrato(ct).lucro||0),0);
+    if(_fcSocios.length===0){
+      const co=cts.find(c=>String(c.numero)===String(sels[0]));
+      if(co&&co.distribuicao_socios&&co.distribuicao_socios.length) _fcSocios=[...co.distribuicao_socios];
     }
-  }
-  renderSociosFc();
-  _rsAtualizarUnificado();
+    renderSociosFc();
+    _rsAtualizarUnificado();
+  },0);
 }
 function _rsAtualizarUnificado(){
   const lista=_rsListaFiltrada();
