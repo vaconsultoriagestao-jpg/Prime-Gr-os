@@ -548,6 +548,17 @@ tr.row-pago td{background:rgba(40,167,69,0.07)}
       </div>
     </div>
 
+    <!-- SELEÇÃO DE CONTRATOS (pills/checkboxes) -->
+    <div class="table-card" style="margin-bottom:1rem;padding:.75rem 1.25rem" id="fc-ct-checks-wrap">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:.6rem">
+        <span style="font-size:12px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.04em">Selecionar contratos</span>
+        <label style="font-size:12px;color:var(--text-muted);cursor:pointer;display:flex;align-items:center;gap:4px">
+          <input type="checkbox" id="fc-sel-todos" onchange="selTodosFc(this)" style="accent-color:#1B2B4B"> Todos
+        </label>
+      </div>
+      <div id="fc-ct-checks" style="display:flex;flex-wrap:wrap;gap:6px"></div>
+    </div>
+
     <div class="stats-grid" id="rs-cards"></div>
     <div id="rs-unificado" style="margin-bottom:1rem"></div>
     <div id="rs-lista" style="display:grid;gap:1rem"></div>
@@ -5560,6 +5571,32 @@ function _rsMini(lbl,val,cls,sub){
 function renderResumo(){
   const el=document.getElementById('rs-lista');if(!el)return;
   const lista=_rsListaFiltrada();
+  // Renderiza pills de seleção de contratos
+  const checksEl=document.getElementById('fc-ct-checks');
+  if(checksEl){
+    const prevSels=new Set([...document.querySelectorAll('#fc-ct-checks input[type=checkbox]:checked')].map(c=>c.value));
+    checksEl.innerHTML=lista.map(r=>{
+      const its=embs.filter(d=>!d.cancelada&&String(d.contrato)===String(r.numero)&&(!_empresaFiltro||d.empresa===_empresaFiltro));
+      const totalVenda=its.reduce((s,d)=>s+(d.total_venda||0),0);
+      const totalRec=its.reduce((s,d)=>s+(d.recebido||0),0);
+      const todosComRec=its.length>0&&its.every(d=>d.data_rec&&(d.recebido||0)>0);
+      const isRec=todosComRec||(totalVenda>0&&totalRec>=totalVenda*0.99);
+      const isDist=(r.ct||{}).distribuicao_socios&&(r.ct.distribuicao_socios.length>0);
+      const checked=prevSels.has(String(r.numero));
+      const badgeRec=isRec
+        ?'<span style="font-size:10px;padding:1px 5px;border-radius:4px;background:#d1fae5;color:#065f46;font-weight:600">✓ Recebido</span>'
+        :'<span style="font-size:10px;padding:1px 5px;border-radius:4px;background:#fef3c7;color:#92400e;font-weight:600">Pendente</span>';
+      const badgeDist=isDist
+        ?'<span style="font-size:10px;padding:1px 5px;border-radius:4px;background:#d1fae5;color:#065f46;font-weight:600">✓ Distribuído</span>'
+        :'<span style="font-size:10px;padding:1px 5px;border-radius:4px;background:#f1f5f9;color:#64748b;font-weight:600">Não distribuído</span>';
+      return`<label style="display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border:1.5px solid ${checked?'#1B2B4B':'var(--gray-200)'};border-radius:8px;cursor:pointer;background:${checked?'#f0f4ff':'var(--white)'};white-space:nowrap;user-select:none" class="${checked?'on':''}">
+        <input type="checkbox" value="${r.numero}" ${checked?'checked':''} onchange="onFcCtCheck(this)" style="accent-color:#1B2B4B;cursor:pointer">
+        <span style="font-weight:700;font-size:13px;color:#1B2B4B">${r.numero}</span>
+        <span style="font-size:12px;color:var(--text-muted);max-width:140px;overflow:hidden;text-overflow:ellipsis">${(r.ct||{}).comprador||'—'}</span>
+        ${badgeRec}${badgeDist}
+      </label>`;
+    }).join('');
+  }
   const t=_rsSoma(lista);
   const despGerais=_rsDespesas().filter(d=>!d.contrato&&!d.contrato_cor).reduce((s,d)=>s+(Number(d.valor)||0),0);
   document.getElementById('rs-cards').innerHTML=`
@@ -5657,7 +5694,9 @@ function renderResumo(){
 }
 function selTodosFc(sel){
   document.querySelectorAll('#fc-ct-checks input[type=checkbox]').forEach(cb=>{
-    cb.checked=sel;cb.closest('label').classList.toggle('on',sel);
+    cb.checked=sel;
+    const lbl=cb.closest('label');
+    if(lbl){lbl.classList.toggle('on',sel);lbl.style.borderColor=sel?'#1B2B4B':'var(--gray-200)';lbl.style.background=sel?'#f0f4ff':'var(--white)';}
   });
   // Recalcula lucro após selecionar/limpar todos
   const sels=[...document.querySelectorAll('#fc-ct-checks input[type=checkbox]:checked')].map(c=>c.value);
@@ -5666,6 +5705,8 @@ function selTodosFc(sel){
   renderSociosFc();
 }
 function onFcCtCheck(cb){
+  const lbl=cb.closest('label');
+  if(lbl){lbl.classList.toggle('on',cb.checked);lbl.style.borderColor=cb.checked?'#1B2B4B':'var(--gray-200)';lbl.style.background=cb.checked?'#f0f4ff':'var(--white)';}
   cb.closest('label').classList.toggle('on',cb.checked);
   const sels=[...document.querySelectorAll('#fc-ct-checks input[type=checkbox]:checked')].map(c=>c.value);
   _fcSelsAtual=sels;
