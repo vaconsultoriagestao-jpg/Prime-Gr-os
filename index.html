@@ -5571,11 +5571,19 @@ function _rsMini(lbl,val,cls,sub){
 function renderResumo(){
   const el=document.getElementById('rs-lista');if(!el)return;
   const lista=_rsListaFiltrada();
-  // Renderiza pills de seleção de contratos
+  // Renderiza pills de seleção de contratos — usa TODOS os contratos (sem filtro de sócios/status)
   const checksEl=document.getElementById('fc-ct-checks');
   if(checksEl){
     const prevSels=new Set([...document.querySelectorAll('#fc-ct-checks input[type=checkbox]:checked')].map(c=>c.value));
-    checksEl.innerHTML=lista.map(r=>{
+    // Lista completa sem filtro de sócios/status/busca — só empresa global
+    const numsAll=new Set([
+      ...cts.filter(c=>!_empresaFiltro||!c.empresa||c.empresa===_empresaFiltro).map(c=>String(c.numero)),
+      ...embs.filter(d=>!d.cancelada&&(!_empresaFiltro||d.empresa===_empresaFiltro)).map(d=>String(d.contrato))
+    ].filter(v=>v&&v!=='undefined'));
+    const listaAll=[...numsAll].map(resumoDoContrato)
+      .filter(r=>!(r.encerrado))
+      .sort((a,b)=>String(b.numero).localeCompare(String(a.numero),undefined,{numeric:true}));
+    checksEl.innerHTML=listaAll.map(r=>{
       const its=embs.filter(d=>!d.cancelada&&String(d.contrato)===String(r.numero)&&(!_empresaFiltro||d.empresa===_empresaFiltro));
       const totalVenda=its.reduce((s,d)=>s+(d.total_venda||0),0);
       const totalRec=its.reduce((s,d)=>s+(d.recebido||0),0);
