@@ -552,9 +552,9 @@ tr.row-pago td{background:rgba(40,167,69,0.07)}
     <div class="table-card" style="margin-bottom:1rem;padding:.75rem 1.25rem" id="fc-ct-checks-wrap">
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:.6rem">
         <span style="font-size:12px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.04em">Selecionar contratos</span>
-        <label style="font-size:12px;color:var(--text-muted);cursor:pointer;display:flex;align-items:center;gap:4px">
-          <input type="checkbox" id="fc-sel-todos" onchange="selTodosFc(this)" style="accent-color:#1B2B4B"> Todos
-        </label>
+        <div id="fc-sel-todos-wrap" onclick="selTodosFcClick()" style="font-size:12px;color:var(--text-muted);cursor:pointer;display:flex;align-items:center;gap:4px;user-select:none">
+          <input type="checkbox" id="fc-sel-todos" style="accent-color:#1B2B4B;pointer-events:none"> Todos
+        </div>
       </div>
       <div id="fc-ct-checks" style="display:flex;flex-wrap:wrap;gap:6px"></div>
     </div>
@@ -5571,19 +5571,11 @@ function _rsMini(lbl,val,cls,sub){
 function renderResumo(){
   const el=document.getElementById('rs-lista');if(!el)return;
   const lista=_rsListaFiltrada();
-  // Renderiza pills de seleção de contratos — usa TODOS os contratos (sem filtro de sócios/status)
+  // Renderiza pills — mesma lista dos cards (já filtrada por empresa, ativo/encerrado, busca)
   const checksEl=document.getElementById('fc-ct-checks');
   if(checksEl){
     const prevSels=new Set([...document.querySelectorAll('#fc-ct-checks input[type=checkbox]:checked')].map(c=>c.value));
-    // Lista completa sem filtro de sócios/status/busca — só empresa global
-    const numsAll=new Set([
-      ...cts.filter(c=>!_empresaFiltro||!c.empresa||c.empresa===_empresaFiltro).map(c=>String(c.numero)),
-      ...embs.filter(d=>!d.cancelada&&(!_empresaFiltro||d.empresa===_empresaFiltro)).map(d=>String(d.contrato))
-    ].filter(v=>v&&v!=='undefined'));
-    const listaAll=[...numsAll].map(resumoDoContrato)
-      .filter(r=>!(r.encerrado))
-      .sort((a,b)=>String(b.numero).localeCompare(String(a.numero),undefined,{numeric:true}));
-    checksEl.innerHTML=listaAll.map(r=>{
+    checksEl.innerHTML=lista.map(r=>{
       const its=embs.filter(d=>!d.cancelada&&String(d.contrato)===String(r.numero)&&(!_empresaFiltro||d.empresa===_empresaFiltro));
       const totalVenda=its.reduce((s,d)=>s+(d.total_venda||0),0);
       const totalRec=its.reduce((s,d)=>s+(d.recebido||0),0);
@@ -5689,9 +5681,12 @@ function renderResumo(){
   if(!listaParaDist.length){if(fcSec)fcSec.style.display='none';}
   else{
     if(fcSec)fcSec.style.display='block';
-    // Lucro total dos contratos filtrados
-    _fcLucroAtual=listaParaDist.reduce((s,r)=>s+r.lucro,0);
-    _fcSelsAtual=listaParaDist.map(r=>String(r.numero));
+    // Só atualiza _fcSelsAtual se não há pills marcados manualmente
+    const pillsMarcados=[...document.querySelectorAll('#fc-ct-checks input[type=checkbox]:checked')].map(c=>c.value);
+    if(pillsMarcados.length===0){
+      _fcLucroAtual=listaParaDist.reduce((s,r)=>s+r.lucro,0);
+      _fcSelsAtual=listaParaDist.map(r=>String(r.numero));
+    }
     // Carrega distribuição salva se sócios ainda não definidos
     if(_fcSocios.length===0&&listaParaDist.length===1){
       const co=listaParaDist[0].ct||{};
@@ -5700,27 +5695,34 @@ function renderResumo(){
     renderSociosFc();
   }
 }
-function selTodosFc(el){
-  const sel=el.checked;
+function selTodosFcClick(){
+  const masterCb=document.getElementById('fc-sel-todos');
+  if(!masterCb)return;
+  const novoEstado=!masterCb.checked;
+  masterCb.checked=novoEstado;
   document.querySelectorAll('#fc-ct-checks input[type=checkbox]').forEach(cb=>{
-    cb.checked=sel;
+    cb.checked=novoEstado;
     const pill=document.getElementById('pill-ct-'+cb.value);
-    if(pill){pill.style.borderColor=sel?'#1B2B4B':'var(--gray-200)';pill.style.background=sel?'#f0f4ff':'var(--white)';}
+    if(pill){pill.style.borderColor=novoEstado?'#1B2B4B':'var(--gray-200)';pill.style.background=novoEstado?'#f0f4ff':'var(--white)';}
   });
-  // Recalcula lucro após selecionar/limpar todos
   const sels=[...document.querySelectorAll('#fc-ct-checks input[type=checkbox]:checked')].map(c=>c.value);
   _fcSelsAtual=sels;
   _fcLucroAtual=sels.reduce((s,ct)=>s+(resumoDoContrato(ct).lucro||0),0);
   renderSociosFc();
   _rsAtualizarUnificado();
 }
+function selTodosFc(el){selTodosFcClick();} // compatibilidade
 function togglePillCt(numero){
   const cb=document.getElementById('cb-ct-'+numero);
   if(!cb)return;
   cb.checked=!cb.checked;
   const pill=document.getElementById('pill-ct-'+numero);
   if(pill){pill.style.borderColor=cb.checked?'#1B2B4B':'var(--gray-200)';pill.style.background=cb.checked?'#f0f4ff':'var(--white)';}
-  const sels=[...document.querySelectorAll('#fc-ct-checks input[type=checkbox]:checked')].map(c=>c.value);
+  const todos=[...document.querySelectorAll('#fc-ct-checks input[type=checkbox]')];
+  const sels=todos.filter(c=>c.checked).map(c=>c.value);
+  // Sincroniza master "Todos"
+  const master=document.getElementById('fc-sel-todos');
+  if(master) master.checked=(todos.length>0&&sels.length===todos.length);
   _fcSelsAtual=sels;
   if(!sels.length){_fcLucroAtual=0;renderSociosFc();_rsAtualizarUnificado();return;}
   _fcLucroAtual=sels.reduce((s,ct)=>s+(resumoDoContrato(ct).lucro||0),0);
