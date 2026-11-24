@@ -5612,7 +5612,10 @@ function renderResumo(){
       </div>`;
     }).join('');
   }
-  const t=_rsSoma(lista);
+  // Cards: se há pills marcados, mostrar só os selecionados
+  const pillsSels=[...document.querySelectorAll('#fc-ct-checks input[type=checkbox]:checked')].map(c=>c.value);
+  const listaCards=pillsSels.length>0?lista.filter(r=>pillsSels.includes(String(r.numero))):lista;
+  const t=_rsSoma(listaCards);
   const despGerais=_rsDespesas().filter(d=>!d.contrato&&!d.contrato_cor).reduce((s,d)=>s+(Number(d.valor)||0),0);
   document.getElementById('rs-cards').innerHTML=`
     <div class="stat-card"><div class="s-label">Contratos</div><div class="s-value">${lista.length}</div><div class="s-sub">${t.cargas} cargas · ${fmtN(t.sc_ent)} sc entregues</div></div>
