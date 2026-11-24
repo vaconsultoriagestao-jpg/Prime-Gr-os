@@ -5538,6 +5538,8 @@ function _rsListaFiltrada(){
   const q=(document.getElementById('rs-q')||{value:''}).value.trim().toLowerCase();
   const sit=(document.getElementById('rs-sit')||{value:''}).value;
   const ordem=(document.getElementById('rs-ordem')||{value:'numero'}).value;
+  const filtroSoc=(document.getElementById('fc-filtro-socios')||{value:''}).value;
+  const filtroStatus=(document.getElementById('fc-filtro-status')||{value:''}).value;
   const nums=new Set([
     ...cts.filter(c=>!_empresaFiltro||!c.empresa||c.empresa===_empresaFiltro).map(c=>String(c.numero)),
     ...embs.filter(d=>!d.cancelada&&(!_empresaFiltro||d.empresa===_empresaFiltro)).map(d=>String(d.contrato))
@@ -5548,6 +5550,19 @@ function _rsListaFiltrada(){
     if(sit==='ativo'&&r.encerrado&&!(_msState['ms-rs-ct']&&_msState['ms-rs-ct'].size))return false;
     if(sit==='encerrado'&&!r.encerrado)return false;
     if(q&&!r.numero.toLowerCase().includes(q)&&!String((r.ct&&r.ct.comprador)||'').toLowerCase().includes(q)&&!String((r.ct&&r.ct.industria)||'').toLowerCase().includes(q))return false;
+    if(filtroSoc&&(!r.ct||r.ct.socios!==filtroSoc))return false;
+    if(filtroStatus){
+      const its=embs.filter(d=>!d.cancelada&&String(d.contrato)===String(r.numero)&&(!_empresaFiltro||d.empresa===_empresaFiltro));
+      const totalVenda=its.reduce((s,d)=>s+(d.total_venda||0),0);
+      const totalRec=its.reduce((s,d)=>s+(d.recebido||0),0);
+      const todosComRec=its.length>0&&its.every(d=>d.data_rec&&(d.recebido||0)>0);
+      const rec100=todosComRec||(totalVenda>0&&totalRec>=totalVenda*0.99);
+      const dist=(r.ct||{}).distribuicao_socios&&(r.ct.distribuicao_socios.length>0);
+      if(filtroStatus==='recebido'&&!rec100)return false;
+      if(filtroStatus==='pendente'&&rec100)return false;
+      if(filtroStatus==='distribuido'&&!dist)return false;
+      if(filtroStatus==='nao_distribuido'&&dist)return false;
+    }
     return true;
   });
   const cmpNum=(a,b)=>String(b.numero).localeCompare(String(a.numero),undefined,{numeric:true});
