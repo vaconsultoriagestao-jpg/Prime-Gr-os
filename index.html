@@ -5618,16 +5618,16 @@ function renderResumo(){
   const t=_rsSoma(listaCards);
   const despGerais=_rsDespesas().filter(d=>!d.contrato&&!d.contrato_cor).reduce((s,d)=>s+(Number(d.valor)||0),0);
   document.getElementById('rs-cards').innerHTML=`
-    <div class="stat-card"><div class="s-label">Contratos</div><div class="s-value">${lista.length}</div><div class="s-sub">${t.cargas} cargas · ${fmtN(t.sc_ent)} sc entregues</div></div>
+    <div class="stat-card"><div class="s-label">Contratos</div><div class="s-value">${listaCards.length}</div><div class="s-sub">${t.cargas} cargas · ${fmtN(t.sc_ent)} sc entregues</div></div>
     <div class="stat-card"><div class="s-label">Venda</div><div class="s-value">${fmt(t.venda)}</div></div>
     <div class="stat-card"><div class="s-label">Gasto total</div><div class="s-value">${fmt(t.gasto)}</div><div class="s-sub">soja, frete, comissão, custos e despesas</div></div>
     <div class="stat-card ${t.lucro>=0?'green':'red'}" style="border:2px solid ${t.lucro>=0?'#1B2B4B':'var(--red)'}"><div class="s-label" style="font-weight:700">Lucro dos contratos</div><div class="s-value">${fmt(t.lucro)}</div><div class="s-sub">${fmt(t.margem)}/sc · ${fmtP(t.pct)}</div></div>
     <div class="stat-card"><div class="s-label">Despesas gerais</div><div class="s-value">${fmt(despGerais)}</div><div class="s-sub">sem contrato · lucro após: ${fmt(t.lucro-despGerais)}</div></div>
     <div class="stat-card amber"><div class="s-label">A receber</div><div class="s-value">${fmt(t.aReceber)}</div><div class="s-sub">recebido ${fmt(t.recebido)}</div></div>
     <div class="stat-card red"><div class="s-label">A pagar</div><div class="s-value">${fmt(t.sojaPagar+t.fretePagar)}</div><div class="s-sub">soja ${fmt(t.sojaPagar)} · frete ${fmt(t.fretePagar)}</div></div>`;
-  _rsRenderUnificado(lista,t);
-  if(!lista.length){el.innerHTML='<div class="table-card"><div class="empty-state" style="padding:2rem">Nenhum contrato para os filtros atuais.</div></div>';return;}
-  el.innerHTML=lista.map(r=>{
+  _rsRenderUnificado(listaCards,t);
+  if(!listaCards.length){el.innerHTML='<div class="table-card"><div class="empty-state" style="padding:2rem">Nenhum contrato para os filtros atuais.</div></div>';return;}
+  el.innerHTML=listaCards.map(r=>{
     const ct=r.ct||{};
     const pctEmb=r.qtd>0?Math.min(100,r.sc_emb/r.qtd*100):0;
     const aberto=_rsAbertos.has(r.numero);
@@ -5727,7 +5727,7 @@ function selTodosFcClick(){
   _fcSelsAtual=sels;
   _fcLucroAtual=sels.reduce((s,ct)=>s+(resumoDoContrato(ct).lucro||0),0);
   renderSociosFc();
-  _rsAtualizarUnificado();
+  _rsRenderCards();
 }
 function selTodosFc(el){selTodosFcClick();} // compatibilidade
 function togglePillCt(numero){
@@ -5742,16 +5742,81 @@ function togglePillCt(numero){
   const master=document.getElementById('fc-sel-todos');
   if(master) master.checked=(todos.length>0&&sels.length===todos.length);
   _fcSelsAtual=sels;
-  if(!sels.length){_fcLucroAtual=0;renderSociosFc();_rsAtualizarUnificado();return;}
-  _fcLucroAtual=sels.reduce((s,ct)=>s+(resumoDoContrato(ct).lucro||0),0);
-  if(_fcSocios.length===0){
-    const co=cts.find(c=>String(c.numero)===String(sels[0]));
-    if(co&&co.distribuicao_socios&&co.distribuicao_socios.length) _fcSocios=[...co.distribuicao_socios];
+  if(!sels.length){_fcLucroAtual=0;}
+  else{
+    _fcLucroAtual=sels.reduce((s,ct)=>s+(resumoDoContrato(ct).lucro||0),0);
+    if(_fcSocios.length===0){
+      const co=cts.find(c=>String(c.numero)===String(sels[0]));
+      if(co&&co.distribuicao_socios&&co.distribuicao_socios.length) _fcSocios=[...co.distribuicao_socios];
+    }
   }
   renderSociosFc();
-  _rsAtualizarUnificado();
+  _rsRenderCards(); // re-renderiza cards e unificado sem mexer nos pills
 }
 function onFcCtCheck(cb){}
+function _rsRenderCards(){
+  // Re-renderiza cards e resumo sem mexer nos pills
+  const el=document.getElementById('rs-lista');if(!el)return;
+  const lista=_rsListaFiltrada();
+  const pillsSels=[...document.querySelectorAll('#fc-ct-checks input[type=checkbox]:checked')].map(c=>c.value);
+  const listaCards=pillsSels.length>0?lista.filter(r=>pillsSels.includes(String(r.numero))):lista;
+  const t=_rsSoma(listaCards);
+  const despGerais=_rsDespesas().filter(d=>!d.contrato&&!d.contrato_cor).reduce((s,d)=>s+(Number(d.valor)||0),0);
+  document.getElementById('rs-cards').innerHTML=`
+    <div class="stat-card"><div class="s-label">Contratos</div><div class="s-value">${listaCards.length}</div><div class="s-sub">${t.cargas} cargas · ${fmtN(t.sc_ent)} sc entregues</div></div>
+    <div class="stat-card"><div class="s-label">Venda</div><div class="s-value">${fmt(t.venda)}</div></div>
+    <div class="stat-card"><div class="s-label">Gasto total</div><div class="s-value">${fmt(t.gasto)}</div><div class="s-sub">soja, frete, comissão, custos e despesas</div></div>
+    <div class="stat-card ${t.lucro>=0?'green':'red'}" style="border:2px solid ${t.lucro>=0?'#1B2B4B':'var(--red)'}"><div class="s-label" style="font-weight:700">Lucro dos contratos</div><div class="s-value">${fmt(t.lucro)}</div><div class="s-sub">${fmt(t.margem)}/sc · ${fmtP(t.pct)}</div></div>
+    <div class="stat-card"><div class="s-label">Despesas gerais</div><div class="s-value">${fmt(despGerais)}</div><div class="s-sub">sem contrato · lucro após: ${fmt(t.lucro-despGerais)}</div></div>
+    <div class="stat-card amber"><div class="s-label">A receber</div><div class="s-value">${fmt(t.aReceber)}</div><div class="s-sub">recebido ${fmt(t.recebido)}</div></div>
+    <div class="stat-card red"><div class="s-label">A pagar</div><div class="s-value">${fmt(t.sojaPagar+t.fretePagar)}</div><div class="s-sub">soja ${fmt(t.sojaPagar)} · frete ${fmt(t.fretePagar)}</div></div>`;
+  _rsRenderUnificado(listaCards,t);
+  if(!listaCards.length){el.innerHTML='<div class="table-card"><div class="empty-state" style="padding:2rem">Nenhum contrato selecionado.</div></div>';return;}
+  el.innerHTML=listaCards.map(r=>{
+    const ct=r.ct||{};
+    const pctEmb=r.qtd>0?Math.min(100,r.sc_emb/r.qtd*100):0;
+    const aberto=_rsAbertos.has(r.numero);
+    const id='rs-'+r.numero.replace(/[^a-zA-Z0-9]/g,'_');
+    return`<div class="table-card" style="margin:0">
+      <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:flex-start;justify-content:space-between;padding:1rem 1.25rem .5rem">
+        <div style="min-width:220px">
+          <div style="font-size:16px;font-weight:700">${_rsRotulo(r.numero)} ${r.encerrado?'<span class="badge badge-gray">Encerrado</span>':'<span class="badge badge-green">Ativo</span>'}</div>
+          <div style="font-size:12px;color:var(--text-muted);margin-top:2px">${ct.comprador||'—'} · ${ct.produto||'—'}${ct.industria?' · '+ct.industria:''}${ct.valor?' · venda '+fmt(ct.valor)+'/sc':''}</div>
+          <div style="margin-top:8px;font-size:11px;color:var(--text-muted)">${r.cargas} carga(s) · ${fmtN(r.sc_emb,0)} sc embarcadas${r.qtd?' de '+fmtN(r.qtd,0)+' ('+fmtN(pctEmb,0)+'%)':''}</div>
+          ${r.qtd?`<div style="margin-top:4px;height:6px;width:240px;max-width:100%;background:var(--gray-100);border-radius:4px"><div style="width:${pctEmb}%;height:100%;background:#1B2B4B;border-radius:4px"></div></div>`:''}
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em">Lucro do contrato</div>
+          <div class="mono ${r.lucro>=0?'pos':'neg'}" style="font-size:22px;font-weight:700">${fmt(r.lucro)}</div>
+          <div style="font-size:12px;color:var(--text-muted)"><strong>${fmt(r.margem)}/sc</strong> · ${fmtP(r.pct)}</div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:8px;padding:.25rem 1.25rem 1rem">
+        ${_rsMini('Sc embarcadas',fmtN(r.sc_emb,0),'',fmtN(r.sc_ent,0)+' sc entregues')}
+        ${_rsMini('Venda',fmt(r.venda))}
+        ${_rsMini('Soja',fmt(r.soja))}
+        ${_rsMini('Frete',fmt(r.frete))}
+        ${_rsMini('Comissão',fmt(r.comissao))}
+        ${_rsMini('Outros custos',fmt(r.outros),'','nota, CTE, descontos')}
+        ${_rsMini('Despesas',fmt(r.despesas),'',r.desp.length+' lanç.')}
+        ${_rsMini('Gasto total',fmt(r.gasto))}
+        ${_rsMini('Recebido',fmt(r.recebido),'pos')}
+        ${_rsMini('A receber',fmt(r.aReceber),r.aReceber>0.009?'amber-txt':'')}
+        ${_rsMini('Soja a pagar',fmt(r.sojaPagar),r.sojaPagar>0.009?'neg':'')}
+        ${_rsMini('Frete a pagar',fmt(r.fretePagar),r.fretePagar>0.009?'neg':'')}
+      </div>
+      <div style="display:flex;gap:8px;padding:0 1.25rem 1rem">
+        <button class="btn btn-secondary btn-sm" onclick="toggleRsCargas('${r.numero}')">${aberto?'▲ Fechar cargas':'📂 Ver cargas e despesas'}</button>
+        <button class="btn btn-secondary btn-sm" onclick="pdfContratoResumo('${r.numero}')">📄 PDF do contrato</button>
+      </div>
+      ${aberto?_rsDetalhe(r,id):''}
+    </div>`;
+  }).join('');
+  listaCards.filter(r=>_rsAbertos.has(r.numero)).forEach(r=>{
+    const id='rs-'+r.numero.replace(/[^a-zA-Z0-9]/g,'_');
+    addTotalRow(id+'-cargas',{8:'N2',9:'R',10:'R',11:'R',12:'R',13:'R',14:'R',15:'R'});
+  });
+}
 function _rsAtualizarUnificado(){
   const lista=_rsListaFiltrada();
   const t=_rsSoma(lista);
